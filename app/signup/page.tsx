@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Church, User, Mail, Lock, MapPin, Phone, ArrowLeft, Users } from "lucide-react";
 
 export default function SignUpPage() {
@@ -36,9 +37,12 @@ export default function SignUpPage() {
             <Church className="h-8 w-8 text-indigo-600" />
             <h1 className="text-xl font-bold">Cong Manager</h1>
           </Link>
-          <Link href="/login">
-            <Button variant="ghost">Já tenho conta</Button>
-          </Link>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <Link href="/login">
+              <Button variant="ghost">Já tenho conta</Button>
+            </Link>
+          </div>
         </div>
       </header>
 

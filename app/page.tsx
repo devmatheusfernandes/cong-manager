@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Church, Users, Calendar, ClipboardList, MapPin, BookOpen, Shield, Smartphone } from "lucide-react";
 
 export default function LandingPage() {
@@ -16,6 +17,7 @@ export default function LandingPage() {
             <h1 className="text-xl font-bold">Cong Manager</h1>
           </div>
           <div className="flex items-center gap-4">
+            <ThemeToggle />
             <Link href="/login">
               <Button variant="ghost">Entrar</Button>
             </Link>

@@ -30,6 +30,7 @@ Table para listagens.
 Card para blocos de informação.
 Dialog para formulários/modal.
 Button sempre com variantes (primary, secondary, destructive).
+Sonner (as the Toast) para feedback visual.
 
 Ícones: Lucide React, sempre acompanhando ações (ex: lápis para editar, olho para visualizar).
 Interações

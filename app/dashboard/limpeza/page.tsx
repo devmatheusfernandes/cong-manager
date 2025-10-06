@@ -3,21 +3,13 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { CollapsibleCard } from "@/components/collapsible-card";
-import { PermissionGuard, PermissionButton, PermissionStatus } from "@/components/permission-guard";
+import { PermissionGuard, PermissionStatus } from "@/components/permission-guard";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Popover,
   PopoverContent,
@@ -35,7 +27,6 @@ import {
   type EscalaLimpeza,
   type CreateEscalaLimpezaData
 } from "@/lib/auth";
-import mockData from "@/data/mock-data.json";
 import { Plus, Calendar, User, Users, CalendarIcon, Info, CheckCircle, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";

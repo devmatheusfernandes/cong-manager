@@ -1,8 +1,6 @@
 import { BottomNavigation } from "@/components/bottom-navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LoginDialog } from "@/components/login-dialog";
-import { Button } from "@/components/ui/button";
-import { Bell } from "lucide-react";
 
 export default function DashboardLayout({
   children,

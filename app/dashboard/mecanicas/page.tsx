@@ -49,7 +49,6 @@ import {
   UserCheck,
   Volume2,
   Monitor,
-  Bell,
   Edit,
   Trash2,
 } from "lucide-react";
@@ -593,7 +592,7 @@ export default function MecanicasPage() {
             <p>Nenhuma designação encontrada.</p>
             {podeGerenciarMecanicas && (
               <p className="text-sm mt-2">
-                Clique em "Nova Designação" para criar a primeira.
+                Clique em &quot;Nova Designação&quot; para criar a primeira.
               </p>
             )}
           </div>

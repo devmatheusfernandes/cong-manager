@@ -11,28 +11,17 @@ import {
   Check,
   X,
   User,
-  Mic,
   Car,
-  Volume2,
-  Monitor,
   UserCheck,
-  Calendar,
-  BookOpen,
   Heart,
-  FileText,
   Users,
   Trash2,
-  Settings,
-  Megaphone,
-  GraduationCap,
   Sparkles,
   Headphones,
   DoorOpen,
   Crown,
   Book,
   Gem,
-  UserPlus,
-  MessageSquare,
   Target,
   School,
   LifeBuoy,
@@ -212,8 +201,8 @@ export default function PermissoesPage() {
     try {
       // Converter objeto de permissões para array
       const permissoesArray = Object.entries(permissoes)
-        .filter(([_, value]) => value)
-        .map(([key, _]) => key);
+        .filter(([, value]) => value)
+        .map(([key]) => key);
       
       // Incluir privilégios de serviço na atualização
       const updateData = {

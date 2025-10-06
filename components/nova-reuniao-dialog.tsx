@@ -20,7 +20,6 @@ import {
   Lightbulb,
   Target,
   Heart,
-  Clock,
   AlertTriangle,
   Users,
 } from "lucide-react";

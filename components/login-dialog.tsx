@@ -20,11 +20,9 @@ export function LoginDialog() {
   const { user, login, logout, loading } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
 
     try {
       const success = await login(password);
@@ -35,7 +33,7 @@ export function LoginDialog() {
       } else {
         toast.error("Senha incorreta!");
       }
-    } catch (error) {
+    } catch (_) {
       toast.error("Erro ao fazer login!");
     }
   };

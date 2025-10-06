@@ -34,7 +34,6 @@ import {
   User,
   CheckCircle,
   AlertCircle,
-  Building2,
   Music,
   CalendarIcon,
   Edit,

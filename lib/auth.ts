@@ -1349,7 +1349,7 @@ export async function updatePublicador(id: string, publicadorData: UpdatePublica
     }
 
     // Atualizar dados básicos do publicador
-    const updateData: any = {}
+    const updateData: Partial<Pick<Publicador, 'nome' | 'genero' | 'privilegio' | 'ativo'>> = {}
     if (publicadorData.nome !== undefined) updateData.nome = publicadorData.nome
     if (publicadorData.genero !== undefined) updateData.genero = publicadorData.genero
     if (publicadorData.privilegio !== undefined) updateData.privilegio = publicadorData.privilegio
@@ -1458,7 +1458,7 @@ export async function updatePublicadorPermissions(
 
     // Atualizar privilégios de serviço se fornecidos
     if (additionalData) {
-      const updateFields: any = {}
+      const updateFields: Partial<Pick<Publicador, 'pioneiro_regular' | 'pioneiro_auxiliar'>> = {}
       if (additionalData.pioneiro_regular !== undefined) {
         updateFields.pioneiro_regular = additionalData.pioneiro_regular
       }

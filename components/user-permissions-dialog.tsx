@@ -175,7 +175,7 @@ export function UserPermissionsDialog({
       } else {
         toast.error(result.error || "Erro ao atualizar permissões");
       }
-    } catch (error) {
+    } catch (_) {
       toast.error("Erro interno do servidor");
     } finally {
       setLoading(false);

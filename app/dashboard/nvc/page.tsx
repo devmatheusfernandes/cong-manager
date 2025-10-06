@@ -5,7 +5,6 @@ import { CollapsibleCard } from "@/components/collapsible-card";
 import { NovaReuniaoDialog } from "@/components/nova-reuniao-dialog";
 import mockData from "@/data/mock-data.json";
 import {
-  Plus,
   Calendar,
   BookOpen,
   Clock,

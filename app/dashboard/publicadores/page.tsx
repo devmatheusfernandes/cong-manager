@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CollapsibleCard } from "@/components/collapsible-card";
-import { Plus, User, Phone, Mail, Shield, Settings, Edit, Trash2 } from "lucide-react";
+import { Plus, User, Shield, Settings, Edit, Trash2 } from "lucide-react";
 import { verificarAdmin } from "@/lib/permissions";
 import { PermissionGuard } from "@/components/permission-guard";
 import { toast } from "sonner";
@@ -104,7 +104,7 @@ export default function NomesDataPage() {
         const updateData: UpdatePublicadorData = {
           nome: novoPublicador.nome,
           genero: novoPublicador.genero as 'masculino' | 'feminino',
-          privilegio: novoPublicador.privilegio as any
+          privilegio: novoPublicador.privilegio as 'nao_batizado' | 'batizado' | 'servo_ministerial' | 'anciao'
         };
         
         const result = await updatePublicador(editingPublicador.id, updateData);
@@ -125,7 +125,7 @@ export default function NomesDataPage() {
         const createData: CreatePublicadorData = {
           nome: novoPublicador.nome,
           genero: novoPublicador.genero as 'masculino' | 'feminino',
-          privilegio: novoPublicador.privilegio as any
+          privilegio: novoPublicador.privilegio as 'nao_batizado' | 'batizado' | 'servo_ministerial' | 'anciao'
         };
         
         const result = await createPublicador(createData);
@@ -279,7 +279,7 @@ export default function NomesDataPage() {
            <p className="text-muted-foreground">Nenhum publicador encontrado.</p>
            {ehAdmin && (
              <p className="text-sm text-muted-foreground mt-2">
-               Clique em "Novo Publicador" para adicionar o primeiro.
+               Clique em &quot;Novo Publicador&quot; para adicionar o primeiro.
              </p>
            )}
          </div>

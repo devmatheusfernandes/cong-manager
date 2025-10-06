@@ -13,7 +13,6 @@ import {
   Users,
   MapPin,
   ChevronUp,
-  Building2,
   Shield,
 } from "lucide-react";
 import { BottomSheet } from "./bottom-sheet";

@@ -309,6 +309,244 @@ export async function createUser(userData: CreateUserData): Promise<{ success: b
   }
 }
 
+// ===== INTERFACES PARA MECÂNICAS =====
+
+export interface Mecanica {
+  id: string;
+  data: string;
+  tipo_reuniao: 'meio_semana' | 'fim_semana';
+  indicador_entrada_id?: string;
+  indicador_auditorio_id?: string;
+  audio_video_id?: string;
+  volante_id?: string;
+  palco_id?: string;
+  leitor_sentinela_id?: string;
+  presidente_id?: string;
+  created_at?: string;
+  updated_at?: string;
+  // Para joins com usuários
+  indicador_entrada?: User;
+  indicador_auditorio?: User;
+  audio_video?: User;
+  volante?: User;
+  palco?: User;
+  leitor_sentinela?: User;
+  presidente?: User;
+}
+
+export interface CreateMecanicaData {
+  data: string;
+  tipo_reuniao: 'meio_semana' | 'fim_semana';
+  indicador_entrada_id?: string;
+  indicador_auditorio_id?: string;
+  audio_video_id?: string;
+  volante_id?: string;
+  palco_id?: string;
+  leitor_sentinela_id?: string;
+  presidente_id?: string;
+}
+
+export interface UpdateMecanicaData {
+  data?: string;
+  tipo_reuniao?: 'meio_semana' | 'fim_semana';
+  indicador_entrada_id?: string;
+  indicador_auditorio_id?: string;
+  audio_video_id?: string;
+  volante_id?: string;
+  palco_id?: string;
+  leitor_sentinela_id?: string;
+  presidente_id?: string;
+}
+
+// ===== FUNÇÕES CRUD PARA MECÂNICAS =====
+
+// Buscar todas as mecânicas
+export async function getAllMecanicas(): Promise<Mecanica[]> {
+  try {
+    const { data, error } = await supabase
+      .from('mecanicas')
+      .select(`
+        *,
+        indicador_entrada:users!indicador_entrada_id(id, username),
+        indicador_auditorio:users!indicador_auditorio_id(id, username),
+        audio_video:users!audio_video_id(id, username),
+        volante:users!volante_id(id, username),
+        palco:users!palco_id(id, username),
+        leitor_sentinela:users!leitor_sentinela_id(id, username),
+        presidente:users!presidente_id(id, username)
+      `)
+      .order('data', { ascending: true })
+
+    if (error) {
+      console.error('Erro ao buscar mecânicas:', error)
+      return []
+    }
+
+    return data || []
+  } catch (error) {
+    console.error('Erro ao buscar mecânicas:', error)
+    return []
+  }
+}
+
+// Buscar mecânica por ID
+export async function getMecanicaById(id: string): Promise<Mecanica | null> {
+  try {
+    const { data, error } = await supabase
+      .from('mecanicas')
+      .select(`
+        *,
+        indicador_entrada:users!indicador_entrada_id(id, username),
+        indicador_auditorio:users!indicador_auditorio_id(id, username),
+        audio_video:users!audio_video_id(id, username),
+        volante:users!volante_id(id, username),
+        palco:users!palco_id(id, username),
+        leitor_sentinela:users!leitor_sentinela_id(id, username),
+        presidente:users!presidente_id(id, username)
+      `)
+      .eq('id', id)
+      .single()
+
+    if (error) {
+      console.error('Erro ao buscar mecânica:', error)
+      return null
+    }
+
+    return data
+  } catch (error) {
+    console.error('Erro ao buscar mecânica:', error)
+    return null
+  }
+}
+
+// Criar nova mecânica
+export async function createMecanica(mecanicaData: CreateMecanicaData): Promise<{ success: boolean; error?: string; mecanica?: Mecanica }> {
+  try {
+    // Verificar se já existe uma mecânica para a mesma data
+    const { data: existingMecanica } = await supabase
+      .from('mecanicas')
+      .select('id')
+      .eq('data', mecanicaData.data)
+      .single()
+
+    if (existingMecanica) {
+      return { success: false, error: 'Já existe uma designação para esta data' }
+    }
+
+    const { data, error } = await supabase
+      .from('mecanicas')
+      .insert([mecanicaData])
+      .select(`
+        *,
+        indicador_entrada:users!indicador_entrada_id(id, username),
+        indicador_auditorio:users!indicador_auditorio_id(id, username),
+        audio_video:users!audio_video_id(id, username),
+        volante:users!volante_id(id, username),
+        palco:users!palco_id(id, username),
+        leitor_sentinela:users!leitor_sentinela_id(id, username),
+        presidente:users!presidente_id(id, username)
+      `)
+      .single()
+
+    if (error) {
+      console.error('Erro ao criar mecânica:', error)
+      return { success: false, error: 'Erro ao criar designação' }
+    }
+
+    return { success: true, mecanica: data }
+  } catch (error) {
+    console.error('Erro ao criar mecânica:', error)
+    return { success: false, error: 'Erro interno do servidor' }
+  }
+}
+
+// Atualizar mecânica
+export async function updateMecanica(id: string, mecanicaData: UpdateMecanicaData): Promise<{ success: boolean; error?: string; mecanica?: Mecanica }> {
+  try {
+    // Verificar se a mecânica existe
+    const { data: existingMecanica } = await supabase
+      .from('mecanicas')
+      .select('id')
+      .eq('id', id)
+      .single()
+
+    if (!existingMecanica) {
+      return { success: false, error: 'Designação não encontrada' }
+    }
+
+    // Se está alterando a data, verificar se não há conflito
+    if (mecanicaData.data) {
+      const { data: conflictMecanica } = await supabase
+        .from('mecanicas')
+        .select('id')
+        .eq('data', mecanicaData.data)
+        .neq('id', id)
+        .single()
+
+      if (conflictMecanica) {
+        return { success: false, error: 'Já existe uma designação para esta data' }
+      }
+    }
+
+    const { data, error } = await supabase
+      .from('mecanicas')
+      .update(mecanicaData)
+      .eq('id', id)
+      .select(`
+        *,
+        indicador_entrada:users!indicador_entrada_id(id, username),
+        indicador_auditorio:users!indicador_auditorio_id(id, username),
+        audio_video:users!audio_video_id(id, username),
+        volante:users!volante_id(id, username),
+        palco:users!palco_id(id, username),
+        leitor_sentinela:users!leitor_sentinela_id(id, username),
+        presidente:users!presidente_id(id, username)
+      `)
+      .single()
+
+    if (error) {
+      console.error('Erro ao atualizar mecânica:', error)
+      return { success: false, error: 'Erro ao atualizar designação' }
+    }
+
+    return { success: true, mecanica: data }
+  } catch (error) {
+    console.error('Erro ao atualizar mecânica:', error)
+    return { success: false, error: 'Erro interno do servidor' }
+  }
+}
+
+// Deletar mecânica
+export async function deleteMecanica(id: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Verificar se a mecânica existe
+    const { data: existingMecanica } = await supabase
+      .from('mecanicas')
+      .select('id')
+      .eq('id', id)
+      .single()
+
+    if (!existingMecanica) {
+      return { success: false, error: 'Designação não encontrada' }
+    }
+
+    const { error } = await supabase
+      .from('mecanicas')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      console.error('Erro ao deletar mecânica:', error)
+      return { success: false, error: 'Erro ao deletar designação' }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error('Erro ao deletar mecânica:', error)
+    return { success: false, error: 'Erro interno do servidor' }
+  }
+}
+
 // Atualizar usuário
 export async function updateUser(userId: string, userData: UpdateUserData): Promise<{ success: boolean; error?: string; user?: User }> {
   try {

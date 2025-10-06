@@ -122,16 +122,42 @@ CREATE TABLE IF NOT EXISTS discursos (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Criar tabela de mecânicas
+CREATE TABLE IF NOT EXISTS mecanicas (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  data DATE NOT NULL,
+  tipo_reuniao TEXT NOT NULL CHECK (tipo_reuniao IN ('meio_semana', 'fim_semana')),
+  indicador_entrada_id TEXT REFERENCES users(id),
+  indicador_auditorio_id TEXT REFERENCES users(id),
+  audio_video_id TEXT REFERENCES users(id),
+  volante_id TEXT REFERENCES users(id),
+  palco_id TEXT REFERENCES users(id),
+  -- Campos específicos para fim de semana
+  leitor_sentinela_id TEXT REFERENCES users(id),
+  presidente_id TEXT REFERENCES users(id),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Trigger para atualizar updated_at na tabela mecanicas
+CREATE TRIGGER update_mecanicas_updated_at
+  BEFORE UPDATE ON mecanicas
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
 -- Criar índices para melhor performance
 CREATE INDEX IF NOT EXISTS idx_discursos_data ON discursos(data);
 CREATE INDEX IF NOT EXISTS idx_discursos_orador_id ON discursos(orador_id);
 CREATE INDEX IF NOT EXISTS idx_oradores_nome ON oradores(nome);
+CREATE INDEX IF NOT EXISTS idx_mecanicas_data ON mecanicas(data);
+CREATE INDEX IF NOT EXISTS idx_mecanicas_tipo_reuniao ON mecanicas(tipo_reuniao);
 
 -- Habilitar RLS (Row Level Security) nas tabelas
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_permissions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE oradores ENABLE ROW LEVEL SECURITY;
 ALTER TABLE discursos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE mecanicas ENABLE ROW LEVEL SECURITY;
 
 -- Criar políticas básicas (ajustar conforme necessário)
 CREATE POLICY "Users can view all users" ON users FOR SELECT USING (true);
@@ -144,3 +170,7 @@ CREATE POLICY "Users can update oradores" ON oradores FOR UPDATE USING (true);
 CREATE POLICY "Users can update discursos" ON discursos FOR UPDATE USING (true);
 CREATE POLICY "Users can delete oradores" ON oradores FOR DELETE USING (true);
 CREATE POLICY "Users can delete discursos" ON discursos FOR DELETE USING (true);
+CREATE POLICY "Users can view all mecanicas" ON mecanicas FOR SELECT USING (true);
+CREATE POLICY "Users can insert mecanicas" ON mecanicas FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can update mecanicas" ON mecanicas FOR UPDATE USING (true);
+CREATE POLICY "Users can delete mecanicas" ON mecanicas FOR DELETE USING (true);

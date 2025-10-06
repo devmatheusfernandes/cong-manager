@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { CollapsibleCard } from "@/components/collapsible-card";
+import { NovaReuniaoDialog } from "@/components/nova-reuniao-dialog";
 import mockData from "@/data/mock-data.json";
 import {
   Plus,
@@ -20,10 +21,7 @@ export default function NVCPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Nossa Vida Cristã</h2>
-        <Button size="sm">
-          <Plus className="h-4 w-4 mr-2" />
-          Nova Reunião
-        </Button>
+        <NovaReuniaoDialog />
       </div>
 
       <div className="space-y-3">

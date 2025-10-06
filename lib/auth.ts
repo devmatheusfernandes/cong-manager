@@ -515,3 +515,347 @@ export async function updateUserPermissions(userId: string, permissions: Permiss
     return { success: false, error: 'Erro interno do servidor' }
   }
 }
+
+// ===== INTERFACES PARA ORADORES E DISCURSOS =====
+
+export interface Orador {
+  id: string;
+  nome: string;
+  congregacao_origem: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Discurso {
+  id: string;
+  orador_id: string;
+  tema: string;
+  data: string;
+  cantico?: string;
+  hospitalidade_id?: string;
+  tem_imagem: boolean;
+  created_at?: string;
+  updated_at?: string;
+  orador?: Orador; // Para joins
+}
+
+export interface CreateOradorData {
+  nome: string;
+  congregacao_origem: string;
+}
+
+export interface UpdateOradorData {
+  nome?: string;
+  congregacao_origem?: string;
+}
+
+export interface CreateDiscursoData {
+  orador_id: string;
+  tema: string;
+  data: string;
+  cantico?: string;
+  hospitalidade_id?: string;
+  tem_imagem?: boolean;
+}
+
+export interface UpdateDiscursoData {
+  orador_id?: string;
+  tema?: string;
+  data?: string;
+  cantico?: string;
+  hospitalidade_id?: string;
+  tem_imagem?: boolean;
+}
+
+// ===== FUNÇÕES CRUD PARA ORADORES =====
+
+// Buscar todos os oradores
+export async function getAllOradores(): Promise<Orador[]> {
+  try {
+    const { data, error } = await supabase
+      .from('oradores')
+      .select('*')
+      .order('nome', { ascending: true })
+
+    if (error) {
+      console.error('Erro ao buscar oradores:', error)
+      return []
+    }
+
+    return data || []
+  } catch (error) {
+    console.error('Erro ao buscar oradores:', error)
+    return []
+  }
+}
+
+// Buscar orador por ID
+export async function getOradorById(id: string): Promise<Orador | null> {
+  try {
+    const { data, error } = await supabase
+      .from('oradores')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    if (error || !data) {
+      return null
+    }
+
+    return data
+  } catch (error) {
+    console.error('Erro ao buscar orador:', error)
+    return null
+  }
+}
+
+// Criar novo orador
+export async function createOrador(oradorData: CreateOradorData): Promise<{ success: boolean; error?: string; orador?: Orador }> {
+  try {
+    // Verificar se já existe um orador com o mesmo nome
+    const { data: existingOrador } = await supabase
+      .from('oradores')
+      .select('id')
+      .eq('nome', oradorData.nome)
+      .single()
+
+    if (existingOrador) {
+      return { success: false, error: 'Já existe um orador com este nome' }
+    }
+
+    const { data, error } = await supabase
+      .from('oradores')
+      .insert([oradorData])
+      .select()
+      .single()
+
+    if (error || !data) {
+      return { success: false, error: 'Erro ao criar orador' }
+    }
+
+    return { success: true, orador: data }
+  } catch (error) {
+    console.error('Erro ao criar orador:', error)
+    return { success: false, error: 'Erro interno do servidor' }
+  }
+}
+
+// Atualizar orador
+export async function updateOrador(id: string, oradorData: UpdateOradorData): Promise<{ success: boolean; error?: string; orador?: Orador }> {
+  try {
+    // Verificar se orador existe
+    const existingOrador = await getOradorById(id)
+    if (!existingOrador) {
+      return { success: false, error: 'Orador não encontrado' }
+    }
+
+    // Se está alterando o nome, verificar se já existe outro com o mesmo nome
+    if (oradorData.nome && oradorData.nome !== existingOrador.nome) {
+      const { data: duplicateOrador } = await supabase
+        .from('oradores')
+        .select('id')
+        .eq('nome', oradorData.nome)
+        .neq('id', id)
+        .single()
+
+      if (duplicateOrador) {
+        return { success: false, error: 'Já existe um orador com este nome' }
+      }
+    }
+
+    const { data, error } = await supabase
+      .from('oradores')
+      .update(oradorData)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error || !data) {
+      return { success: false, error: 'Erro ao atualizar orador' }
+    }
+
+    return { success: true, orador: data }
+  } catch (error) {
+    console.error('Erro ao atualizar orador:', error)
+    return { success: false, error: 'Erro interno do servidor' }
+  }
+}
+
+// Deletar orador
+export async function deleteOrador(id: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Verificar se orador existe
+    const existingOrador = await getOradorById(id)
+    if (!existingOrador) {
+      return { success: false, error: 'Orador não encontrado' }
+    }
+
+    // Verificar se há discursos associados
+    const { data: discursos } = await supabase
+      .from('discursos')
+      .select('id')
+      .eq('orador_id', id)
+      .limit(1)
+
+    if (discursos && discursos.length > 0) {
+      return { success: false, error: 'Não é possível deletar orador que possui discursos associados' }
+    }
+
+    const { error } = await supabase
+      .from('oradores')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      return { success: false, error: 'Erro ao deletar orador' }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error('Erro ao deletar orador:', error)
+    return { success: false, error: 'Erro interno do servidor' }
+  }
+}
+
+// ===== FUNÇÕES CRUD PARA DISCURSOS =====
+
+// Buscar todos os discursos com informações do orador
+export async function getAllDiscursos(): Promise<Discurso[]> {
+  try {
+    const { data, error } = await supabase
+      .from('discursos')
+      .select(`
+        *,
+        orador:oradores(*)
+      `)
+      .order('data', { ascending: false })
+
+    if (error) {
+      console.error('Erro ao buscar discursos:', error)
+      return []
+    }
+
+    return data || []
+  } catch (error) {
+    console.error('Erro ao buscar discursos:', error)
+    return []
+  }
+}
+
+// Buscar discurso por ID
+export async function getDiscursoById(id: string): Promise<Discurso | null> {
+  try {
+    const { data, error } = await supabase
+      .from('discursos')
+      .select(`
+        *,
+        orador:oradores(*)
+      `)
+      .eq('id', id)
+      .single()
+
+    if (error || !data) {
+      return null
+    }
+
+    return data
+  } catch (error) {
+    console.error('Erro ao buscar discurso:', error)
+    return null
+  }
+}
+
+// Criar novo discurso
+export async function createDiscurso(discursoData: CreateDiscursoData): Promise<{ success: boolean; error?: string; discurso?: Discurso }> {
+  try {
+    // Verificar se orador existe
+    const orador = await getOradorById(discursoData.orador_id)
+    if (!orador) {
+      return { success: false, error: 'Orador não encontrado' }
+    }
+
+    const { data, error } = await supabase
+      .from('discursos')
+      .insert([{
+        ...discursoData,
+        tem_imagem: discursoData.tem_imagem || false
+      }])
+      .select(`
+        *,
+        orador:oradores(*)
+      `)
+      .single()
+
+    if (error || !data) {
+      return { success: false, error: 'Erro ao criar discurso' }
+    }
+
+    return { success: true, discurso: data }
+  } catch (error) {
+    console.error('Erro ao criar discurso:', error)
+    return { success: false, error: 'Erro interno do servidor' }
+  }
+}
+
+// Atualizar discurso
+export async function updateDiscurso(id: string, discursoData: UpdateDiscursoData): Promise<{ success: boolean; error?: string; discurso?: Discurso }> {
+  try {
+    // Verificar se discurso existe
+    const existingDiscurso = await getDiscursoById(id)
+    if (!existingDiscurso) {
+      return { success: false, error: 'Discurso não encontrado' }
+    }
+
+    // Se está alterando o orador, verificar se existe
+    if (discursoData.orador_id) {
+      const orador = await getOradorById(discursoData.orador_id)
+      if (!orador) {
+        return { success: false, error: 'Orador não encontrado' }
+      }
+    }
+
+    const { data, error } = await supabase
+      .from('discursos')
+      .update(discursoData)
+      .eq('id', id)
+      .select(`
+        *,
+        orador:oradores(*)
+      `)
+      .single()
+
+    if (error || !data) {
+      return { success: false, error: 'Erro ao atualizar discurso' }
+    }
+
+    return { success: true, discurso: data }
+  } catch (error) {
+    console.error('Erro ao atualizar discurso:', error)
+    return { success: false, error: 'Erro interno do servidor' }
+  }
+}
+
+// Deletar discurso
+export async function deleteDiscurso(id: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Verificar se discurso existe
+    const existingDiscurso = await getDiscursoById(id)
+    if (!existingDiscurso) {
+      return { success: false, error: 'Discurso não encontrado' }
+    }
+
+    const { error } = await supabase
+      .from('discursos')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      return { success: false, error: 'Erro ao deletar discurso' }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error('Erro ao deletar discurso:', error)
+    return { success: false, error: 'Erro interno do servidor' }
+  }
+}

@@ -100,10 +100,47 @@ CREATE TRIGGER update_users_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
--- Habilitar RLS (Row Level Security) se necessário
--- ALTER TABLE users ENABLE ROW LEVEL SECURITY;
--- ALTER TABLE user_permissions ENABLE ROW LEVEL SECURITY;
+-- Criar tabela de oradores
+CREATE TABLE IF NOT EXISTS oradores (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  nome TEXT NOT NULL,
+  congregacao_origem TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 
--- Criar políticas de acesso (opcional, para segurança adicional)
--- CREATE POLICY "Permitir leitura de usuários" ON users FOR SELECT USING (true);
--- CREATE POLICY "Permitir leitura de permissões" ON user_permissions FOR SELECT USING (true);
+-- Criar tabela de discursos
+CREATE TABLE IF NOT EXISTS discursos (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  orador_id UUID NOT NULL REFERENCES oradores(id) ON DELETE CASCADE,
+  tema TEXT NOT NULL,
+  data DATE NOT NULL,
+  cantico TEXT,
+  hospitalidade_id TEXT,
+  tem_imagem BOOLEAN DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Criar índices para melhor performance
+CREATE INDEX IF NOT EXISTS idx_discursos_data ON discursos(data);
+CREATE INDEX IF NOT EXISTS idx_discursos_orador_id ON discursos(orador_id);
+CREATE INDEX IF NOT EXISTS idx_oradores_nome ON oradores(nome);
+
+-- Habilitar RLS (Row Level Security) nas tabelas
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_permissions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE oradores ENABLE ROW LEVEL SECURITY;
+ALTER TABLE discursos ENABLE ROW LEVEL SECURITY;
+
+-- Criar políticas básicas (ajustar conforme necessário)
+CREATE POLICY "Users can view all users" ON users FOR SELECT USING (true);
+CREATE POLICY "Users can view all permissions" ON user_permissions FOR SELECT USING (true);
+CREATE POLICY "Users can view all oradores" ON oradores FOR SELECT USING (true);
+CREATE POLICY "Users can view all discursos" ON discursos FOR SELECT USING (true);
+CREATE POLICY "Users can insert oradores" ON oradores FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can insert discursos" ON discursos FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can update oradores" ON oradores FOR UPDATE USING (true);
+CREATE POLICY "Users can update discursos" ON discursos FOR UPDATE USING (true);
+CREATE POLICY "Users can delete oradores" ON oradores FOR DELETE USING (true);
+CREATE POLICY "Users can delete discursos" ON discursos FOR DELETE USING (true);

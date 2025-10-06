@@ -1,5 +1,6 @@
 import { BottomNavigation } from "@/components/bottom-navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LoginDialog } from "@/components/login-dialog";
 import { Button } from "@/components/ui/button";
 import { Bell } from "lucide-react";
 
@@ -24,15 +25,8 @@ export default function DashboardLayout({
           </div>
           
           {/* Botões direita */}
-          <div className="flex items-center gap-2 w-24 justify-end">
-            <Button variant="outline" size="icon" className="relative">
-              <Bell className="h-[1.2rem] w-[1.2rem]" />
-              {/* Badge de notificação */}
-              <span className="absolute -top-1 -right-1 h-3 w-3 bg-rose-600 rounded-full flex items-center justify-center">
-                <span className="text-[10px] text-white font-bold">3</span>
-              </span>
-              <span className="sr-only">Notificações</span>
-            </Button>
+          <div className="flex items-center gap-2 justify-end">
+            <LoginDialog />
           </div>
         </div>
       </header>

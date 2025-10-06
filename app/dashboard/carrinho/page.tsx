@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { CollapsibleCard } from "@/components/collapsible-card";
+import { EditableContent } from "@/components/permission-wrapper";
 import mockData from "@/data/mock-data.json";
 import { Plus, ShoppingCart, MapPin, Clock, User, Calendar } from "lucide-react";
 
@@ -10,10 +11,12 @@ export default function CarrinhoPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Carrinho</h2>
-        <Button size="sm">
-          <Plus className="h-4 w-4 mr-2" />
-          Novo Local
-        </Button>
+        <EditableContent section="carrinho">
+          <Button size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Novo Local
+          </Button>
+        </EditableContent>
       </div>
       
       <div className="space-y-3">
@@ -72,14 +75,16 @@ export default function CarrinhoPage() {
                   )}
                 </div>
                 
-                <div className="flex gap-2 pt-2">
-                  <Button size="sm" variant="outline" className="flex-1">
-                    Editar
-                  </Button>
-                  <Button size="sm" variant="outline" className="flex-1">
-                    Escala
-                  </Button>
-                </div>
+                <EditableContent section="carrinho">
+                  <div className="flex gap-2 pt-2">
+                    <Button size="sm" variant="outline" className="flex-1">
+                      Editar
+                    </Button>
+                    <Button size="sm" variant="outline" className="flex-1">
+                      Escala
+                    </Button>
+                  </div>
+                </EditableContent>
               </div>
             </CollapsibleCard>
           );

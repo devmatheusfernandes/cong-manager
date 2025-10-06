@@ -17,6 +17,8 @@ import {
   Shield,
 } from "lucide-react";
 import { BottomSheet } from "./bottom-sheet";
+import { useAuth } from "./auth-provider";
+import { getAvailableTabs } from "@/lib/auth";
 
 interface TabItem {
   id: string;
@@ -25,13 +27,7 @@ interface TabItem {
   path: string;
 }
 
-const tabs: TabItem[] = [
-  {
-    id: "publicadores",
-    label: "Publicadores",
-    icon: Calendar,
-    path: "/dashboard/publicadores",
-  },
+const allTabs: TabItem[] = [
   {
     id: "discursos",
     label: "Discursos",
@@ -60,16 +56,16 @@ const tabs: TabItem[] = [
     path: "/dashboard/pregacao",
   },
   {
-    id: "congregacao",
-    label: "Congregação",
-    icon: Building2,
-    path: "/dashboard/congregacao",
+    id: "publicadores",
+    label: "Publicadores",
+    icon: Calendar,
+    path: "/dashboard/publicadores",
   },
   {
     id: "admin",
-    label: "Permissões",
+    label: "Admin",
     icon: Shield,
-    path: "/dashboard/admin/permissoes",
+    path: "/dashboard/admin",
   },
 ];
 
@@ -126,6 +122,11 @@ export function BottomNavigation({ className }: BottomNavigationProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const { user } = useAuth();
+
+  // Obter tabs disponíveis baseado nas permissões do usuário
+  const availableTabIds = getAvailableTabs(user);
+  const tabs = allTabs.filter(tab => availableTabIds.includes(tab.id));
 
   // Determina qual tab está ativa baseada na URL atual
   const activeTab = tabs.find((tab) => pathname === tab.path)?.id || "";
@@ -138,7 +139,7 @@ export function BottomNavigation({ className }: BottomNavigationProps) {
 
   // Se a tab ativa não estiver nas 4 primeiras, substitui a 4ª pela tab ativa
   const displayTabs = [...mobileVisibleTabs];
-  if (!activeTabInVisible) {
+  if (!activeTabInVisible && tabs.length > 4) {
     const activeTabObj = tabs.find((tab) => tab.id === activeTab);
     if (activeTabObj) {
       displayTabs[3] = activeTabObj; // Substitui a 4ª posição pela tab ativa
@@ -159,7 +160,7 @@ export function BottomNavigation({ className }: BottomNavigationProps) {
       >
         <div className="max-w-screen-xl mx-auto">
           {/* Desktop: todas as tabs */}
-          <div className="hidden md:grid md:grid-cols-10">
+          <div className={`hidden md:grid gap-1 ${tabs.length <= 5 ? 'md:grid-cols-5' : tabs.length <= 7 ? 'md:grid-cols-7' : 'md:grid-cols-9'}`}>
             {tabs.map((tab) => (
               <TabButton
                 key={tab.id}
@@ -170,28 +171,42 @@ export function BottomNavigation({ className }: BottomNavigationProps) {
             ))}
           </div>
 
-          {/* Mobile: 5 posições */}
-          <div className="grid grid-cols-5 md:hidden">
-            {/* Primeiras 4 posições: tabs dinâmicas */}
-            {displayTabs.map((tab) => (
-              <TabButton
-                key={tab.id}
-                tab={tab}
-                isActive={activeTab === tab.id}
-                onClick={() => handleTabSelect(tab)}
-              />
-            ))}
-
-            {/* 5ª posição: sempre o botão "mais" */}
-            <button
-              onClick={() => setIsSheetOpen(true)}
-              className="relative flex flex-col items-center justify-center p-3 min-h-[60px] transition-colors text-muted-foreground hover:text-foreground"
-            >
-              <div className="flex flex-col items-center gap-1">
-                <ChevronUp className="h-5 w-5" />
-                <span className="text-xs font-medium leading-none">Mais</span>
-              </div>
-            </button>
+          {/* Mobile: máximo 5 posições */}
+          <div className={`grid md:hidden ${tabs.length <= 4 ? `grid-cols-${tabs.length}` : 'grid-cols-5'}`}>
+            {/* Tabs dinâmicas */}
+            {tabs.length <= 4 ? (
+              // Se tem 4 ou menos tabs, mostra todas
+              tabs.map((tab) => (
+                <TabButton
+                  key={tab.id}
+                  tab={tab}
+                  isActive={activeTab === tab.id}
+                  onClick={() => handleTabSelect(tab)}
+                />
+              ))
+            ) : (
+              // Se tem mais de 4 tabs, mostra as primeiras 4 + botão "mais"
+              <>
+                {displayTabs.map((tab) => (
+                  <TabButton
+                    key={tab.id}
+                    tab={tab}
+                    isActive={activeTab === tab.id}
+                    onClick={() => handleTabSelect(tab)}
+                  />
+                ))}
+                {/* 5ª posição: botão "mais" */}
+                <button
+                  onClick={() => setIsSheetOpen(true)}
+                  className="relative flex flex-col items-center justify-center p-3 min-h-[60px] transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  <div className="flex flex-col items-center gap-1">
+                    <ChevronUp className="h-5 w-5" />
+                    <span className="text-xs font-medium leading-none">Mais</span>
+                  </div>
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>

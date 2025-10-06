@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useRouter, usePathname } from "next/navigation";
 import {
   Calendar,
   Mic,
@@ -12,6 +13,7 @@ import {
   Users,
   MapPin,
   ChevronUp,
+  Building2,
 } from "lucide-react";
 import { BottomSheet } from "./bottom-sheet";
 
@@ -19,45 +21,77 @@ interface TabItem {
   id: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
+  path: string;
 }
 
 const tabs: TabItem[] = [
-  { id: "nomes-datas", label: "Nomes/Datas", icon: Calendar },
-  { id: "discursos", label: "Discursos", icon: Mic },
-  { id: "mecanicas", label: "Mecânicas", icon: Settings },
-  { id: "limpeza", label: "Limpeza", icon: Trash2 },
-  { id: "nvc", label: "NVC", icon: BookOpen },
-  { id: "carrinho", label: "Carrinho", icon: ShoppingCart },
-  { id: "grupos", label: "Grupos", icon: Users },
-  { id: "pregacao", label: "Pregação", icon: MapPin },
+  {
+    id: "publicadores",
+    label: "Publicadores",
+    icon: Calendar,
+    path: "/dashboard/publicadores",
+  },
+  {
+    id: "discursos",
+    label: "Discursos",
+    icon: Mic,
+    path: "/dashboard/discursos",
+  },
+  {
+    id: "mecanicas",
+    label: "Mecânicas",
+    icon: Settings,
+    path: "/dashboard/mecanicas",
+  },
+  { id: "limpeza", label: "Limpeza", icon: Trash2, path: "/dashboard/limpeza" },
+  { id: "nvc", label: "NVC", icon: BookOpen, path: "/dashboard/nvc" },
+  {
+    id: "carrinho",
+    label: "Carrinho",
+    icon: ShoppingCart,
+    path: "/dashboard/carrinho",
+  },
+  { id: "grupos", label: "Grupos", icon: Users, path: "/dashboard/grupos" },
+  {
+    id: "pregacao",
+    label: "Pregação",
+    icon: MapPin,
+    path: "/dashboard/pregacao",
+  },
+  {
+    id: "congregacao",
+    label: "Congregação",
+    icon: Building2,
+    path: "/dashboard/congregacao",
+  },
 ];
 
 interface BottomNavigationProps {
-  activeTab: string;
-  onTabChange: (tabId: string) => void;
+  className?: string;
 }
 
-function TabButton({ 
-  tab, 
-  isActive, 
-  onClick, 
-  className = "" 
-}: { 
-  tab: TabItem; 
-  isActive: boolean; 
+function TabButton({
+  tab,
+  isActive,
+  onClick,
+  className = "",
+}: {
+  tab: TabItem;
+  isActive: boolean;
   onClick: () => void;
   className?: string;
 }) {
   const Icon = tab.icon;
-  
+
   return (
     <button
       onClick={onClick}
       className={`
         relative flex flex-col items-center justify-center p-3 min-h-[60px] transition-colors rounded-lg
-        ${isActive 
-          ? "text-primary" 
-          : "text-muted-foreground hover:text-foreground"
+        ${
+          isActive
+            ? "text-primary"
+            : "text-muted-foreground hover:text-foreground"
         }
         ${className}
       `}
@@ -70,7 +104,7 @@ function TabButton({
           transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
         />
       )}
-      
+
       <div className="relative z-10 flex flex-col items-center gap-1">
         <Icon className="h-5 w-5" />
         <span className="text-xs font-medium leading-none text-center">
@@ -81,30 +115,41 @@ function TabButton({
   );
 }
 
-export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationProps) {
+export function BottomNavigation({ className }: BottomNavigationProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Determina qual tab está ativa baseada na URL atual
+  const activeTab = tabs.find((tab) => pathname === tab.path)?.id || "";
 
   // Para mobile: primeiras 4 tabs visíveis + botão "mais" na última posição
   const mobileVisibleTabs = tabs.slice(0, 4);
-  const activeTabInVisible = mobileVisibleTabs.find(tab => tab.id === activeTab);
-  
+  const activeTabInVisible = mobileVisibleTabs.find(
+    (tab) => tab.id === activeTab
+  );
+
   // Se a tab ativa não estiver nas 4 primeiras, substitui a 4ª pela tab ativa
   let displayTabs = [...mobileVisibleTabs];
   if (!activeTabInVisible) {
-    const activeTabObj = tabs.find(tab => tab.id === activeTab);
+    const activeTabObj = tabs.find((tab) => tab.id === activeTab);
     if (activeTabObj) {
       displayTabs[3] = activeTabObj; // Substitui a 4ª posição pela tab ativa
     }
   }
 
-  const handleTabSelect = (tabId: string) => {
-    onTabChange(tabId);
+  const handleTabSelect = (tab: TabItem) => {
+    router.push(tab.path);
     setIsSheetOpen(false);
   };
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50">
+      <div
+        className={`fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50 ${
+          className || ""
+        }`}
+      >
         <div className="max-w-screen-xl mx-auto">
           {/* Desktop: todas as tabs */}
           <div className="hidden md:grid md:grid-cols-8">
@@ -113,7 +158,7 @@ export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationPro
                 key={tab.id}
                 tab={tab}
                 isActive={activeTab === tab.id}
-                onClick={() => onTabChange(tab.id)}
+                onClick={() => handleTabSelect(tab)}
               />
             ))}
           </div>
@@ -126,7 +171,7 @@ export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationPro
                 key={tab.id}
                 tab={tab}
                 isActive={activeTab === tab.id}
-                onClick={() => onTabChange(tab.id)}
+                onClick={() => handleTabSelect(tab)}
               />
             ))}
 
@@ -137,9 +182,7 @@ export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationPro
             >
               <div className="flex flex-col items-center gap-1">
                 <ChevronUp className="h-5 w-5" />
-                <span className="text-xs font-medium leading-none">
-                  Mais
-                </span>
+                <span className="text-xs font-medium leading-none">Mais</span>
               </div>
             </button>
           </div>
@@ -158,7 +201,7 @@ export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationPro
               key={tab.id}
               tab={tab}
               isActive={activeTab === tab.id}
-              onClick={() => handleTabSelect(tab.id)}
+              onClick={() => handleTabSelect(tab)}
               className="border border-border hover:bg-muted/50"
             />
           ))}

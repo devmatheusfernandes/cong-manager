@@ -1,0 +1,579 @@
+{
+  "usuarios": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440001",
+      "nome": "João Silva",
+      "email": "joao.silva@email.com"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440002",
+      "nome": "Maria Santos",
+      "email": "maria.santos@email.com"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440003",
+      "nome": "Pedro Oliveira",
+      "email": "pedro.oliveira@email.com"
+    }
+  ],
+  "congregacoes": [
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440001",
+      "nome": "Congregação Central",
+      "cidade": "São Paulo"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440002",
+      "nome": "Congregação Norte",
+      "cidade": "São Paulo"
+    }
+  ],
+  "usuarios_congregacoes": [
+    {
+      "usuario_id": "550e8400-e29b-41d4-a716-446655440001",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "eh_responsavel": true
+    },
+    {
+      "usuario_id": "550e8400-e29b-41d4-a716-446655440002",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "eh_responsavel": false
+    },
+    {
+      "usuario_id": "550e8400-e29b-41d4-a716-446655440003",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "eh_responsavel": false
+    }
+  ],
+  "permissoes": [
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440001",
+      "usuario_id": "550e8400-e29b-41d4-a716-446655440001",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "perm_limpeza": true,
+      "perm_mecanica": true,
+      "perm_discurso": true,
+      "perm_pregacao": true,
+      "perm_carrinho": true,
+      "perm_nossa_vida_crista": true
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440002",
+      "usuario_id": "550e8400-e29b-41d4-a716-446655440002",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "perm_limpeza": true,
+      "perm_mecanica": false,
+      "perm_discurso": false,
+      "perm_pregacao": true,
+      "perm_carrinho": false,
+      "perm_nossa_vida_crista": true
+    }
+  ],
+  "publicadores": [
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440001",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "nome": "Ana Costa",
+      "telefone": "(11) 99999-1111",
+      "email": "ana.costa@email.com"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440002",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "nome": "Carlos Ferreira",
+      "telefone": "(11) 99999-2222",
+      "email": "carlos.ferreira@email.com"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440003",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "nome": "Lucia Mendes",
+      "telefone": "(11) 99999-3333",
+      "email": "lucia.mendes@email.com"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440004",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "nome": "Roberto Lima",
+      "telefone": "(11) 99999-4444",
+      "email": "roberto.lima@email.com"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440005",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "nome": "Fernanda Rocha",
+      "telefone": "(11) 99999-5555",
+      "email": "fernanda.rocha@email.com"
+    }
+  ],
+  "oradores": [
+    {
+      "id": "990e8400-e29b-41d4-a716-446655440001",
+      "nome": "Irmão José Almeida",
+      "congregacao_origem": "Congregação Central"
+    },
+    {
+      "id": "990e8400-e29b-41d4-a716-446655440002",
+      "nome": "Irmão Paulo Rodrigues",
+      "congregacao_origem": "Congregação Norte"
+    },
+    {
+      "id": "990e8400-e29b-41d4-a716-446655440003",
+      "nome": "Irmão Marcos Pereira",
+      "congregacao_origem": "Congregação Sul"
+    }
+  ],
+  "discursos": [
+    {
+      "id": "aa0e8400-e29b-41d4-a716-446655440001",
+      "orador_id": "990e8400-e29b-41d4-a716-446655440001",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "tema": "A Importância da Oração",
+      "data": "2024-01-15",
+      "cantico": "Cântico 45",
+      "hospitalidade_id": "880e8400-e29b-41d4-a716-446655440001",
+      "tem_imagem": true
+    },
+    {
+      "id": "aa0e8400-e29b-41d4-a716-446655440002",
+      "orador_id": "990e8400-e29b-41d4-a716-446655440002",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "tema": "Fé em Tempos Difíceis",
+      "data": "2024-01-22",
+      "cantico": "Cântico 23",
+      "hospitalidade_id": "880e8400-e29b-41d4-a716-446655440002",
+      "tem_imagem": false
+    },
+    {
+      "id": "aa0e8400-e29b-41d4-a716-446655440003",
+      "orador_id": "990e8400-e29b-41d4-a716-446655440003",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "tema": "O Amor ao Próximo",
+      "data": "2024-01-29",
+      "cantico": "Cântico 67",
+      "hospitalidade_id": "880e8400-e29b-41d4-a716-446655440003",
+      "tem_imagem": true
+    }
+  ],
+  "mecanicas": [
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440001",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "data": "2024-01-16",
+      "indicador_id": "880e8400-e29b-41d4-a716-446655440001",
+      "leitor_id": "880e8400-e29b-41d4-a716-446655440002",
+      "som_id": "880e8400-e29b-41d4-a716-446655440003",
+      "palco_id": "880e8400-e29b-41d4-a716-446655440004"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440002",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "data": "2024-01-18",
+      "indicador_id": "880e8400-e29b-41d4-a716-446655440002",
+      "leitor_id": "880e8400-e29b-41d4-a716-446655440003",
+      "som_id": "880e8400-e29b-41d4-a716-446655440004",
+      "palco_id": "880e8400-e29b-41d4-a716-446655440005"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440003",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "data": "2024-01-23",
+      "indicador_id": "880e8400-e29b-41d4-a716-446655440003",
+      "leitor_id": "880e8400-e29b-41d4-a716-446655440004",
+      "som_id": "880e8400-e29b-41d4-a716-446655440005",
+      "palco_id": "880e8400-e29b-41d4-a716-446655440001"
+    }
+  ],
+  "grupos": [
+    {
+      "id": "cc0e8400-e29b-41d4-a716-446655440001",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "nome": "Grupo A",
+      "superintendente_id": "880e8400-e29b-41d4-a716-446655440001",
+      "servo_id": null
+    },
+    {
+      "id": "cc0e8400-e29b-41d4-a716-446655440002",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "nome": "Grupo B",
+      "superintendente_id": null,
+      "servo_id": "880e8400-e29b-41d4-a716-446655440003"
+    },
+    {
+      "id": "cc0e8400-e29b-41d4-a716-446655440003",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "nome": "Grupo C",
+      "superintendente_id": "880e8400-e29b-41d4-a716-446655440004",
+      "servo_id": null
+    }
+  ],
+  "grupo_publicadores": [
+    {
+      "id": "dd0e8400-e29b-41d4-a716-446655440001",
+      "grupo_id": "cc0e8400-e29b-41d4-a716-446655440001",
+      "publicador_ids": [
+        "880e8400-e29b-41d4-a716-446655440001",
+        "880e8400-e29b-41d4-a716-446655440002"
+      ]
+    },
+    {
+      "id": "dd0e8400-e29b-41d4-a716-446655440002",
+      "grupo_id": "cc0e8400-e29b-41d4-a716-446655440002",
+      "publicador_ids": [
+        "880e8400-e29b-41d4-a716-446655440003"
+      ]
+    },
+    {
+      "id": "dd0e8400-e29b-41d4-a716-446655440003",
+      "grupo_id": "cc0e8400-e29b-41d4-a716-446655440003",
+      "publicador_ids": [
+        "880e8400-e29b-41d4-a716-446655440004",
+        "880e8400-e29b-41d4-a716-446655440005"
+      ]
+    }
+  ],
+  "locais_carrinho": [
+    {
+      "id": "ee0e8400-e29b-41d4-a716-446655440001",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "nome": "Shopping Center Norte",
+      "endereco": "Av. Paulista, 1000 - São Paulo, SP"
+    },
+    {
+      "id": "ee0e8400-e29b-41d4-a716-446655440002",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "nome": "Estação de Metrô Sé",
+      "endereco": "Praça da Sé, s/n - São Paulo, SP"
+    },
+    {
+      "id": "ee0e8400-e29b-41d4-a716-446655440003",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "nome": "Parque Ibirapuera",
+      "endereco": "Av. Pedro Álvares Cabral - São Paulo, SP"
+    }
+  ],
+  "carrinho_horarios": [
+    {
+      "id": "ff0e8400-e29b-41d4-a716-446655440001",
+      "local_id": "ee0e8400-e29b-41d4-a716-446655440001",
+      "dia_semana": 6,
+      "hora_inicio": "09:00",
+      "hora_fim": "12:00"
+    },
+    {
+      "id": "ff0e8400-e29b-41d4-a716-446655440002",
+      "local_id": "ee0e8400-e29b-41d4-a716-446655440001",
+      "dia_semana": 0,
+      "hora_inicio": "14:00",
+      "hora_fim": "17:00"
+    },
+    {
+      "id": "ff0e8400-e29b-41d4-a716-446655440003",
+      "local_id": "ee0e8400-e29b-41d4-a716-446655440002",
+      "dia_semana": 2,
+      "hora_inicio": "08:00",
+      "hora_fim": "11:00"
+    },
+    {
+      "id": "ff0e8400-e29b-41d4-a716-446655440004",
+      "local_id": "ee0e8400-e29b-41d4-a716-446655440003",
+      "dia_semana": 5,
+      "hora_inicio": "15:00",
+      "hora_fim": "18:00"
+    }
+  ],
+  "territorios": [
+    {
+      "id": "110e8400-e29b-41d4-a716-446655440001",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "nome": "Território 1 - Vila Madalena",
+      "finalizado": false,
+      "data_finalizacao": null,
+      "coordenada": "-23.5505,-46.6333",
+      "imagem_url": "https://example.com/territorio1.jpg"
+    },
+    {
+      "id": "110e8400-e29b-41d4-a716-446655440002",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "nome": "Território 2 - Pinheiros",
+      "finalizado": true,
+      "data_finalizacao": "2024-01-10",
+      "coordenada": "-23.5629,-46.7006",
+      "imagem_url": "https://example.com/territorio2.jpg"
+    },
+    {
+      "id": "110e8400-e29b-41d4-a716-446655440003",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "nome": "Território 3 - Jardins",
+      "finalizado": false,
+      "data_finalizacao": null,
+      "coordenada": "-23.5629,-46.6544",
+      "imagem_url": "https://example.com/territorio3.jpg"
+    }
+  ],
+  "nossa_vida_crista": [
+    {
+      "id": "220e8400-e29b-41d4-a716-446655440001",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "periodo": "1-7 de setembro",
+      "leituraBiblica": "Provérbios 29",
+      "canticos": {
+        "inicial": "28",
+        "intermediario": "159",
+        "final": "31"
+      },
+      "comentarios": {
+        "iniciais": "1 min",
+        "finais": "3 min"
+      },
+      "tesourosPalavra": {
+        "titulo": "Rejeite crenças e costumes que não são baseados na Bíblia",
+        "duracao": "10 min",
+        "pontos": [
+          "Obedeça a Jeová e seja feliz de verdade. (Pro. 29:18; wp16.6 6, quadro)",
+          "Peça a Jeová sabedoria para entender se um costume agrada a ele ou não. (Pro. 29:3a; w19.04 17 § 13)",
+          "Não deixe que outros pressionem você a participar de costumes errados. (Pro. 29:25; w18.11 11 § 12)"
+        ],
+        "joiasEspirituais": [
+          {
+            "texto": "Pro. 29:5",
+            "pergunta": "O que significa bajular, ou lisonjear, e como 'o homem que bajula seu próximo arma uma rede para os pés dele'?",
+            "referencia": "it 'Lisonja' § 1",
+            "duracao": "10 min"
+          }
+        ],
+        "leituraBiblica": {
+          "texto": "Pro. 29:1-18",
+          "referencia": "th lição 5",
+          "duracao": "4 min"
+        }
+      },
+      "facaSeuMelhor": [
+        {
+          "tipo": "Iniciando conversas",
+          "duracao": "3 min",
+          "formato": "TESTEMUNHO INFORMAL",
+          "descricao": "Convide a pessoa para o discurso especial.",
+          "referencia": "lmd lição 2 ponto 3"
+        },
+        {
+          "tipo": "Iniciando conversas",
+          "duracao": "4 min",
+          "formato": "DE CASA EM CASA",
+          "descricao": "Use A Sentinela N.º 1 de 2025 para começar a conversa. A pessoa mostra interesse em outro assunto. Ajuste sua apresentação.",
+          "referencia": "lmd lição 3 ponto 3"
+        },
+        {
+          "tipo": "Iniciando conversas",
+          "duracao": "5 min",
+          "formato": "TESTEMUNHO INFORMAL",
+          "descricao": "Ofereça A Sentinela N.º 1 de 2025 para alguém que está preocupado com as guerras.",
+          "referencia": "lmd lição 3 ponto 4"
+        }
+      ],
+      "nossaVidaCrista": [
+        {
+          "tipo": "Necessidades locais",
+          "duracao": "15 min"
+        },
+        {
+          "tipo": "Estudo bíblico de congregação",
+          "duracao": "30 min",
+          "conteudo": "lfb introdução da seção 4 e histórias 14-15"
+        }
+      ]
+    },
+    {
+      "id": "220e8400-e29b-41d4-a716-446655440002",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "periodo": "8-14 de setembro",
+      "leituraBiblica": "Provérbios 30",
+      "canticos": {
+        "inicial": "45",
+        "intermediario": "78",
+        "final": "92"
+      },
+      "comentarios": {
+        "iniciais": "1 min",
+        "finais": "3 min"
+      },
+      "tesourosPalavra": {
+        "titulo": "Seja humilde e reconheça suas limitações",
+        "duracao": "10 min",
+        "pontos": [
+          "Reconheça que você precisa da orientação de Jeová. (Pro. 30:2-3; w20.05 14 § 6)",
+          "Seja modesto e não se ache melhor que os outros. (Pro. 30:13; w19.08 26 § 14)",
+          "Confie na sabedoria de Jeová, não na sua própria. (Pro. 30:5-6; w18.07 8 § 8)"
+        ],
+        "joiasEspirituais": [
+          {
+            "texto": "Pro. 30:8-9",
+            "pergunta": "Por que Agur pediu a Jeová que não lhe desse nem pobreza nem riqueza?",
+            "referencia": "w19.11 20 § 12",
+            "duracao": "10 min"
+          }
+        ],
+        "leituraBiblica": {
+          "texto": "Pro. 30:1-20",
+          "referencia": "th lição 6",
+          "duracao": "4 min"
+        }
+      },
+      "facaSeuMelhor": [
+        {
+          "tipo": "Fazendo discípulos",
+          "duracao": "3 min",
+          "formato": "ESTUDO BÍBLICO",
+          "descricao": "Ajude o estudante a entender a importância da oração.",
+          "referencia": "lmd lição 4 ponto 2"
+        },
+        {
+          "tipo": "Fazendo discípulos",
+          "duracao": "4 min",
+          "formato": "REVISITA",
+          "descricao": "Use o vídeo 'Por que estudar a Bíblia?' para motivar a pessoa a aceitar um estudo.",
+          "referencia": "lmd lição 4 ponto 3"
+        }
+      ],
+      "nossaVidaCrista": [
+        {
+          "tipo": "Cântico e oração",
+          "duracao": "5 min"
+        },
+        {
+          "tipo": "Necessidades locais",
+          "duracao": "15 min"
+        },
+        {
+          "tipo": "Estudo bíblico de congregação",
+          "duracao": "30 min",
+          "conteudo": "lfb histórias 16-17"
+        }
+      ]
+    }
+  ],
+  "nvc_partes": [
+    {
+      "id": "330e8400-e29b-41d4-a716-446655440001",
+      "nvc_id": "220e8400-e29b-41d4-a716-446655440001",
+      "ordem": 1,
+      "nome_parte": "Tesouros da Palavra de Deus",
+      "tema_parte": "Gênesis 1:1-10",
+      "publicador_id": "880e8400-e29b-41d4-a716-446655440001",
+      "duracao_minutos": 10,
+      "observacoes": "Usar auxílios visuais"
+    },
+    {
+      "id": "330e8400-e29b-41d4-a716-446655440002",
+      "nvc_id": "220e8400-e29b-41d4-a716-446655440001",
+      "ordem": 2,
+      "nome_parte": "Faça Seu Melhor no Ministério",
+      "tema_parte": "Primeira Conversa",
+      "publicador_id": "880e8400-e29b-41d4-a716-446655440002",
+      "duracao_minutos": 4,
+      "observacoes": "Demonstração com ajudante"
+    },
+    {
+      "id": "330e8400-e29b-41d4-a716-446655440003",
+      "nvc_id": "220e8400-e29b-41d4-a716-446655440001",
+      "ordem": 3,
+      "nome_parte": "Nossa Vida Cristã",
+      "tema_parte": "Como Desenvolver Autocontrole",
+      "publicador_id": "880e8400-e29b-41d4-a716-446655440003",
+      "duracao_minutos": 15,
+      "observacoes": "Incluir experiências pessoais"
+    },
+    {
+      "id": "330e8400-e29b-41d4-a716-446655440004",
+      "nvc_id": "220e8400-e29b-41d4-a716-446655440002",
+      "ordem": 1,
+      "nome_parte": "Tesouros da Palavra de Deus",
+      "tema_parte": "Gênesis 1:11-25",
+      "publicador_id": "880e8400-e29b-41d4-a716-446655440004",
+      "duracao_minutos": 10,
+      "observacoes": "Enfatizar a criação"
+    },
+    {
+      "id": "330e8400-e29b-41d4-a716-446655440005",
+      "nvc_id": "220e8400-e29b-41d4-a716-446655440002",
+      "ordem": 2,
+      "nome_parte": "Faça Seu Melhor no Ministério",
+      "tema_parte": "Revisita",
+      "publicador_id": "880e8400-e29b-41d4-a716-446655440005",
+      "duracao_minutos": 4,
+      "observacoes": "Usar publicação recente"
+    },
+    {
+      "id": "330e8400-e29b-41d4-a716-446655440006",
+      "nvc_id": "220e8400-e29b-41d4-a716-446655440002",
+      "ordem": 3,
+      "nome_parte": "Nossa Vida Cristã",
+      "tema_parte": "A Importância da Assembleia",
+      "publicador_id": "880e8400-e29b-41d4-a716-446655440001",
+      "duracao_minutos": 15,
+      "observacoes": "Mencionar benefícios espirituais"
+    }
+  ],
+  "escala_limpeza": [
+    {
+      "id": "440e8400-e29b-41d4-a716-446655440001",
+      "grupo_id": "990e8400-e29b-41d4-a716-446655440001",
+      "data_limpeza": "2024-01-15",
+      "publicadores": [
+        "880e8400-e29b-41d4-a716-446655440001",
+        "880e8400-e29b-41d4-a716-446655440002"
+      ],
+      "observacoes": "Limpeza geral do salão"
+    },
+    {
+      "id": "440e8400-e29b-41d4-a716-446655440002",
+      "grupo_id": "990e8400-e29b-41d4-a716-446655440001",
+      "data_limpeza": "2024-02-15",
+      "publicadores": [
+        "880e8400-e29b-41d4-a716-446655440003",
+        "880e8400-e29b-41d4-a716-446655440004"
+      ],
+      "observacoes": "Incluir limpeza dos banheiros"
+    },
+    {
+      "id": "440e8400-e29b-41d4-a716-446655440003",
+      "grupo_id": "990e8400-e29b-41d4-a716-446655440002",
+      "data_limpeza": "2024-01-22",
+      "publicadores": [
+        "880e8400-e29b-41d4-a716-446655440005",
+        "880e8400-e29b-41d4-a716-446655440006"
+      ],
+      "observacoes": "Limpeza após assembleia"
+    },
+    {
+      "id": "440e8400-e29b-41d4-a716-446655440004",
+      "grupo_id": "990e8400-e29b-41d4-a716-446655440002",
+      "data_limpeza": "2024-02-22",
+      "publicadores": [
+        "880e8400-e29b-41d4-a716-446655440007",
+        "880e8400-e29b-41d4-a716-446655440008"
+      ],
+      "observacoes": "Limpeza de rotina"
+    },
+    {
+      "id": "440e8400-e29b-41d4-a716-446655440005",
+      "grupo_id": "990e8400-e29b-41d4-a716-446655440003",
+      "data_limpeza": "2024-01-29",
+      "publicadores": [
+        "880e8400-e29b-41d4-a716-446655440009",
+        "880e8400-e29b-41d4-a716-446655440010"
+      ],
+      "observacoes": "Limpeza completa"
+    },
+    {
+      "id": "440e8400-e29b-41d4-a716-446655440006",
+      "grupo_id": "990e8400-e29b-41d4-a716-446655440003",
+      "data_limpeza": "2024-02-29",
+      "publicadores": [
+        "880e8400-e29b-41d4-a716-446655440001",
+        "880e8400-e29b-41d4-a716-446655440003"
+      ],
+      "observacoes": "Limpeza mensal"
+    }
+  ]
+}

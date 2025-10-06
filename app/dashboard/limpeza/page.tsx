@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { CollapsibleCard } from "@/components/collapsible-card";
 import { PermissionGuard, PermissionButton, PermissionStatus } from "@/components/permission-guard";
@@ -26,6 +26,15 @@ import {
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { 
+  getAllPublicadores, 
+  type Publicador,
+  getAllEscalasLimpeza,
+  createEscalaLimpeza,
+  deleteEscalaLimpeza,
+  type EscalaLimpeza,
+  type CreateEscalaLimpezaData
+} from "@/lib/auth";
 import mockData from "@/data/mock-data.json";
 import { Plus, Calendar, User, Users, CalendarIcon, Info, CheckCircle, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
@@ -34,7 +43,20 @@ import { podeEditar } from "@/lib/permissions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
+// Função para filtrar publicadores com permissão de limpeza
+const getPublicadoresLimpeza = (publicadores: Publicador[]) => {
+  return publicadores.filter(publicador => 
+    publicador.ativo && 
+    publicador.permissions?.includes("perm_limpeza")
+  );
+};
+
 export default function LimpezaPage() {
+  // Estados para dados
+  const [publicadores, setPublicadores] = useState<Publicador[]>([]);
+  const [escalasLimpeza, setEscalasLimpeza] = useState<EscalaLimpeza[]>([]);
+  const [loading, setLoading] = useState(true);
+  
   // Estados para os modais
   const [isNovaEscalaModalOpen, setIsNovaEscalaModalOpen] = useState(false);
   const [isInstrucoesModalOpen, setIsInstrucoesModalOpen] = useState(false);
@@ -48,11 +70,33 @@ export default function LimpezaPage() {
   const tempUserId = "550e8400-e29b-41d4-a716-446655440001";
   const tempCongregacaoId = "660e8400-e29b-41d4-a716-446655440001";
 
+  // Carregamento de dados
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const [publicadoresData, escalasData] = await Promise.all([
+          getAllPublicadores(),
+          getAllEscalasLimpeza()
+        ]);
+        setPublicadores(publicadoresData);
+        setEscalasLimpeza(escalasData);
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        toast.error("Erro ao carregar dados");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
   // Verificar permissões
   const podeGerenciarLimpeza = podeEditar(tempUserId, tempCongregacaoId, "perm_limpeza");
 
   // Função para submeter nova escala
-  const handleSubmitNovaEscala = (e: React.FormEvent) => {
+  const handleSubmitNovaEscala = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!date) {
@@ -65,21 +109,36 @@ export default function LimpezaPage() {
       return;
     }
 
-    // Aqui seria feita a chamada para a API
-    console.log("Nova escala:", {
-      data: format(date, "yyyy-MM-dd"),
-      ...novaEscala
-    });
+    try {
+      const novaEscalaData: CreateEscalaLimpezaData = {
+        grupo_id: tempCongregacaoId,
+        data_limpeza: format(date, "yyyy-MM-dd"),
+        publicadores: novaEscala.publicadores,
+        observacoes: novaEscala.observacoes
+      };
 
-    toast.success("Escala de limpeza criada com sucesso!");
-    
-    // Reset do formulário
-    setDate(undefined);
-    setNovaEscala({
-      publicadores: [],
-      observacoes: ""
-    });
-    setIsNovaEscalaModalOpen(false);
+      const result = await createEscalaLimpeza(novaEscalaData);
+      
+      if (result.success && result.escala) {
+        // Atualizar o estado local
+        setEscalasLimpeza(prev => [...prev, result.escala!]);
+      } else {
+        throw new Error(result.error || "Erro desconhecido ao criar escala");
+      }
+
+      toast.success("Escala de limpeza criada com sucesso!");
+      
+      // Reset do formulário
+      setDate(undefined);
+      setNovaEscala({
+        publicadores: [],
+        observacoes: ""
+      });
+      setIsNovaEscalaModalOpen(false);
+    } catch (error) {
+      console.error("Erro ao criar escala:", error);
+      toast.error("Erro ao criar escala de limpeza");
+    }
   };
 
   // Função para adicionar/remover publicador
@@ -92,11 +151,48 @@ export default function LimpezaPage() {
     }));
   };
 
+  // Função para excluir escala
+  const handleDeleteEscala = async (escalaId: string) => {
+    try {
+      const result = await deleteEscalaLimpeza(escalaId);
+      
+      if (result.success) {
+        // Atualizar o estado local
+        setEscalasLimpeza(prev => prev.filter(escala => escala.id !== escalaId));
+        toast.success("Escala de limpeza removida com sucesso!");
+      } else {
+        throw new Error(result.error || "Erro desconhecido ao remover escala");
+      }
+    } catch (error) {
+      console.error("Erro ao remover escala:", error);
+      toast.error("Erro ao remover escala de limpeza");
+    }
+  };
+
   // Ordenar escalas por data
-  const escalasOrdenadas = mockData.escala_limpeza.sort(
+  const escalasOrdenadas = escalasLimpeza.sort(
     (a, b) =>
       new Date(a.data_limpeza).getTime() - new Date(b.data_limpeza).getTime()
   );
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <h2 className="text-xl font-semibold">Limpeza</h2>
+            <PermissionStatus permissao="perm_limpeza" />
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-8">
+          <div className="text-center space-y-2">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            <p className="text-sm text-muted-foreground">Carregando publicadores...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -132,7 +228,7 @@ export default function LimpezaPage() {
       <div className="space-y-3">
         {escalasOrdenadas.map((escala) => {
           const publicadoresResponsaveis = escala.publicadores
-            .map((pubId) => mockData.publicadores.find((p) => p.id === pubId))
+            .map((pubId) => publicadores.find((p) => p.id === pubId))
             .filter((publicador): publicador is NonNullable<typeof publicador> => publicador !== undefined);
 
           const dataFormatada = new Date(
@@ -180,7 +276,12 @@ export default function LimpezaPage() {
                     <Button size="sm" variant="outline" className="flex-1">
                       Editar
                     </Button>
-                    <Button size="sm" variant="outline" className="flex-1">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="flex-1"
+                      onClick={() => handleDeleteEscala(escala.id)}
+                    >
                       Remover
                     </Button>
                   </div>
@@ -229,7 +330,7 @@ export default function LimpezaPage() {
             <div className="space-y-2">
               <Label>Publicadores Responsáveis</Label>
               <div className="max-h-48 overflow-y-auto border rounded-lg p-3 space-y-2">
-                {mockData.publicadores.map((publicador) => (
+                {getPublicadoresLimpeza(publicadores).map((publicador) => (
                   <div
                     key={publicador.id}
                     className={cn(

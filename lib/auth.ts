@@ -1528,3 +1528,136 @@ export async function getPublicadorPermissions(publicadorId: string): Promise<st
     return []
   }
 }
+
+// ===== ESCALAS DE LIMPEZA =====
+
+export interface EscalaLimpeza {
+  id: string;
+  grupo_id: string;
+  data_limpeza: string;
+  publicadores: string[];
+  observacoes?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CreateEscalaLimpezaData {
+  grupo_id: string;
+  data_limpeza: string;
+  publicadores: string[];
+  observacoes?: string;
+}
+
+export interface UpdateEscalaLimpezaData {
+  grupo_id?: string;
+  data_limpeza?: string;
+  publicadores?: string[];
+  observacoes?: string;
+}
+
+// Buscar todas as escalas de limpeza
+export async function getAllEscalasLimpeza(): Promise<EscalaLimpeza[]> {
+  try {
+    const { data, error } = await supabase
+      .from('escala_limpeza')
+      .select('*')
+      .order('data_limpeza', { ascending: true });
+
+    if (error) {
+      console.error('Erro ao buscar escalas de limpeza:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Erro ao buscar escalas de limpeza:', error);
+    return [];
+  }
+}
+
+// Buscar escala de limpeza por ID
+export async function getEscalaLimpezaById(id: string): Promise<EscalaLimpeza | null> {
+  try {
+    const { data, error } = await supabase
+      .from('escala_limpeza')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      console.error('Erro ao buscar escala de limpeza:', error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Erro ao buscar escala de limpeza:', error);
+    return null;
+  }
+}
+
+// Criar nova escala de limpeza
+export async function createEscalaLimpeza(escalaData: CreateEscalaLimpezaData): Promise<{ success: boolean; error?: string; escala?: EscalaLimpeza }> {
+  try {
+    const { data, error } = await supabase
+      .from('escala_limpeza')
+      .insert([escalaData])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Erro ao criar escala de limpeza:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, escala: data };
+  } catch (error) {
+    console.error('Erro ao criar escala de limpeza:', error);
+    return { success: false, error: 'Erro interno do servidor' };
+  }
+}
+
+// Atualizar escala de limpeza
+export async function updateEscalaLimpeza(id: string, escalaData: UpdateEscalaLimpezaData): Promise<{ success: boolean; error?: string; escala?: EscalaLimpeza }> {
+  try {
+    const { data, error } = await supabase
+      .from('escala_limpeza')
+      .update({
+        ...escalaData,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Erro ao atualizar escala de limpeza:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, escala: data };
+  } catch (error) {
+    console.error('Erro ao atualizar escala de limpeza:', error);
+    return { success: false, error: 'Erro interno do servidor' };
+  }
+}
+
+// Deletar escala de limpeza
+export async function deleteEscalaLimpeza(id: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { error } = await supabase
+      .from('escala_limpeza')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Erro ao deletar escala de limpeza:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Erro ao deletar escala de limpeza:', error);
+    return { success: false, error: 'Erro interno do servidor' };
+  }
+}

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,23 +20,168 @@ import {
 } from "@/components/ui/field";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Church, ArrowLeft, Users } from "lucide-react";
+import { Church, ArrowLeft, Users, Hash } from "lucide-react";
+import { toast } from "sonner";
 
 export default function SignUpPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("congregacao");
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [numeroUnico, setNumeroUnico] = useState("");
+  const [verificandoNumero, setVerificandoNumero] = useState(false);
+
+  const validateForm = (formData: FormData, tipo: string) => {
+    const newErrors: Record<string, string> = {};
+
+    if (tipo === "congregacao") {
+      const nome = formData.get("congregacao.nome") as string;
+      const cidade = formData.get("congregacao.cidade") as string;
+      const numeroUnico = formData.get("congregacao.numeroUnico") as string;
+      const nomeResp = formData.get("responsavel.nome") as string;
+      const email = formData.get("responsavel.email") as string;
+      const senha = formData.get("responsavel.senha") as string;
+      const confirmarSenha = formData.get("responsavel.confirmarSenha") as string;
+
+      if (!nome) newErrors["congregacao.nome"] = "Nome da congregação é obrigatório";
+      if (!cidade) newErrors["congregacao.cidade"] = "Cidade é obrigatória";
+      if (!numeroUnico) newErrors["congregacao.numeroUnico"] = "Número único é obrigatório";
+      if (numeroUnico && numeroUnico.length !== 6) newErrors["congregacao.numeroUnico"] = "Número único deve ter 6 dígitos";
+      if (!nomeResp) newErrors["responsavel.nome"] = "Nome é obrigatório";
+      if (!email) newErrors["responsavel.email"] = "E-mail é obrigatório";
+      if (!senha) newErrors["responsavel.senha"] = "Senha é obrigatória";
+      if (senha && senha.length < 8) newErrors["responsavel.senha"] = "Senha deve ter pelo menos 8 caracteres";
+      if (senha !== confirmarSenha) newErrors["responsavel.confirmarSenha"] = "As senhas não coincidem";
+    } else {
+      const nome = formData.get("usuario.nome") as string;
+      const email = formData.get("usuario.email") as string;
+      const codigo = formData.get("usuario.codigoCongregacao") as string;
+      const senha = formData.get("usuario.senha") as string;
+      const confirmarSenha = formData.get("usuario.confirmarSenha") as string;
+
+      if (!nome) newErrors["usuario.nome"] = "Nome é obrigatório";
+      if (!email) newErrors["usuario.email"] = "E-mail é obrigatório";
+      if (!codigo) newErrors["usuario.codigoCongregacao"] = "Código da congregação é obrigatório";
+      if (codigo && codigo.length !== 6) newErrors["usuario.codigoCongregacao"] = "Código deve ter 6 dígitos";
+      if (!senha) newErrors["usuario.senha"] = "Senha é obrigatória";
+      if (senha && senha.length < 8) newErrors["usuario.senha"] = "Senha deve ter pelo menos 8 caracteres";
+      if (senha !== confirmarSenha) newErrors["usuario.confirmarSenha"] = "As senhas não coincidem";
+    }
+
+    return newErrors;
+  };
+
+  const verificarNumeroUnico = async (numero: string) => {
+    if (numero.length !== 6) return;
+
+    setVerificandoNumero(true);
+    try {
+      const response = await fetch("/api/congregacao/verificar-numero", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ numero }),
+      });
+
+      const data = await response.json();
+      
+      if (data.existe) {
+        setErrors(prev => ({
+          ...prev,
+          "congregacao.numeroUnico": "Este número já está em uso. Escolha outro."
+        }));
+      } else {
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors["congregacao.numeroUnico"];
+          return newErrors;
+        });
+      }
+    } catch (error) {
+      console.error("Erro ao verificar número:", error);
+      toast.error("Erro ao verificar número único");
+    } finally {
+      setVerificandoNumero(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     setErrors({});
 
-    // Simular validação e envio
-    setTimeout(() => {
+    const formData = new FormData(e.currentTarget);
+    const validationErrors = validateForm(formData, activeTab);
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
       setIsLoading(false);
-      // Aqui seria a lógica real de criação
-    }, 2000);
+      return;
+    }
+
+    try {
+      let requestData;
+      
+      if (activeTab === "congregacao") {
+        requestData = {
+          tipo: "congregacao",
+          congregacao: {
+            nome: formData.get("congregacao.nome"),
+            cidade: formData.get("congregacao.cidade"),
+            numeroUnico: formData.get("congregacao.numeroUnico"),
+          },
+          responsavel: {
+            nome: formData.get("responsavel.nome"),
+            email: formData.get("responsavel.email"),
+            telefone: formData.get("responsavel.telefone"),
+            senha: formData.get("responsavel.senha"),
+            confirmarSenha: formData.get("responsavel.confirmarSenha"),
+          },
+        };
+      } else {
+        requestData = {
+          tipo: "usuario",
+          usuario: {
+            nome: formData.get("usuario.nome"),
+            email: formData.get("usuario.email"),
+            telefone: formData.get("usuario.telefone"),
+            codigoCongregacao: formData.get("usuario.codigoCongregacao"),
+            senha: formData.get("usuario.senha"),
+            confirmarSenha: formData.get("usuario.confirmarSenha"),
+          },
+        };
+      }
+
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success(data.message);
+        
+        if (activeTab === "congregacao") {
+          toast.success(`Número da congregação: ${data.data.numero_unico}`, {
+            duration: 10000,
+          });
+        }
+        
+        // Redirecionar para login ou dashboard
+        router.push("/login");
+      } else {
+        toast.error(data.error || "Erro ao criar conta");
+        if (data.errors) {
+          setErrors(data.errors);
+        }
+      }
+    } catch (error) {
+      console.error("Erro no signup:", error);
+      toast.error("Erro interno. Tente novamente.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -141,6 +287,39 @@ export default function SignUpPage() {
                       />
                       {errors["congregacao.cidade"] && (
                         <FieldError>{errors["congregacao.cidade"]}</FieldError>
+                      )}
+                    </Field>
+
+                    <Field>
+                      <FieldLabel htmlFor="cong-numero">
+                        <Hash className="h-4 w-4 inline mr-1" />
+                        Número Único da Congregação
+                      </FieldLabel>
+                      <Input
+                        id="cong-numero"
+                        name="congregacao.numeroUnico"
+                        placeholder="Ex: 123456"
+                        maxLength={6}
+                        value={numeroUnico}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, "");
+                          setNumeroUnico(value);
+                          if (value.length === 6) {
+                            verificarNumeroUnico(value);
+                          }
+                        }}
+                        required
+                      />
+                      <FieldDescription>
+                        Número de 6 dígitos que identificará sua congregação no sistema
+                      </FieldDescription>
+                      {verificandoNumero && (
+                        <FieldDescription className="text-amber-600">
+                          Verificando disponibilidade...
+                        </FieldDescription>
+                      )}
+                      {errors["congregacao.numeroUnico"] && (
+                        <FieldError>{errors["congregacao.numeroUnico"]}</FieldError>
                       )}
                     </Field>
                   </div>

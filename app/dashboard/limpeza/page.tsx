@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { CollapsibleCard } from "@/components/collapsible-card";
+import { PermissionGuard, PermissionButton, PermissionStatus } from "@/components/permission-guard";
 import mockData from "@/data/mock-data.json";
 import { Plus, Calendar, User, Users } from "lucide-react";
 
@@ -15,11 +16,16 @@ export default function LimpezaPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Limpeza</h2>
-        <Button size="sm">
-          <Plus className="h-4 w-4 mr-2" />
-          Nova Escala
-        </Button>
+        <div className="space-y-1">
+          <h2 className="text-xl font-semibold">Limpeza</h2>
+          <PermissionStatus permissao="perm_limpeza" />
+        </div>
+        <PermissionButton permissao="perm_limpeza">
+          <Button size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Nova Escala
+          </Button>
+        </PermissionButton>
       </div>
 
       <div className="space-y-3">
@@ -68,14 +74,16 @@ export default function LimpezaPage() {
                   </div>
                 </div>
 
-                <div className="flex gap-2 pt-2">
-                  <Button size="sm" variant="outline" className="flex-1">
-                    Editar
-                  </Button>
-                  <Button size="sm" variant="outline" className="flex-1">
-                    Remover
-                  </Button>
-                </div>
+                <PermissionGuard permissao="perm_limpeza">
+                  <div className="flex gap-2 pt-2">
+                    <Button size="sm" variant="outline" className="flex-1">
+                      Editar
+                    </Button>
+                    <Button size="sm" variant="outline" className="flex-1">
+                      Remover
+                    </Button>
+                  </div>
+                </PermissionGuard>
               </div>
             </CollapsibleCard>
           );

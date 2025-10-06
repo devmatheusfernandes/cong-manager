@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 interface CollapsibleCardProps {
   title: string;
   icon?: LucideIcon;
-  badge?: string;
+  badge?: string | React.ReactNode;
   children: React.ReactNode;
   defaultExpanded?: boolean;
 }
@@ -35,9 +35,13 @@ export function CollapsibleCard({
           </div>
           <div className="flex items-center gap-2">
             {badge && (
-              <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
-                {badge}
-              </span>
+              typeof badge === 'string' ? (
+                <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                  {badge}
+                </span>
+              ) : (
+                badge
+              )
             )}
             {isExpanded ? (
               <ChevronUp className="h-4 w-4 text-muted-foreground" />

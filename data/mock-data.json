@@ -45,28 +45,39 @@
       "eh_responsavel": false
     }
   ],
-  "permissoes": [
+  "permissoes_sistema": [
     {
       "id": "770e8400-e29b-41d4-a716-446655440001",
       "usuario_id": "550e8400-e29b-41d4-a716-446655440001",
       "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
-      "perm_limpeza": true,
-      "perm_mecanica": true,
-      "perm_discurso": true,
-      "perm_pregacao": true,
       "perm_carrinho": true,
-      "perm_nossa_vida_crista": true
+      "perm_pregacao": true,
+      "perm_nvc": true,
+      "perm_mecanicas": true,
+      "perm_discurso": true,
+      "perm_limpeza": true
     },
     {
       "id": "770e8400-e29b-41d4-a716-446655440002",
       "usuario_id": "550e8400-e29b-41d4-a716-446655440002",
       "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
-      "perm_limpeza": true,
-      "perm_mecanica": false,
-      "perm_discurso": false,
-      "perm_pregacao": true,
       "perm_carrinho": false,
-      "perm_nossa_vida_crista": true
+      "perm_pregacao": true,
+      "perm_nvc": true,
+      "perm_mecanicas": false,
+      "perm_discurso": false,
+      "perm_limpeza": true
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440003",
+      "usuario_id": "550e8400-e29b-41d4-a716-446655440003",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "perm_carrinho": false,
+      "perm_pregacao": false,
+      "perm_nvc": false,
+      "perm_mecanicas": false,
+      "perm_discurso": false,
+      "perm_limpeza": false
     }
   ],
   "publicadores": [
@@ -75,35 +86,135 @@
       "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
       "nome": "Ana Costa",
       "telefone": "(11) 99999-1111",
-      "email": "ana.costa@email.com"
+      "email": "ana.costa@email.com",
+      "privilegio": "anciao",
+      "permissoes": {
+        "limpeza": true,
+        "discurso_publico": true,
+        "carrinho": true,
+        "volante": true,
+        "palco": true,
+        "som": true,
+        "indicador_entrada": true,
+        "indicador_palco": true,
+        "presidencia_fim_semana": true,
+        "presidencia_meio_semana": true,
+        "participar_escola": true,
+        "joias_espirituais": true,
+        "leitura_livro": true,
+        "leitura_sentinela": true,
+        "dirigir_estudo_livro": true,
+        "nossa_vida_crista": true,
+        "fazer_oracao": true
+      }
     },
     {
       "id": "880e8400-e29b-41d4-a716-446655440002",
       "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
       "nome": "Carlos Ferreira",
       "telefone": "(11) 99999-2222",
-      "email": "carlos.ferreira@email.com"
+      "email": "carlos.ferreira@email.com",
+      "privilegio": "servo_ministerial",
+      "permissoes": {
+        "limpeza": true,
+        "discurso_publico": false,
+        "carrinho": true,
+        "volante": true,
+        "palco": true,
+        "som": true,
+        "indicador_entrada": true,
+        "indicador_palco": true,
+        "presidencia_fim_semana": false,
+        "presidencia_meio_semana": true,
+        "participar_escola": true,
+        "joias_espirituais": true,
+        "leitura_livro": true,
+        "leitura_sentinela": true,
+        "dirigir_estudo_livro": false,
+        "nossa_vida_crista": true,
+        "fazer_oracao": true
+      }
     },
     {
       "id": "880e8400-e29b-41d4-a716-446655440003",
       "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
       "nome": "Lucia Mendes",
       "telefone": "(11) 99999-3333",
-      "email": "lucia.mendes@email.com"
+      "email": "lucia.mendes@email.com",
+      "privilegio": "pioneiro_regular",
+      "permissoes": {
+        "limpeza": true,
+        "discurso_publico": false,
+        "carrinho": true,
+        "volante": true,
+        "palco": false,
+        "som": false,
+        "indicador_entrada": true,
+        "indicador_palco": false,
+        "presidencia_fim_semana": false,
+        "presidencia_meio_semana": false,
+        "participar_escola": true,
+        "joias_espirituais": false,
+        "leitura_livro": false,
+        "leitura_sentinela": false,
+        "dirigir_estudo_livro": false,
+        "nossa_vida_crista": true,
+        "fazer_oracao": true
+      }
     },
     {
       "id": "880e8400-e29b-41d4-a716-446655440004",
       "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
       "nome": "Roberto Lima",
       "telefone": "(11) 99999-4444",
-      "email": "roberto.lima@email.com"
+      "email": "roberto.lima@email.com",
+      "privilegio": "publicador_batizado",
+      "permissoes": {
+        "limpeza": true,
+        "discurso_publico": false,
+        "carrinho": true,
+        "volante": true,
+        "palco": true,
+        "som": true,
+        "indicador_entrada": true,
+        "indicador_palco": true,
+        "presidencia_fim_semana": false,
+        "presidencia_meio_semana": false,
+        "participar_escola": true,
+        "joias_espirituais": false,
+        "leitura_livro": true,
+        "leitura_sentinela": true,
+        "dirigir_estudo_livro": false,
+        "nossa_vida_crista": true,
+        "fazer_oracao": true
+      }
     },
     {
       "id": "880e8400-e29b-41d4-a716-446655440005",
       "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
       "nome": "Fernanda Rocha",
       "telefone": "(11) 99999-5555",
-      "email": "fernanda.rocha@email.com"
+      "email": "fernanda.rocha@email.com",
+      "privilegio": "publicador_nao_batizado",
+      "permissoes": {
+        "limpeza": true,
+        "discurso_publico": false,
+        "carrinho": false,
+        "volante": false,
+        "palco": false,
+        "som": false,
+        "indicador_entrada": false,
+        "indicador_palco": false,
+        "presidencia_fim_semana": false,
+        "presidencia_meio_semana": false,
+        "participar_escola": true,
+        "joias_espirituais": false,
+        "leitura_livro": false,
+        "leitura_sentinela": false,
+        "dirigir_estudo_livro": false,
+        "nossa_vida_crista": true,
+        "fazer_oracao": false
+      }
     }
   ],
   "oradores": [

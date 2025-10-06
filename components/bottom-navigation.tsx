@@ -14,6 +14,7 @@ import {
   MapPin,
   ChevronUp,
   Building2,
+  Shield,
 } from "lucide-react";
 import { BottomSheet } from "./bottom-sheet";
 
@@ -63,6 +64,12 @@ const tabs: TabItem[] = [
     label: "Congregação",
     icon: Building2,
     path: "/dashboard/congregacao",
+  },
+  {
+    id: "admin",
+    label: "Permissões",
+    icon: Shield,
+    path: "/dashboard/admin/permissoes",
   },
 ];
 
@@ -152,7 +159,7 @@ export function BottomNavigation({ className }: BottomNavigationProps) {
       >
         <div className="max-w-screen-xl mx-auto">
           {/* Desktop: todas as tabs */}
-          <div className="hidden md:grid md:grid-cols-8">
+          <div className="hidden md:grid md:grid-cols-10">
             {tabs.map((tab) => (
               <TabButton
                 key={tab.id}

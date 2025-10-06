@@ -1,9 +1,35 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { CollapsibleCard } from "@/components/collapsible-card";
 import mockData from "@/data/mock-data.json";
-import { Plus, User, Phone, Mail } from "lucide-react";
+import { Plus, User, Phone, Mail, Shield, Settings } from "lucide-react";
+import Link from "next/link";
+
+// Função para obter o label do privilégio
+function getPrivilegioLabel(privilegio: string) {
+  const privilegios: Record<string, string> = {
+    anciao: "Ancião",
+    servo_ministerial: "Servo Ministerial",
+    pioneiro_regular: "Pioneiro Regular",
+    publicador_batizado: "Publicador Batizado",
+    publicador_nao_batizado: "Publicador Não Batizado"
+  };
+  return privilegios[privilegio] || privilegio;
+}
+
+// Função para obter a cor do badge do privilégio
+function getPrivilegioBadgeColor(privilegio: string) {
+  const cores: Record<string, string> = {
+    anciao: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300",
+    servo_ministerial: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
+    pioneiro_regular: "bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300",
+    publicador_batizado: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+    publicador_nao_batizado: "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300"
+  };
+  return cores[privilegio] || "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300";
+}
 
 export default function NomesDataPage() {
   return (
@@ -23,6 +49,15 @@ export default function NomesDataPage() {
             title={publicador.nome}
             icon={User}
             defaultExpanded={false}
+            badge={
+              <Badge 
+                variant="secondary" 
+                className={getPrivilegioBadgeColor(publicador.privilegio)}
+              >
+                <Shield className="h-3 w-3 mr-1" />
+                {getPrivilegioLabel(publicador.privilegio)}
+              </Badge>
+            }
           >
             <div className="space-y-3">
               <div className="grid grid-cols-1 gap-3">
@@ -47,6 +82,12 @@ export default function NomesDataPage() {
                 <Button size="sm" variant="outline" className="flex-1">
                   Designações
                 </Button>
+                <Link href={`/dashboard/publicadores/${publicador.id}/permissoes`} className="flex-1">
+                  <Button size="sm" variant="outline" className="w-full">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Verificar Permissões
+                  </Button>
+                </Link>
               </div>
             </div>
           </CollapsibleCard>

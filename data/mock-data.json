@@ -95,7 +95,7 @@
         "limpeza": true,
         "discurso_publico": true,
         "carrinho": true,
-        "volante": true,
+        "volante": false,
         "palco": true,
         "som": true,
         "indicador_entrada": true,
@@ -333,9 +333,7 @@
     {
       "id": "dd0e8400-e29b-41d4-a716-446655440002",
       "grupo_id": "cc0e8400-e29b-41d4-a716-446655440002",
-      "publicador_ids": [
-        "880e8400-e29b-41d4-a716-446655440003"
-      ]
+      "publicador_ids": ["880e8400-e29b-41d4-a716-446655440003"]
     },
     {
       "id": "dd0e8400-e29b-41d4-a716-446655440003",

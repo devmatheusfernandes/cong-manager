@@ -1,11 +1,112 @@
 "use client";
 
+import { useState } from "react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { CollapsibleCard } from "@/components/collapsible-card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { podeEditar } from "@/lib/permissions";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import mockData from "@/data/mock-data.json";
-import { Plus, Calendar, User, UserCheck, Volume2, Monitor, Bell } from "lucide-react";
+import { Plus, Calendar as CalendarLucide, User, UserCheck, Volume2, Monitor, Bell } from "lucide-react";
 
 export default function MecanicasPage() {
+  // Estados para o modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [date, setDate] = useState<Date>();
+  const [novaDesignacao, setNovaDesignacao] = useState({
+    tipoReuniao: "",
+    indicadorEntrada: "",
+    indicadorAuditorio: "",
+    audioVideo: "",
+    volante: "",
+    palco: "",
+    // Campos específicos para fim de semana
+    leitorSentinela: "",
+    presidente: ""
+  });
+
+  // IDs temporários para teste (em produção viriam do contexto/auth)
+  const usuarioId = "550e8400-e29b-41d4-a716-446655440001";
+  const congregacaoId = "660e8400-e29b-41d4-a716-446655440001";
+
+  // Verificar permissões
+  const podeGerenciarMecanicas = podeEditar(usuarioId, congregacaoId, "perm_mecanicas");
+
+  // Função para submeter o formulário
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!date) {
+      toast.error("Por favor, selecione uma data");
+      return;
+    }
+
+    if (!novaDesignacao.tipoReuniao) {
+      toast.error("Por favor, selecione o tipo de reunião");
+      return;
+    }
+
+    // Validações específicas para fim de semana
+    if (novaDesignacao.tipoReuniao === "fim_semana") {
+      if (!novaDesignacao.leitorSentinela) {
+        toast.error("Por favor, selecione o leitor de sentinela");
+        return;
+      }
+      if (!novaDesignacao.presidente) {
+        toast.error("Por favor, selecione o presidente");
+        return;
+      }
+    }
+
+    // Aqui seria feita a chamada para a API
+    console.log("Nova designação:", {
+      data: format(date, "yyyy-MM-dd"),
+      ...novaDesignacao
+    });
+
+    toast.success("Designação criada com sucesso!");
+    
+    // Reset do formulário
+    setDate(undefined);
+    setNovaDesignacao({
+      tipoReuniao: "",
+      indicadorEntrada: "",
+      indicadorAuditorio: "",
+      audioVideo: "",
+      volante: "",
+      palco: "",
+      // Campos específicos para fim de semana
+      leitorSentinela: "",
+      presidente: ""
+    });
+    setIsModalOpen(false);
+  };
+
   // Ordenar mecânicas por data
   const mecanicasOrdenadas = mockData.mecanicas.sort((a, b) => 
     new Date(a.data).getTime() - new Date(b.data).getTime()
@@ -15,10 +116,243 @@ export default function MecanicasPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Mecânicas</h2>
-        <Button size="sm">
-          <Plus className="h-4 w-4 mr-2" />
-          Nova Designação
-        </Button>
+        {podeGerenciarMecanicas && (
+          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Nova Designação
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>Nova Designação de Mecânicas</DialogTitle>
+                <DialogDescription>
+                  Crie uma nova designação completa para uma reunião (meio de semana ou fim de semana).
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Tipo de Reunião */}
+                <div className="space-y-2">
+                  <Label htmlFor="tipoReuniao">Tipo de Reunião</Label>
+                  <Select
+                    value={novaDesignacao.tipoReuniao}
+                    onValueChange={(value) => setNovaDesignacao(prev => ({ ...prev, tipoReuniao: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o tipo de reunião" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="meio_semana">Meio de Semana</SelectItem>
+                      <SelectItem value="fim_semana">Fim de Semana</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Data */}
+                <div className="space-y-2">
+                  <Label>Data da Reunião</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !date && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {date ? format(date, "PPP", { locale: ptBR }) : "Selecione uma data"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={date}
+                        onSelect={setDate}
+                        initialFocus
+                        locale={ptBR}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                {/* Indicador - Entrada */}
+                <div className="space-y-2">
+                  <Label htmlFor="indicadorEntrada">Indicador - Entrada</Label>
+                  <Select
+                    value={novaDesignacao.indicadorEntrada}
+                    onValueChange={(value) => setNovaDesignacao(prev => ({ ...prev, indicadorEntrada: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o indicador da entrada" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {mockData.publicadores
+                        .filter(p => p.permissoes.indicador_entrada)
+                        .map((publicador) => (
+                          <SelectItem key={publicador.id} value={publicador.id}>
+                            {publicador.nome}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Indicador - Auditório */}
+                <div className="space-y-2">
+                  <Label htmlFor="indicadorAuditorio">Indicador - Auditório</Label>
+                  <Select
+                    value={novaDesignacao.indicadorAuditorio}
+                    onValueChange={(value) => setNovaDesignacao(prev => ({ ...prev, indicadorAuditorio: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o indicador do auditório" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {mockData.publicadores
+                        .filter(p => p.permissoes.indicador_palco)
+                        .map((publicador) => (
+                          <SelectItem key={publicador.id} value={publicador.id}>
+                            {publicador.nome}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Áudio e Vídeo */}
+                <div className="space-y-2">
+                  <Label htmlFor="audioVideo">Áudio e Vídeo</Label>
+                  <Select
+                    value={novaDesignacao.audioVideo}
+                    onValueChange={(value) => setNovaDesignacao(prev => ({ ...prev, audioVideo: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione responsável pelo áudio e vídeo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {mockData.publicadores
+                        .filter(p => p.permissoes.som)
+                        .map((publicador) => (
+                          <SelectItem key={publicador.id} value={publicador.id}>
+                            {publicador.nome}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Volante */}
+                <div className="space-y-2">
+                  <Label htmlFor="volante">Volante</Label>
+                  <Select
+                    value={novaDesignacao.volante}
+                    onValueChange={(value) => setNovaDesignacao(prev => ({ ...prev, volante: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o volante" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {mockData.publicadores
+                        .filter(p => p.permissoes.volante)
+                        .map((publicador) => (
+                          <SelectItem key={publicador.id} value={publicador.id}>
+                            {publicador.nome}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Palco */}
+                <div className="space-y-2">
+                  <Label htmlFor="palco">Palco</Label>
+                  <Select
+                    value={novaDesignacao.palco}
+                    onValueChange={(value) => setNovaDesignacao(prev => ({ ...prev, palco: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione responsável pelo palco" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {mockData.publicadores
+                        .filter(p => p.permissoes.palco)
+                        .map((publicador) => (
+                          <SelectItem key={publicador.id} value={publicador.id}>
+                            {publicador.nome}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Campos específicos para Fim de Semana */}
+                {novaDesignacao.tipoReuniao === "fim_semana" && (
+                  <>
+                    {/* Leitor de Sentinela */}
+                    <div className="space-y-2">
+                      <Label htmlFor="leitorSentinela">Leitor de Sentinela</Label>
+                      <Select
+                        value={novaDesignacao.leitorSentinela}
+                        onValueChange={(value) => setNovaDesignacao(prev => ({ ...prev, leitorSentinela: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o leitor de sentinela" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {mockData.publicadores
+                            .filter(p => p.permissoes.leitura_sentinela)
+                            .map((publicador) => (
+                              <SelectItem key={publicador.id} value={publicador.id}>
+                                {publicador.nome}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Presidente */}
+                    <div className="space-y-2">
+                      <Label htmlFor="presidente">Presidente</Label>
+                      <Select
+                        value={novaDesignacao.presidente}
+                        onValueChange={(value) => setNovaDesignacao(prev => ({ ...prev, presidente: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o presidente" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {mockData.publicadores
+                            .filter(p => p.permissoes.presidencia_fim_semana)
+                            .map((publicador) => (
+                              <SelectItem key={publicador.id} value={publicador.id}>
+                                {publicador.nome}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
+                )}
+
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsModalOpen(false)}
+                    className="flex-1"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button type="submit" className="flex-1">
+                    Criar Designação
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
       
       <div className="space-y-3">
@@ -39,7 +373,7 @@ export default function MecanicasPage() {
             <CollapsibleCard
               key={mecanica.id}
               title={dataFormatada}
-              icon={Calendar}
+              icon={CalendarLucide}
               defaultExpanded={false}
             >
               <div className="space-y-4">

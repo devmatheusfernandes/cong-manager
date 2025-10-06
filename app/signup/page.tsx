@@ -3,12 +3,23 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field";
+import {
+  Field,
+  FieldLabel,
+  FieldDescription,
+  FieldError,
+} from "@/components/ui/field";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Church, User, Mail, Lock, MapPin, Phone, ArrowLeft, Users } from "lucide-react";
+import { Church, ArrowLeft, Users } from "lucide-react";
 
 export default function SignUpPage() {
   const [activeTab, setActiveTab] = useState("congregacao");
@@ -32,7 +43,10 @@ export default function SignUpPage() {
       {/* Header */}
       <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <Link
+            href="/"
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
             <ArrowLeft className="h-5 w-5" />
             <Church className="h-8 w-8 text-indigo-600" />
             <h1 className="text-xl font-bold">Cong Manager</h1>
@@ -57,13 +71,23 @@ export default function SignUpPage() {
 
         <Card className="border-1 border-slate-200 dark:border-slate-800 rounded-2xl">
           <CardHeader>
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="w-full"
+            >
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="congregacao" className="flex items-center gap-2">
+                <TabsTrigger
+                  value="congregacao"
+                  className="flex items-center gap-2"
+                >
                   <Church className="h-4 w-4" />
                   Nova Congregação
                 </TabsTrigger>
-                <TabsTrigger value="usuario" className="flex items-center gap-2">
+                <TabsTrigger
+                  value="usuario"
+                  className="flex items-center gap-2"
+                >
                   <Users className="h-4 w-4" />
                   Juntar-se à Congregação
                 </TabsTrigger>
@@ -77,7 +101,9 @@ export default function SignUpPage() {
               <TabsContent value="congregacao" className="space-y-6">
                 <div className="text-center mb-6">
                   <Church className="h-12 w-12 text-indigo-600 mx-auto mb-3" />
-                  <CardTitle className="text-xl">Criar Nova Congregação</CardTitle>
+                  <CardTitle className="text-xl">
+                    Criar Nova Congregação
+                  </CardTitle>
                   <CardDescription>
                     Você será o responsável administrativo da congregação
                   </CardDescription>
@@ -86,10 +112,14 @@ export default function SignUpPage() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Dados da Congregação */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Dados da Congregação</h3>
-                    
+                    <h3 className="text-lg font-semibold">
+                      Dados da Congregação
+                    </h3>
+
                     <Field>
-                      <FieldLabel htmlFor="cong-nome">Nome da Congregação</FieldLabel>
+                      <FieldLabel htmlFor="cong-nome">
+                        Nome da Congregação
+                      </FieldLabel>
                       <Input
                         id="cong-nome"
                         name="congregacao.nome"
@@ -117,8 +147,10 @@ export default function SignUpPage() {
 
                   {/* Dados do Responsável */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Seus Dados (Responsável)</h3>
-                    
+                    <h3 className="text-lg font-semibold">
+                      Seus Dados (Responsável)
+                    </h3>
+
                     <Field>
                       <FieldLabel htmlFor="resp-nome">Nome Completo</FieldLabel>
                       <Input
@@ -173,7 +205,9 @@ export default function SignUpPage() {
                     </Field>
 
                     <Field>
-                      <FieldLabel htmlFor="resp-confirmar-senha">Confirmar Senha</FieldLabel>
+                      <FieldLabel htmlFor="resp-confirmar-senha">
+                        Confirmar Senha
+                      </FieldLabel>
                       <Input
                         id="resp-confirmar-senha"
                         name="responsavel.confirmarSenha"
@@ -182,7 +216,9 @@ export default function SignUpPage() {
                         required
                       />
                       {errors["responsavel.confirmarSenha"] && (
-                        <FieldError>{errors["responsavel.confirmarSenha"]}</FieldError>
+                        <FieldError>
+                          {errors["responsavel.confirmarSenha"]}
+                        </FieldError>
                       )}
                     </Field>
                   </div>
@@ -197,7 +233,9 @@ export default function SignUpPage() {
               <TabsContent value="usuario" className="space-y-6">
                 <div className="text-center mb-6">
                   <Users className="h-12 w-12 text-indigo-600 mx-auto mb-3" />
-                  <CardTitle className="text-xl">Juntar-se à Congregação</CardTitle>
+                  <CardTitle className="text-xl">
+                    Juntar-se à Congregação
+                  </CardTitle>
                   <CardDescription>
                     Entre em uma congregação já existente no sistema
                   </CardDescription>
@@ -241,7 +279,9 @@ export default function SignUpPage() {
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="user-congregacao">Código da Congregação</FieldLabel>
+                    <FieldLabel htmlFor="user-congregacao">
+                      Código da Congregação
+                    </FieldLabel>
                     <Input
                       id="user-congregacao"
                       name="usuario.codigoCongregacao"
@@ -249,10 +289,13 @@ export default function SignUpPage() {
                       required
                     />
                     <FieldDescription>
-                      Solicite o código de acesso ao responsável da sua congregação
+                      Solicite o código de acesso ao responsável da sua
+                      congregação
                     </FieldDescription>
                     {errors["usuario.codigoCongregacao"] && (
-                      <FieldError>{errors["usuario.codigoCongregacao"]}</FieldError>
+                      <FieldError>
+                        {errors["usuario.codigoCongregacao"]}
+                      </FieldError>
                     )}
                   </Field>
 
@@ -274,7 +317,9 @@ export default function SignUpPage() {
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="user-confirmar-senha">Confirmar Senha</FieldLabel>
+                    <FieldLabel htmlFor="user-confirmar-senha">
+                      Confirmar Senha
+                    </FieldLabel>
                     <Input
                       id="user-confirmar-senha"
                       name="usuario.confirmarSenha"
@@ -283,7 +328,9 @@ export default function SignUpPage() {
                       required
                     />
                     {errors["usuario.confirmarSenha"] && (
-                      <FieldError>{errors["usuario.confirmarSenha"]}</FieldError>
+                      <FieldError>
+                        {errors["usuario.confirmarSenha"]}
+                      </FieldError>
                     )}
                   </Field>
 
@@ -300,7 +347,10 @@ export default function SignUpPage() {
                 Termos de Uso
               </Link>{" "}
               e{" "}
-              <Link href="/privacidade" className="text-indigo-600 hover:underline">
+              <Link
+                href="/privacidade"
+                className="text-indigo-600 hover:underline"
+              >
                 Política de Privacidade
               </Link>
             </div>

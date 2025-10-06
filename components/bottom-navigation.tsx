@@ -130,7 +130,7 @@ export function BottomNavigation({ className }: BottomNavigationProps) {
   );
 
   // Se a tab ativa não estiver nas 4 primeiras, substitui a 4ª pela tab ativa
-  let displayTabs = [...mobileVisibleTabs];
+  const displayTabs = [...mobileVisibleTabs];
   if (!activeTabInVisible) {
     const activeTabObj = tabs.find((tab) => tab.id === activeTab);
     if (activeTabObj) {

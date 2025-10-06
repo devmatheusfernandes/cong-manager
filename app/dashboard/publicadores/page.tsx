@@ -22,7 +22,6 @@ export default function NomesDataPage() {
             key={publicador.id}
             title={publicador.nome}
             icon={User}
-            badge={(publicador as any).privilegio}
             defaultExpanded={false}
           >
             <div className="space-y-3">

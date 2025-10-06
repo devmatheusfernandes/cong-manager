@@ -174,3 +174,52 @@ CREATE POLICY "Users can view all mecanicas" ON mecanicas FOR SELECT USING (true
 CREATE POLICY "Users can insert mecanicas" ON mecanicas FOR INSERT WITH CHECK (true);
 CREATE POLICY "Users can update mecanicas" ON mecanicas FOR UPDATE USING (true);
 CREATE POLICY "Users can delete mecanicas" ON mecanicas FOR DELETE USING (true);
+
+-- Criar tabela de publicadores
+CREATE TABLE IF NOT EXISTS publicadores (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  nome TEXT NOT NULL,
+  genero TEXT NOT NULL CHECK (genero IN ('masculino', 'feminino')),
+  privilegio TEXT NOT NULL CHECK (privilegio IN ('nao_batizado', 'batizado', 'pioneiro_regular', 'servo_ministerial', 'anciao')),
+  ativo BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Criar tabela de permissões dos publicadores
+CREATE TABLE IF NOT EXISTS publicador_permissions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  publicador_id UUID NOT NULL REFERENCES publicadores(id) ON DELETE CASCADE,
+  permission TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(publicador_id, permission)
+);
+
+-- Trigger para atualizar updated_at na tabela publicadores
+CREATE TRIGGER update_publicadores_updated_at
+  BEFORE UPDATE ON publicadores
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- Criar índices para melhor performance
+CREATE INDEX IF NOT EXISTS idx_publicadores_nome ON publicadores(nome);
+CREATE INDEX IF NOT EXISTS idx_publicadores_privilegio ON publicadores(privilegio);
+CREATE INDEX IF NOT EXISTS idx_publicadores_ativo ON publicadores(ativo);
+CREATE INDEX IF NOT EXISTS idx_publicador_permissions_publicador_id ON publicador_permissions(publicador_id);
+CREATE INDEX IF NOT EXISTS idx_publicador_permissions_permission ON publicador_permissions(permission);
+
+-- Habilitar RLS nas novas tabelas
+ALTER TABLE publicadores ENABLE ROW LEVEL SECURITY;
+ALTER TABLE publicador_permissions ENABLE ROW LEVEL SECURITY;
+
+-- Criar políticas para publicadores
+CREATE POLICY "Users can view all publicadores" ON publicadores FOR SELECT USING (true);
+CREATE POLICY "Users can insert publicadores" ON publicadores FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can update publicadores" ON publicadores FOR UPDATE USING (true);
+CREATE POLICY "Users can delete publicadores" ON publicadores FOR DELETE USING (true);
+
+-- Criar políticas para publicador_permissions
+CREATE POLICY "Users can view all publicador_permissions" ON publicador_permissions FOR SELECT USING (true);
+CREATE POLICY "Users can insert publicador_permissions" ON publicador_permissions FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can update publicador_permissions" ON publicador_permissions FOR UPDATE USING (true);
+CREATE POLICY "Users can delete publicador_permissions" ON publicador_permissions FOR DELETE USING (true);

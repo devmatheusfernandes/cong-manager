@@ -17,6 +17,7 @@ import {
   Heart,
 } from "lucide-react";
 import mockData from "@/data/mock-data.json";
+import { PermissionButton } from "@/components/permission-guard";
 
 export default function CongregacaoPage() {
   // Assumindo que estamos visualizando a primeira congregação do mock data
@@ -237,10 +238,13 @@ export default function CongregacaoPage() {
               Editar Informações
             </Button>
 
-            <Button variant="outline" className="justify-start">
+            <PermissionButton 
+              permissao="perm_publicadores"
+              className="justify-start"
+            >
               <Users className="h-4 w-4 mr-2" />
               Gerenciar Publicadores
-            </Button>
+            </PermissionButton>
 
             <Button variant="outline" className="justify-start">
               <Calendar className="h-4 w-4 mr-2" />

@@ -1097,3 +1097,305 @@ export async function deleteDiscurso(id: string): Promise<{ success: boolean; er
     return { success: false, error: 'Erro interno do servidor' }
   }
 }
+
+// ===== PUBLICADORES =====
+
+export interface Publicador {
+  email: any;
+  telefone: any;
+  id: string;
+  nome: string;
+  genero: 'masculino' | 'feminino';
+  privilegio: 'nao_batizado' | 'batizado' | 'pioneiro_regular' | 'servo_ministerial' | 'anciao';
+  ativo: boolean;
+  permissions: string[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CreatePublicadorData {
+  nome: string;
+  genero: 'masculino' | 'feminino';
+  privilegio: 'nao_batizado' | 'batizado' | 'pioneiro_regular' | 'servo_ministerial' | 'anciao';
+  ativo?: boolean;
+  permissions?: string[];
+}
+
+export interface UpdatePublicadorData {
+  nome?: string;
+  genero?: 'masculino' | 'feminino';
+  privilegio?: 'nao_batizado' | 'batizado' | 'pioneiro_regular' | 'servo_ministerial' | 'anciao';
+  ativo?: boolean;
+  permissions?: string[];
+}
+
+// Listar todos os publicadores
+export async function getAllPublicadores(): Promise<Publicador[]> {
+  try {
+    const { data: publicadores, error } = await supabase
+      .from('publicadores')
+      .select('*')
+      .order('nome', { ascending: true })
+
+    if (error) {
+      console.error('Erro ao buscar publicadores:', error)
+      return []
+    }
+
+    // Buscar permissões para cada publicador
+    const publicadoresComPermissoes = await Promise.all(
+      (publicadores || []).map(async (publicador) => {
+        const { data: permissions } = await supabase
+          .from('publicador_permissions')
+          .select('permission')
+          .eq('publicador_id', publicador.id)
+
+        return {
+          ...publicador,
+          permissions: permissions?.map(p => p.permission) || []
+        }
+      })
+    )
+
+    return publicadoresComPermissoes
+  } catch (error) {
+    console.error('Erro ao buscar publicadores:', error)
+    return []
+  }
+}
+
+// Buscar publicador por ID
+export async function getPublicadorById(id: string): Promise<Publicador | null> {
+  try {
+    const { data: publicador, error } = await supabase
+      .from('publicadores')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    if (error || !publicador) {
+      return null
+    }
+
+    // Buscar permissões do publicador
+    const { data: permissions } = await supabase
+      .from('publicador_permissions')
+      .select('permission')
+      .eq('publicador_id', id)
+
+    return {
+      ...publicador,
+      permissions: permissions?.map(p => p.permission) || []
+    }
+  } catch (error) {
+    console.error('Erro ao buscar publicador:', error)
+    return null
+  }
+}
+
+// Criar novo publicador
+export async function createPublicador(publicadorData: CreatePublicadorData): Promise<{ success: boolean; error?: string; publicador?: Publicador }> {
+  try {
+    const { data: publicador, error } = await supabase
+      .from('publicadores')
+      .insert({
+        nome: publicadorData.nome,
+        genero: publicadorData.genero,
+        privilegio: publicadorData.privilegio,
+        ativo: publicadorData.ativo ?? true
+      })
+      .select()
+      .single()
+
+    if (error || !publicador) {
+      console.error('Erro ao criar publicador:', error)
+      return { success: false, error: 'Erro ao criar publicador' }
+    }
+
+    // Adicionar permissões se fornecidas
+    if (publicadorData.permissions && publicadorData.permissions.length > 0) {
+      const permissionsToInsert = publicadorData.permissions.map(permission => ({
+        publicador_id: publicador.id,
+        permission
+      }))
+
+      const { error: permError } = await supabase
+        .from('publicador_permissions')
+        .insert(permissionsToInsert)
+
+      if (permError) {
+        console.error('Erro ao adicionar permissões:', permError)
+        // Não falha a criação do publicador por causa das permissões
+      }
+    }
+
+    const publicadorCompleto = await getPublicadorById(publicador.id)
+    return { success: true, publicador: publicadorCompleto || undefined }
+  } catch (error) {
+    console.error('Erro ao criar publicador:', error)
+    return { success: false, error: 'Erro interno do servidor' }
+  }
+}
+
+// Atualizar publicador
+export async function updatePublicador(id: string, publicadorData: UpdatePublicadorData): Promise<{ success: boolean; error?: string; publicador?: Publicador }> {
+  try {
+    // Verificar se publicador existe
+    const publicadorExistente = await getPublicadorById(id)
+    if (!publicadorExistente) {
+      return { success: false, error: 'Publicador não encontrado' }
+    }
+
+    // Atualizar dados básicos do publicador
+    const updateData: any = {}
+    if (publicadorData.nome !== undefined) updateData.nome = publicadorData.nome
+    if (publicadorData.genero !== undefined) updateData.genero = publicadorData.genero
+    if (publicadorData.privilegio !== undefined) updateData.privilegio = publicadorData.privilegio
+    if (publicadorData.ativo !== undefined) updateData.ativo = publicadorData.ativo
+
+    if (Object.keys(updateData).length > 0) {
+      const { error } = await supabase
+        .from('publicadores')
+        .update(updateData)
+        .eq('id', id)
+
+      if (error) {
+        console.error('Erro ao atualizar publicador:', error)
+        return { success: false, error: 'Erro ao atualizar publicador' }
+      }
+    }
+
+    // Atualizar permissões se fornecidas
+    if (publicadorData.permissions !== undefined) {
+      // Remover todas as permissões existentes
+      await supabase
+        .from('publicador_permissions')
+        .delete()
+        .eq('publicador_id', id)
+
+      // Adicionar novas permissões
+      if (publicadorData.permissions.length > 0) {
+        const permissionsToInsert = publicadorData.permissions.map(permission => ({
+          publicador_id: id,
+          permission
+        }))
+
+        const { error: permError } = await supabase
+          .from('publicador_permissions')
+          .insert(permissionsToInsert)
+
+        if (permError) {
+          console.error('Erro ao atualizar permissões:', permError)
+          return { success: false, error: 'Erro ao atualizar permissões' }
+        }
+      }
+    }
+
+    const publicadorAtualizado = await getPublicadorById(id)
+    return { success: true, publicador: publicadorAtualizado || undefined }
+  } catch (error) {
+    console.error('Erro ao atualizar publicador:', error)
+    return { success: false, error: 'Erro interno do servidor' }
+  }
+}
+
+// Deletar publicador
+export async function deletePublicador(id: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Verificar se publicador existe
+    const publicador = await getPublicadorById(id)
+    if (!publicador) {
+      return { success: false, error: 'Publicador não encontrado' }
+    }
+
+    // Verificar se publicador está sendo usado em mecânicas
+    const { data: mecanicasUsando, error: checkError } = await supabase
+      .from('mecanicas')
+      .select('id')
+      .or(`indicador_entrada_id.eq.${id},indicador_auditorio_id.eq.${id},audio_video_id.eq.${id},volante_id.eq.${id},palco_id.eq.${id},leitor_sentinela_id.eq.${id},presidente_id.eq.${id}`)
+
+    if (checkError) {
+      console.error('Erro ao verificar uso do publicador:', checkError)
+      return { success: false, error: 'Erro ao verificar dependências' }
+    }
+
+    if (mecanicasUsando && mecanicasUsando.length > 0) {
+      return { success: false, error: 'Não é possível excluir publicador que está sendo usado em designações' }
+    }
+
+    // Deletar publicador (as permissões serão deletadas automaticamente por CASCADE)
+    const { error } = await supabase
+      .from('publicadores')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      console.error('Erro ao deletar publicador:', error)
+      return { success: false, error: 'Erro ao deletar publicador' }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error('Erro ao deletar publicador:', error)
+    return { success: false, error: 'Erro interno do servidor' }
+  }
+}
+
+// Atualizar apenas as permissões de um publicador
+export async function updatePublicadorPermissions(publicadorId: string, permissions: string[]): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Verificar se publicador existe
+    const publicadorExistente = await getPublicadorById(publicadorId)
+    if (!publicadorExistente) {
+      return { success: false, error: 'Publicador não encontrado' }
+    }
+
+    // Remover todas as permissões existentes
+    await supabase
+      .from('publicador_permissions')
+      .delete()
+      .eq('publicador_id', publicadorId)
+
+    // Adicionar novas permissões
+    if (permissions.length > 0) {
+      const permissionsToInsert = permissions.map(permission => ({
+        publicador_id: publicadorId,
+        permission
+      }))
+
+      const { error: permError } = await supabase
+        .from('publicador_permissions')
+        .insert(permissionsToInsert)
+
+      if (permError) {
+        console.error('Erro ao atualizar permissões:', permError)
+        return { success: false, error: 'Erro ao atualizar permissões' }
+      }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error('Erro ao atualizar permissões do publicador:', error)
+    return { success: false, error: 'Erro interno do servidor' }
+  }
+}
+
+// Buscar permissões de um publicador específico
+export async function getPublicadorPermissions(publicadorId: string): Promise<string[]> {
+  try {
+    const { data: permissions, error } = await supabase
+      .from('publicador_permissions')
+      .select('permission')
+      .eq('publicador_id', publicadorId)
+
+    if (error) {
+      console.error('Erro ao buscar permissões:', error)
+      return []
+    }
+
+    return permissions?.map(p => p.permission) || []
+  } catch (error) {
+    console.error('Erro ao buscar permissões do publicador:', error)
+    return []
+  }
+}

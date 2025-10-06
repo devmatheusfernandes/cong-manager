@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import mockData from "@/data/mock-data.json";
 import {
   ArrowLeft,
   Shield,
@@ -22,8 +21,29 @@ import {
   Heart,
   FileText,
   Users,
+  Trash2,
+  Settings,
+  Megaphone,
+  GraduationCap,
+  Sparkles,
+  Headphones,
+  DoorOpen,
+  Crown,
+  Book,
+  Gem,
+  UserPlus,
+  MessageSquare,
+  Target,
+  School,
+  LifeBuoy
 } from "lucide-react";
 import { toast } from "sonner";
+import { PermissionGuard } from "@/components/permission-guard";
+import { 
+  getPublicadorById, 
+  updatePublicadorPermissions,
+  type Publicador 
+} from "@/lib/auth";
 
 // Função para obter o label do privilégio
 function getPrivilegioLabel(privilegio: string) {
@@ -59,67 +79,30 @@ function getPrivilegioBadgeColor(privilegio: string) {
 
 // Configuração das permissões com ícones e labels
 const permissoesConfig = {
-  limpeza: { label: "Limpeza", icon: Shield, categoria: "Serviços Gerais" },
-  discurso_publico: {
-    label: "Discurso Público",
-    icon: Mic,
-    categoria: "Ensino",
-  },
-  carrinho: { label: "Carrinho", icon: Car, categoria: "Pregação" },
-  volante: { label: "Volante", icon: Car, categoria: "Pregação" },
-  palco: { label: "Palco", icon: Monitor, categoria: "Mecânicas" },
-  som: { label: "Som", icon: Volume2, categoria: "Mecânicas" },
-  indicador_entrada: {
-    label: "Indicador Entrada",
-    icon: UserCheck,
-    categoria: "Mecânicas",
-  },
-  indicador_palco: {
-    label: "Indicador Palco",
-    icon: UserCheck,
-    categoria: "Mecânicas",
-  },
-  presidencia_fim_semana: {
-    label: "Presidência Fim de Semana",
-    icon: Calendar,
-    categoria: "Presidência",
-  },
-  presidencia_meio_semana: {
-    label: "Presidência Meio de Semana",
-    icon: Calendar,
-    categoria: "Presidência",
-  },
-  participar_escola: {
-    label: "Participar da Escola",
-    icon: BookOpen,
-    categoria: "Ensino",
-  },
-  joias_espirituais: {
-    label: "Joias Espirituais",
-    icon: Heart,
-    categoria: "Ensino",
-  },
-  leitura_livro: {
-    label: "Leitura do Livro",
-    icon: FileText,
-    categoria: "Ensino",
-  },
-  leitura_sentinela: {
-    label: "Leitura da Sentinela",
-    icon: FileText,
-    categoria: "Ensino",
-  },
-  dirigir_estudo_livro: {
-    label: "Dirigir Estudo do Livro",
-    icon: Users,
-    categoria: "Ensino",
-  },
-  nossa_vida_crista: {
-    label: "Nossa Vida Cristã",
-    icon: BookOpen,
-    categoria: "Ensino",
-  },
-  fazer_oracao: { label: "Fazer Oração", icon: Heart, categoria: "Ensino" },
+  // Serviços Gerais
+  perm_limpeza: { label: "Limpeza", icon: Trash2, categoria: "Serviços Gerais" },
+  perm_carrinho: { label: "Carrinho", icon: Car, categoria: "Pregação" },
+  
+  // Mecânicas
+  perm_presidencia: { label: "Presidência", icon: Crown, categoria: "Mecânicas" },
+  perm_leitor: { label: "Leitor", icon: Book, categoria: "Mecânicas" },
+  perm_volante: { label: "Volante", icon: Car, categoria: "Mecânicas" },
+  perm_audio_video: { label: "Áudio e Vídeo", icon: Headphones, categoria: "Mecânicas" },
+  perm_palco: { label: "Palco", icon: Sparkles, categoria: "Mecânicas" },
+  perm_indicador_entrada: { label: "Indicador - Entrada", icon: DoorOpen, categoria: "Mecânicas" },
+  perm_indicador_palco: { label: "Indicador - Palco", icon: UserCheck, categoria: "Mecânicas" },
+  
+  // NVC - Nossa Vida Cristã e Ministério
+  perm_oracao_inicial_final: { label: "Oração Inicial ou Final", icon: Heart, categoria: "NVC" },
+  perm_presidencia_nvc: { label: "Presidência NVC", icon: Crown, categoria: "NVC" },
+  perm_discurso_tesouros: { label: "Discurso Tesouros", icon: Gem, categoria: "NVC" },
+  perm_joias_espirituais: { label: "Joias Espirituais", icon: Sparkles, categoria: "NVC" },
+  perm_leitura_biblia: { label: "Leitura da Bíblia", icon: Sparkles, categoria: "NVC" },
+  perm_leitura_livro: { label: "Leitura do Livro", icon: Book, categoria: "NVC" },
+  perm_dirigir_estudo_biblico: { label: "Dirigir Estudo Bíblico", icon: Users, categoria: "NVC" },
+  perm_faca_seu_melhor_ministerio: { label: "Faça seu Melhor no Ministério", icon: Target, categoria: "NVC" },
+  perm_discurso_estudante: { label: "Discurso de Estudante", icon: School, categoria: "NVC" },
+  perm_nossa_vida_crista: { label: "Nossa Vida Cristã", icon: LifeBuoy, categoria: "NVC" },
 };
 
 export default function PermissoesPage() {
@@ -127,23 +110,72 @@ export default function PermissoesPage() {
   const router = useRouter();
   const publicadorId = params.id as string;
 
-  // Encontrar o publicador
-  const publicador = mockData.publicadores.find((p) => p.id === publicadorId);
+  const [publicador, setPublicador] = useState<Publicador | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [permissoes, setPermissoes] = useState<Record<string, boolean>>({});
+  const [saving, setSaving] = useState(false);
 
-  // Inicializar estado sempre, mesmo se publicador não existir
-  const [permissoes, setPermissoes] = useState(publicador?.permissoes || {});
+  useEffect(() => {
+    const loadPublicador = async () => {
+      try {
+        const data = await getPublicadorById(publicadorId);
+        if (data) {
+          setPublicador(data);
+          // Converter array de permissões para objeto
+          const permissoesObj: Record<string, boolean> = {};
+          data.permissions?.forEach(permission => {
+            permissoesObj[permission] = true;
+          });
+          setPermissoes(permissoesObj);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar publicador:', error);
+        toast.error('Erro ao carregar dados do publicador');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPublicador();
+  }, [publicadorId]);
+
+  if (loading) {
+    return (
+      <div className="p-4">
+        <div className="flex items-center gap-2 mb-6">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.back()}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar
+          </Button>
+        </div>
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!publicador) {
     return (
       <div className="p-4">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2">
-            Publicador não encontrado
-          </h2>
-          <Button onClick={() => router.back()}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+        <div className="flex items-center gap-2 mb-6">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.back()}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
             Voltar
           </Button>
+        </div>
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">Publicador não encontrado.</p>
         </div>
       </div>
     );
@@ -156,9 +188,24 @@ export default function PermissoesPage() {
     }));
   };
 
-  const handleSalvar = () => {
-    // Aqui você implementaria a lógica para salvar as permissões
-    toast.success("Permissões atualizadas com sucesso!");
+  const handleSalvar = async () => {
+    if (!publicador) return;
+    
+    setSaving(true);
+    try {
+      // Converter objeto de permissões para array
+      const permissoesArray = Object.entries(permissoes)
+        .filter(([_, value]) => value)
+        .map(([key, _]) => key);
+      
+      await updatePublicadorPermissions(publicador.id, permissoesArray);
+      toast.success("Permissões atualizadas com sucesso!");
+    } catch (error) {
+      console.error('Erro ao salvar permissões:', error);
+      toast.error('Erro ao salvar permissões');
+    } finally {
+      setSaving(false);
+    }
   };
 
   // Agrupar permissões por categoria
@@ -177,7 +224,8 @@ export default function PermissoesPage() {
   );
 
   return (
-    <div className="p-4 space-y-6">
+    <PermissionGuard permissao="perm_publicadores">
+      <div className="p-4 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="outline" size="sm" onClick={() => router.back()}>
@@ -294,17 +342,23 @@ export default function PermissoesPage() {
 
       {/* Botões de Ação */}
       <div className="flex gap-4 pt-4">
-        <Button onClick={handleSalvar} className="flex-1">
-          Salvar Alterações
+        <Button 
+          onClick={handleSalvar} 
+          className="flex-1"
+          disabled={saving}
+        >
+          {saving ? "Salvando..." : "Salvar Alterações"}
         </Button>
         <Button
           variant="outline"
           onClick={() => router.back()}
           className="flex-1"
+          disabled={saving}
         >
           Cancelar
         </Button>
       </div>
-    </div>
+      </div>
+    </PermissionGuard>
   );
 }

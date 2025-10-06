@@ -1,71 +1,79 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { 
-  Shield, 
-  ShoppingCart, 
-  MessageSquare, 
-  Users, 
-  Mic, 
-  Sparkles, 
-  Trash2,
+import {
+  Shield,
+  ShoppingCart,
+  MessageSquare,
+  Users,
+  Mic,
+  Sparkles,
   Settings,
   Crown,
-  User
+  User,
 } from "lucide-react";
 import mockData from "@/data/mock-data.json";
-import { 
-  PERMISSOES_LABELS, 
-  PERMISSOES_DESCRICOES, 
-  type PermissaoSistema 
+import {
+  PERMISSOES_LABELS,
+  PERMISSOES_DESCRICOES,
+  type PermissaoSistema,
 } from "@/lib/permissions";
 
 // Ícones para cada permissão
-const PERMISSOES_ICONS: Record<PermissaoSistema, React.ComponentType<any>> = {
+const PERMISSOES_ICONS: Record<PermissaoSistema, React.ComponentType<{ className?: string }>> = {
   perm_carrinho: ShoppingCart,
   perm_pregacao: MessageSquare,
   perm_nvc: Users,
   perm_mecanicas: Settings,
   perm_discurso: Mic,
-  perm_limpeza: Sparkles
+  perm_limpeza: Sparkles,
 };
 
 export default function AdminPermissoesPage() {
   const [permissoes, setPermissoes] = useState(mockData.permissoes_sistema);
-  
+
   // Obter usuários da congregação
-  const usuarios = mockData.usuarios.filter(usuario => 
-    mockData.usuarios_congregacoes.some(uc => 
-      uc.usuario_id === usuario.id && 
-      uc.congregacao_id === "660e8400-e29b-41d4-a716-446655440001"
+  const usuarios = mockData.usuarios.filter((usuario) =>
+    mockData.usuarios_congregacoes.some(
+      (uc) =>
+        uc.usuario_id === usuario.id &&
+        uc.congregacao_id === "660e8400-e29b-41d4-a716-446655440001"
     )
   );
 
   // Verificar se usuário é responsável
   const isResponsavel = (usuarioId: string) => {
-    return mockData.usuarios_congregacoes.find(
-      uc => uc.usuario_id === usuarioId && 
-      uc.congregacao_id === "660e8400-e29b-41d4-a716-446655440001"
-    )?.eh_responsavel === true;
+    return (
+      mockData.usuarios_congregacoes.find(
+        (uc) =>
+          uc.usuario_id === usuarioId &&
+          uc.congregacao_id === "660e8400-e29b-41d4-a716-446655440001"
+      )?.eh_responsavel === true
+    );
   };
 
   // Atualizar permissão
   const atualizarPermissao = (
-    usuarioId: string, 
-    permissao: PermissaoSistema, 
+    usuarioId: string,
+    permissao: PermissaoSistema,
     valor: boolean
   ) => {
-    setPermissoes(prev => prev.map(p => 
-      p.usuario_id === usuarioId 
-        ? { ...p, [permissao]: valor }
-        : p
-    ));
+    setPermissoes((prev) =>
+      prev.map((p) =>
+        p.usuario_id === usuarioId ? { ...p, [permissao]: valor } : p
+      )
+    );
   };
 
   return (
@@ -81,8 +89,10 @@ export default function AdminPermissoesPage() {
       </div>
 
       <div className="grid gap-6">
-        {usuarios.map(usuario => {
-          const permissaoUsuario = permissoes.find(p => p.usuario_id === usuario.id);
+        {usuarios.map((usuario) => {
+          const permissaoUsuario = permissoes.find(
+            (p) => p.usuario_id === usuario.id
+          );
           const ehResponsavel = isResponsavel(usuario.id);
 
           return (
@@ -97,12 +107,17 @@ export default function AdminPermissoesPage() {
                         <User className="h-5 w-5 text-slate-500" />
                       )}
                       <div>
-                        <CardTitle className="text-lg">{usuario.nome}</CardTitle>
+                        <CardTitle className="text-lg">
+                          {usuario.nome}
+                        </CardTitle>
                         <CardDescription>{usuario.email}</CardDescription>
                       </div>
                     </div>
                     {ehResponsavel && (
-                      <Badge variant="secondary" className="bg-amber-100 text-amber-800">
+                      <Badge
+                        variant="secondary"
+                        className="bg-amber-100 text-amber-800"
+                      >
                         Responsável
                       </Badge>
                     )}
@@ -114,7 +129,8 @@ export default function AdminPermissoesPage() {
                 {ehResponsavel ? (
                   <div className="text-center py-4">
                     <p className="text-sm text-muted-foreground">
-                      Como responsável da congregação, este usuário tem acesso total a todas as seções.
+                      Como responsável da congregação, este usuário tem acesso
+                      total a todas as seções.
                     </p>
                   </div>
                 ) : (
@@ -122,17 +138,22 @@ export default function AdminPermissoesPage() {
                     {Object.entries(PERMISSOES_LABELS).map(([key, label]) => {
                       const permissaoKey = key as PermissaoSistema;
                       const Icon = PERMISSOES_ICONS[permissaoKey];
-                      const temPermissao = permissaoUsuario?.[permissaoKey] || false;
+                      const temPermissao =
+                        permissaoUsuario?.[permissaoKey] || false;
 
                       return (
-                        <div 
+                        <div
                           key={key}
                           className="flex items-center justify-between p-3 rounded-lg border bg-card"
                         >
                           <div className="flex items-center gap-3">
-                            <Icon className={`h-5 w-5 ${
-                              temPermissao ? 'text-teal-600' : 'text-slate-400'
-                            }`} />
+                            <Icon
+                              className={`h-5 w-5 ${
+                                temPermissao
+                                  ? "text-teal-600"
+                                  : "text-slate-400"
+                              }`}
+                            />
                             <div>
                               <Label className="text-sm font-medium">
                                 {label}
@@ -144,8 +165,12 @@ export default function AdminPermissoesPage() {
                           </div>
                           <Switch
                             checked={temPermissao}
-                            onCheckedChange={(checked) => 
-                              atualizarPermissao(usuario.id, permissaoKey, checked)
+                            onCheckedChange={(checked) =>
+                              atualizarPermissao(
+                                usuario.id,
+                                permissaoKey,
+                                checked
+                              )
                             }
                           />
                         </div>
@@ -167,7 +192,7 @@ export default function AdminPermissoesPage() {
               {Object.entries(PERMISSOES_LABELS).map(([key, label]) => {
                 const permissaoKey = key as PermissaoSistema;
                 const Icon = PERMISSOES_ICONS[permissaoKey];
-                
+
                 return (
                   <div key={key} className="flex items-center gap-2">
                     <Icon className="h-4 w-4 text-slate-600" />

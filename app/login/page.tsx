@@ -15,7 +15,6 @@ import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Church, Mail, Lock, ArrowLeft, Eye, EyeOff } from "lucide-react";
-import Error from "next/error";
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);

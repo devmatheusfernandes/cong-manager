@@ -1,11 +1,101 @@
 "use client";
 
+import { useState } from "react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Switch } from "@/components/ui/switch";
 import { CollapsibleCard } from "@/components/collapsible-card";
 import mockData from "@/data/mock-data.json";
-import { Plus, Calendar, User, CheckCircle, AlertCircle, Building2, Music } from "lucide-react";
+import { Plus, Calendar, User, CheckCircle, AlertCircle, Building2, Music, CalendarIcon } from "lucide-react";
+import { podeEditar } from "@/lib/permissions";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export default function DiscursosPage() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isOradorModalOpen, setIsOradorModalOpen] = useState(false);
+  const [date, setDate] = useState<Date>();
+  const [novoDiscurso, setNovoDiscurso] = useState({
+    tema: "",
+    orador_id: "",
+    congregacao_id: "660e8400-e29b-41d4-a716-446655440001", // Congregação padrão
+    cantico: "",
+    hospitalidade_id: "",
+    tem_imagem: false
+  });
+  const [novoOrador, setNovoOrador] = useState({
+    nome: "",
+    congregacao_origem: ""
+  });
+
+  // IDs padrão para teste - em produção viriam do contexto de autenticação
+  const usuarioId = "550e8400-e29b-41d4-a716-446655440001";
+  const congregacaoId = "660e8400-e29b-41d4-a716-446655440001";
+  
+  const podeGerenciarDiscursos = podeEditar(usuarioId, congregacaoId, 'perm_discurso');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!novoDiscurso.tema || !date || !novoDiscurso.orador_id) {
+      toast.error("Tema, data e orador são obrigatórios");
+      return;
+    }
+
+    // Aqui seria feita a chamada para a API para criar o discurso
+    const discursoParaCriar = {
+      ...novoDiscurso,
+      data: format(date, "yyyy-MM-dd")
+    };
+    
+    console.log("Criando discurso:", discursoParaCriar);
+    toast.success("Discurso criado com sucesso!");
+    
+    // Reset do formulário
+    setNovoDiscurso({
+      tema: "",
+      orador_id: "",
+      congregacao_id: "660e8400-e29b-41d4-a716-446655440001",
+      cantico: "",
+      hospitalidade_id: "",
+      tem_imagem: false
+    });
+    setDate(undefined);
+    setIsModalOpen(false);
+  };
+
+  const handleOradorSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!novoOrador.nome || !novoOrador.congregacao_origem) {
+      toast.error("Nome e congregação são obrigatórios");
+      return;
+    }
+
+    // Aqui seria feita a chamada para a API para criar o orador
+    const oradorParaCriar = {
+      id: `990e8400-e29b-41d4-a716-${Date.now()}`, // ID temporário
+      ...novoOrador
+    };
+    
+    console.log("Criando orador:", oradorParaCriar);
+    toast.success("Orador criado com sucesso!");
+    
+    // Reset do formulário
+    setNovoOrador({
+      nome: "",
+      congregacao_origem: ""
+    });
+    setIsOradorModalOpen(false);
+  };
+
   // Ordenar discursos por data
   const discursosOrdenados = mockData.discursos.sort((a, b) => 
     new Date(a.data).getTime() - new Date(b.data).getTime()
@@ -15,11 +105,175 @@ export default function DiscursosPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Discursos</h2>
-        <Button size="sm">
-          <Plus className="h-4 w-4 mr-2" />
-          Novo Discurso
-        </Button>
+        {podeGerenciarDiscursos && (
+          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Discurso
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]">
+              <DialogHeader>
+                <DialogTitle>Criar Novo Discurso</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="tema">Tema *</Label>
+                  <Input
+                    id="tema"
+                    value={novoDiscurso.tema}
+                    onChange={(e) => setNovoDiscurso({...novoDiscurso, tema: e.target.value})}
+                    placeholder="Digite o tema do discurso"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Data *</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        data-empty={!date}
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !date && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {date ? format(date, "PPP", { locale: ptBR }) : <span>Selecione uma data</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <CalendarComponent
+                        mode="single"
+                        selected={date}
+                        onSelect={setDate}
+                        locale={ptBR}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="orador">Orador *</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsOradorModalOpen(true)}
+                      className="text-xs"
+                    >
+                      <Plus className="w-3 h-3 mr-1" />
+                      Novo Orador
+                    </Button>
+                  </div>
+                  <Select value={novoDiscurso.orador_id} onValueChange={(value) => setNovoDiscurso({...novoDiscurso, orador_id: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o orador" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {mockData.oradores.map((orador) => (
+                        <SelectItem key={orador.id} value={orador.id}>
+                          {orador.nome} - {orador.congregacao_origem}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="cantico">Cântico</Label>
+                  <Input
+                    id="cantico"
+                    value={novoDiscurso.cantico}
+                    onChange={(e) => setNovoDiscurso({...novoDiscurso, cantico: e.target.value})}
+                    placeholder="Número do cântico"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="hospitalidade">Hospitalidade</Label>
+                  <Select value={novoDiscurso.hospitalidade_id} onValueChange={(value) => setNovoDiscurso({...novoDiscurso, hospitalidade_id: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione quem oferecerá hospitalidade (opcional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {mockData.publicadores.map((publicador) => (
+                        <SelectItem key={publicador.id} value={publicador.id}>
+                          {publicador.nome}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="tem_imagem"
+                    checked={novoDiscurso.tem_imagem}
+                    onCheckedChange={(checked) => setNovoDiscurso({...novoDiscurso, tem_imagem: checked})}
+                  />
+                  <Label htmlFor="tem_imagem">Tem imagem</Label>
+                </div>
+
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700">
+                    Criar Discurso
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
+
+      {/* Modal para criar novo orador */}
+      <Dialog open={isOradorModalOpen} onOpenChange={setIsOradorModalOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Criar Novo Orador</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleOradorSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="nome-orador">Nome Completo *</Label>
+              <Input
+                id="nome-orador"
+                value={novoOrador.nome}
+                onChange={(e) => setNovoOrador({...novoOrador, nome: e.target.value})}
+                placeholder="Digite o nome completo do orador"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="congregacao-origem">Congregação de Origem *</Label>
+              <Input
+                id="congregacao-origem"
+                value={novoOrador.congregacao_origem}
+                onChange={(e) => setNovoOrador({...novoOrador, congregacao_origem: e.target.value})}
+                placeholder="Digite a congregação do orador"
+                required
+              />
+            </div>
+
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button type="button" variant="outline" onClick={() => setIsOradorModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700">
+                Criar Orador
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
       
       <div className="space-y-3">
         {discursosOrdenados.map((discurso) => {

@@ -5,48 +5,40 @@ import { User, authenticateUser } from '@/lib/auth';
 
 interface AuthContextType {
   user: User | null;
-  login: (password: string) => boolean;
+  login: (password: string) => Promise<boolean>;
   logout: () => void;
-  isLoading: boolean;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    // Verificar se há usuário salvo no localStorage
-    const savedUser = localStorage.getItem('cong-manager-user');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        console.error('Erro ao carregar usuário salvo:', error);
-        localStorage.removeItem('cong-manager-user');
+  const login = async (password: string): Promise<boolean> => {
+    setLoading(true);
+    try {
+      const authenticatedUser = await authenticateUser(password);
+      if (authenticatedUser) {
+        setUser(authenticatedUser);
+        return true;
       }
+      return false;
+    } catch (error) {
+      console.error('Erro no login:', error);
+      return false;
+    } finally {
+      setLoading(false);
     }
-    setIsLoading(false);
-  }, []);
-
-  const login = (password: string): boolean => {
-    const authenticatedUser = authenticateUser(password);
-    if (authenticatedUser) {
-      setUser(authenticatedUser);
-      localStorage.setItem('cong-manager-user', JSON.stringify(authenticatedUser));
-      return true;
-    }
-    return false;
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('cong-manager-user');
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

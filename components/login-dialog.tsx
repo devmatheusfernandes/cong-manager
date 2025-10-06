@@ -17,17 +17,17 @@ import { LogIn, LogOut, User } from "lucide-react";
 import { toast } from "sonner";
 
 export function LoginDialog() {
-  const { user, login, logout } = useAuth();
+  const { user, login, logout, loading } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setError('');
 
     try {
-      const success = login(password);
+      const success = await login(password);
       if (success) {
         toast.success("Login realizado com sucesso!");
         setIsOpen(false);
@@ -37,8 +37,6 @@ export function LoginDialog() {
       }
     } catch (error) {
       toast.error("Erro ao fazer login!");
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -102,8 +100,8 @@ export function LoginDialog() {
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Entrando..." : "Entrar"}
+            <Button type="submit" disabled={loading}>
+              {loading ? "Entrando..." : "Entrar"}
             </Button>
           </div>
         </form>

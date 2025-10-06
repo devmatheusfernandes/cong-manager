@@ -5,11 +5,29 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PermissionWrapper } from "@/components/permission-wrapper";
 import { useAuth } from "@/components/auth-provider";
-import { FIXED_USERS } from "@/lib/auth";
-import { Shield, User, Settings, Lock } from "lucide-react";
+import { getAllUsers, User } from "@/lib/auth";
+import { Shield, User as UserIcon, Settings, Lock } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function AdminPage() {
   const { user } = useAuth();
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const users = await getAllUsers();
+        setAllUsers(users);
+      } catch (error) {
+        console.error('Erro ao carregar usuários:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   return (
     <PermissionWrapper 
@@ -38,7 +56,7 @@ export default function AdminPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
+                <UserIcon className="h-5 w-5" />
                 Usuário Atual
               </CardTitle>
               <CardDescription>
@@ -85,43 +103,47 @@ export default function AdminPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {FIXED_USERS.map((fixedUser) => (
-                  <div 
-                    key={fixedUser.id} 
-                    className={`p-4 rounded-lg border ${
-                      user?.id === fixedUser.id 
-                        ? 'border-primary bg-primary/5' 
-                        : 'border-border'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{fixedUser.username}</span>
-                        {user?.id === fixedUser.id && (
-                          <Badge variant="default" className="text-xs">Você</Badge>
-                        )}
-                      </div>
-                      <Badge 
-                        variant={fixedUser.role === 'admin' ? 'default' : 'secondary'}
-                      >
-                        {fixedUser.role}
-                      </Badge>
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                      {fixedUser.permissions.map((permission) => (
+              {loading ? (
+                <p className="text-muted-foreground">Carregando usuários...</p>
+              ) : (
+                <div className="space-y-4">
+                  {allUsers.map((systemUser) => (
+                    <div 
+                      key={systemUser.id} 
+                      className={`p-4 rounded-lg border ${
+                        user?.id === systemUser.id 
+                          ? 'border-primary bg-primary/5' 
+                          : 'border-border'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{systemUser.username}</span>
+                          {user?.id === systemUser.id && (
+                            <Badge variant="default" className="text-xs">Você</Badge>
+                          )}
+                        </div>
                         <Badge 
-                          key={permission} 
-                          variant="outline" 
-                          className="text-xs"
+                          variant={systemUser.role === 'admin' ? 'default' : 'secondary'}
                         >
-                          {permission}
+                          {systemUser.role}
                         </Badge>
-                      ))}
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {systemUser.permissions.map((permission) => (
+                          <Badge 
+                            key={permission} 
+                            variant="outline" 
+                            className="text-xs"
+                          >
+                            {permission}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 

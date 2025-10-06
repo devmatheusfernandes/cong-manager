@@ -35,58 +35,7 @@ export type Permission =
   | 'view_publicadores'
   | 'edit_publicadores';
 
-// Usuários fixos do sistema
-export const FIXED_USERS: User[] = [
-  {
-    id: 'admin',
-    username: 'Administrador',
-    password: 'admin',
-    role: 'admin',
-    permissions: ['view_all', 'edit_all']
-  },
-  {
-    id: 'carrinho',
-    username: 'Carrinho',
-    password: 'carrinho',
-    role: 'carrinho',
-    permissions: ['view_carrinho', 'edit_carrinho', 'view_grupos', 'view_pregacao']
-  },
-  {
-    id: 'nvc',
-    username: 'Vida e Ministério',
-    password: 'nvc',
-    role: 'nvc',
-    permissions: ['view_nvc', 'edit_nvc', 'view_publicadores']
-  },
-  {
-    id: 'pregacao',
-    username: 'Pregação',
-    password: 'pregacao',
-    role: 'pregacao',
-    permissions: ['view_pregacao', 'edit_pregacao', 'view_grupos', 'edit_grupos', 'view_publicadores']
-  },
-  {
-    id: 'mecanicas',
-    username: 'Mecânicas',
-    password: 'mecanicas',
-    role: 'mecanicas',
-    permissions: ['view_mecanicas', 'edit_mecanicas', 'view_publicadores']
-  },
-  {
-    id: 'oradores',
-    username: 'Oradores',
-    password: 'oradores',
-    role: 'oradores',
-    permissions: ['view_discursos', 'edit_discursos', 'view_publicadores']
-  },
-  {
-    id: 'limpeza',
-    username: 'Limpeza',
-    password: 'limpeza',
-    role: 'limpeza',
-    permissions: ['view_limpeza', 'edit_limpeza', 'view_grupos', 'view_publicadores']
-  }
-];
+import { supabase } from './supabase'
 
 // Tabs disponíveis para usuários não logados
 export const PUBLIC_TABS = [
@@ -99,10 +48,126 @@ export const PUBLIC_TABS = [
   'pregacao'
 ];
 
-// Função para autenticar usuário usando apenas senha
-export function authenticateUser(password: string): User | null {
-  const user = FIXED_USERS.find(u => u.password === password);
-  return user || null;
+// Função para buscar usuário no Supabase
+export async function getUserFromDatabase(userId: string): Promise<User | null> {
+  try {
+    // Buscar usuário
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single()
+
+    if (userError || !userData) {
+      return null
+    }
+
+    // Buscar permissões do usuário
+    const { data: permissionsData, error: permissionsError } = await supabase
+      .from('user_permissions')
+      .select('permission')
+      .eq('user_id', userId)
+
+    if (permissionsError) {
+      return null
+    }
+
+    const permissions = permissionsData?.map(p => p.permission as Permission) || []
+
+    return {
+      id: userData.id,
+      username: userData.username,
+      password: userData.password,
+      role: userData.role as UserRole,
+      permissions
+    }
+  } catch (error) {
+    console.error('Erro ao buscar usuário:', error)
+    return null
+  }
+}
+
+// Função para autenticar usuário
+export async function authenticateUser(password: string): Promise<User | null> {
+  try {
+    // Buscar usuário pela senha
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('password', password)
+      .single()
+
+    if (userError || !userData) {
+      return null
+    }
+
+    // Buscar permissões do usuário
+    const { data: permissionsData, error: permissionsError } = await supabase
+      .from('user_permissions')
+      .select('permission')
+      .eq('user_id', userData.id)
+
+    if (permissionsError) {
+      return null
+    }
+
+    const permissions = permissionsData?.map(p => p.permission as Permission) || []
+
+    return {
+      id: userData.id,
+      username: userData.username,
+      password: userData.password,
+      role: userData.role as UserRole,
+      permissions
+    }
+  } catch (error) {
+     console.error('Erro ao autenticar usuário:', error)
+     return null
+   }
+ }
+
+// Função para buscar todos os usuários (para admin)
+export async function getAllUsers(): Promise<User[]> {
+  try {
+    // Buscar todos os usuários
+    const { data: usersData, error: usersError } = await supabase
+      .from('users')
+      .select('*')
+      .order('username')
+
+    if (usersError || !usersData) {
+      return []
+    }
+
+    // Buscar todas as permissões
+    const { data: permissionsData, error: permissionsError } = await supabase
+      .from('user_permissions')
+      .select('user_id, permission')
+
+    if (permissionsError) {
+      return []
+    }
+
+    // Mapear usuários com suas permissões
+    const users: User[] = usersData.map(userData => {
+      const userPermissions = permissionsData
+        ?.filter(p => p.user_id === userData.id)
+        ?.map(p => p.permission as Permission) || []
+
+      return {
+        id: userData.id,
+        username: userData.username,
+        password: userData.password,
+        role: userData.role as UserRole,
+        permissions: userPermissions
+      }
+    })
+
+    return users
+  } catch (error) {
+    console.error('Erro ao buscar usuários:', error)
+    return []
+  }
 }
 
 // Função para verificar se usuário tem permissão

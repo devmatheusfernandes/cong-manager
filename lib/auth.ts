@@ -827,6 +827,54 @@ export async function getAllOradores(): Promise<Orador[]> {
   }
 }
 
+// Buscar oradores combinados (tabela oradores + publicadores que sejam anciãos ou servos ministeriais)
+export async function getOradoresCombinados(): Promise<Orador[]> {
+  try {
+    // Buscar oradores da tabela oradores
+    const { data: oradoresData, error: oradoresError } = await supabase
+      .from('oradores')
+      .select('*')
+      .order('nome', { ascending: true })
+
+    if (oradoresError) {
+      console.error('Erro ao buscar oradores:', oradoresError)
+    }
+
+    // Buscar publicadores que sejam anciãos ou servos ministeriais
+    const { data: publicadoresData, error: publicadoresError } = await supabase
+      .from('publicadores')
+      .select('*')
+      .in('privilegio', ['anciao', 'servo_ministerial'])
+      .eq('ativo', true)
+      .order('nome', { ascending: true })
+
+    if (publicadoresError) {
+      console.error('Erro ao buscar publicadores:', publicadoresError)
+    }
+
+    // Combinar os dados
+    const oradores: Orador[] = oradoresData || []
+    
+    // Converter publicadores para o formato de oradores
+    const publicadoresComoOradores: Orador[] = (publicadoresData || []).map(publicador => ({
+      id: `pub_${publicador.id}`, // Prefixo para distinguir de oradores reais
+      nome: publicador.nome,
+      congregacao_origem: 'Local', // Publicadores são da congregação local
+      created_at: publicador.created_at,
+      updated_at: publicador.updated_at
+    }))
+
+    // Combinar e ordenar por nome
+    const oradoresCombinados = [...oradores, ...publicadoresComoOradores]
+      .sort((a, b) => a.nome.localeCompare(b.nome))
+
+    return oradoresCombinados
+  } catch (error) {
+    console.error('Erro ao buscar oradores combinados:', error)
+    return []
+  }
+}
+
 // Buscar orador por ID
 export async function getOradorById(id: string): Promise<Orador | null> {
   try {
@@ -843,6 +891,50 @@ export async function getOradorById(id: string): Promise<Orador | null> {
     return data
   } catch (error) {
     console.error('Erro ao buscar orador:', error)
+    return null
+  }
+}
+
+// Buscar orador combinado por ID (oradores ou publicadores)
+export async function getOradorCombinadoById(id: string): Promise<Orador | null> {
+  try {
+    // Se o ID tem prefixo 'pub_', é um publicador
+    if (id.startsWith('pub_')) {
+      const publicadorId = id.replace('pub_', '')
+      const { data, error } = await supabase
+        .from('publicadores')
+        .select('*')
+        .eq('id', publicadorId)
+        .single()
+
+      if (error || !data) {
+        return null
+      }
+
+      // Converter publicador para formato de orador
+      return {
+        id: `pub_${data.id}`,
+        nome: data.nome,
+        congregacao_origem: 'Local',
+        created_at: data.created_at,
+        updated_at: data.updated_at
+      }
+    } else {
+      // É um orador normal
+      const { data, error } = await supabase
+        .from('oradores')
+        .select('*')
+        .eq('id', id)
+        .single()
+
+      if (error || !data) {
+        return null
+      }
+
+      return data
+    }
+  } catch (error) {
+    console.error('Erro ao buscar orador combinado:', error)
     return null
   }
 }

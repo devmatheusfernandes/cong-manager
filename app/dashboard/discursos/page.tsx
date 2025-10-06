@@ -45,7 +45,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
   getAllDiscursos,
-  getAllOradores,
+  getOradoresCombinados,
   createDiscurso,
   createOrador,
   updateDiscurso,
@@ -91,7 +91,7 @@ export default function DiscursosPage() {
     try {
       const [discursosData, oradoresData] = await Promise.all([
         getAllDiscursos(),
-        getAllOradores(),
+        getOradoresCombinados(),
       ]);
       setDiscursos(discursosData);
       setOradores(oradoresData);

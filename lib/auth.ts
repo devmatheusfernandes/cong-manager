@@ -1193,12 +1193,14 @@ export async function deleteDiscurso(id: string): Promise<{ success: boolean; er
 // ===== PUBLICADORES =====
 
 export interface Publicador {
-  email: any;
-  telefone: any;
   id: string;
   nome: string;
   genero: 'masculino' | 'feminino';
-  privilegio: 'nao_batizado' | 'batizado' | 'pioneiro_regular' | 'servo_ministerial' | 'anciao';
+  privilegio: 'nao_batizado' | 'batizado' | 'servo_ministerial' | 'anciao';
+  pioneiro_regular: boolean;
+  pioneiro_auxiliar: boolean;
+  telefone?: string;
+  email?: string;
   ativo: boolean;
   permissions: string[];
   created_at?: string;
@@ -1208,7 +1210,11 @@ export interface Publicador {
 export interface CreatePublicadorData {
   nome: string;
   genero: 'masculino' | 'feminino';
-  privilegio: 'nao_batizado' | 'batizado' | 'pioneiro_regular' | 'servo_ministerial' | 'anciao';
+  privilegio: 'nao_batizado' | 'batizado' | 'servo_ministerial' | 'anciao';
+  pioneiro_regular?: boolean;
+  pioneiro_auxiliar?: boolean;
+  telefone?: string;
+  email?: string;
   ativo?: boolean;
   permissions?: string[];
 }
@@ -1216,7 +1222,11 @@ export interface CreatePublicadorData {
 export interface UpdatePublicadorData {
   nome?: string;
   genero?: 'masculino' | 'feminino';
-  privilegio?: 'nao_batizado' | 'batizado' | 'pioneiro_regular' | 'servo_ministerial' | 'anciao';
+  privilegio?: 'nao_batizado' | 'batizado' | 'servo_ministerial' | 'anciao';
+  pioneiro_regular?: boolean;
+  pioneiro_auxiliar?: boolean;
+  telefone?: string;
+  email?: string;
   ativo?: boolean;
   permissions?: string[];
 }
@@ -1434,12 +1444,39 @@ export async function deletePublicador(id: string): Promise<{ success: boolean; 
 }
 
 // Atualizar apenas as permissões de um publicador
-export async function updatePublicadorPermissions(publicadorId: string, permissions: string[]): Promise<{ success: boolean; error?: string }> {
+export async function updatePublicadorPermissions(
+  publicadorId: string, 
+  permissions: string[], 
+  additionalData?: { pioneiro_regular?: boolean; pioneiro_auxiliar?: boolean }
+): Promise<{ success: boolean; error?: string }> {
   try {
     // Verificar se publicador existe
     const publicadorExistente = await getPublicadorById(publicadorId)
     if (!publicadorExistente) {
       return { success: false, error: 'Publicador não encontrado' }
+    }
+
+    // Atualizar privilégios de serviço se fornecidos
+    if (additionalData) {
+      const updateFields: any = {}
+      if (additionalData.pioneiro_regular !== undefined) {
+        updateFields.pioneiro_regular = additionalData.pioneiro_regular
+      }
+      if (additionalData.pioneiro_auxiliar !== undefined) {
+        updateFields.pioneiro_auxiliar = additionalData.pioneiro_auxiliar
+      }
+
+      if (Object.keys(updateFields).length > 0) {
+        const { error: updateError } = await supabase
+          .from('publicadores')
+          .update(updateFields)
+          .eq('id', publicadorId)
+
+        if (updateError) {
+          console.error('Erro ao atualizar privilégios de serviço:', updateError)
+          return { success: false, error: 'Erro ao atualizar privilégios de serviço' }
+        }
+      }
     }
 
     // Remover todas as permissões existentes

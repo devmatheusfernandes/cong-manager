@@ -35,7 +35,9 @@ import {
   MessageSquare,
   Target,
   School,
-  LifeBuoy
+  LifeBuoy,
+  Star,
+  Award
 } from "lucide-react";
 import { toast } from "sonner";
 import { PermissionGuard } from "@/components/permission-guard";
@@ -50,9 +52,8 @@ function getPrivilegioLabel(privilegio: string) {
   const privilegios: Record<string, string> = {
     anciao: "Ancião",
     servo_ministerial: "Servo Ministerial",
-    pioneiro_regular: "Pioneiro Regular",
-    publicador_batizado: "Publicador Batizado",
-    publicador_nao_batizado: "Publicador Não Batizado",
+    batizado: "Publicador Batizado",
+    nao_batizado: "Publicador Não Batizado",
   };
   return privilegios[privilegio] || privilegio;
 }
@@ -64,11 +65,9 @@ function getPrivilegioBadgeColor(privilegio: string) {
       "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300",
     servo_ministerial:
       "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
-    pioneiro_regular:
-      "bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300",
-    publicador_batizado:
+    batizado:
       "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-    publicador_nao_batizado:
+    nao_batizado:
       "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300",
   };
   return (
@@ -103,6 +102,10 @@ const permissoesConfig = {
   perm_faca_seu_melhor_ministerio: { label: "Faça seu Melhor no Ministério", icon: Target, categoria: "NVC" },
   perm_discurso_estudante: { label: "Discurso de Estudante", icon: School, categoria: "NVC" },
   perm_nossa_vida_crista: { label: "Nossa Vida Cristã", icon: LifeBuoy, categoria: "NVC" },
+  
+  // Outros Privilégios
+  pioneiro_regular: { label: "Pioneiro Regular", icon: Star, categoria: "Outros Privilégios" },
+  pioneiro_auxiliar: { label: "Pioneiro Auxiliar", icon: Award, categoria: "Outros Privilégios" },
 };
 
 export default function PermissoesPage() {
@@ -113,6 +116,7 @@ export default function PermissoesPage() {
   const [publicador, setPublicador] = useState<Publicador | null>(null);
   const [loading, setLoading] = useState(true);
   const [permissoes, setPermissoes] = useState<Record<string, boolean>>({});
+  const [privilegiosServico, setPrivilegiosServico] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -127,6 +131,12 @@ export default function PermissoesPage() {
             permissoesObj[permission] = true;
           });
           setPermissoes(permissoesObj);
+          
+          // Configurar privilégios de serviço
+          setPrivilegiosServico({
+            pioneiro_regular: data.pioneiro_regular || false,
+            pioneiro_auxiliar: data.pioneiro_auxiliar || false,
+          });
         }
       } catch (error) {
         console.error('Erro ao carregar publicador:', error);
@@ -188,6 +198,13 @@ export default function PermissoesPage() {
     }));
   };
 
+  const handlePrivilegioServicoChange = (privilegio: string, valor: boolean) => {
+    setPrivilegiosServico((prev) => ({
+      ...prev,
+      [privilegio]: valor,
+    }));
+  };
+
   const handleSalvar = async () => {
     if (!publicador) return;
     
@@ -198,7 +215,14 @@ export default function PermissoesPage() {
         .filter(([_, value]) => value)
         .map(([key, _]) => key);
       
-      await updatePublicadorPermissions(publicador.id, permissoesArray);
+      // Incluir privilégios de serviço na atualização
+      const updateData = {
+        permissions: permissoesArray,
+        pioneiro_regular: privilegiosServico.pioneiro_regular,
+        pioneiro_auxiliar: privilegiosServico.pioneiro_auxiliar,
+      };
+      
+      await updatePublicadorPermissions(publicador.id, permissoesArray, updateData);
       toast.success("Permissões atualizadas com sucesso!");
     } catch (error) {
       console.error('Erro ao salvar permissões:', error);
@@ -283,8 +307,12 @@ export default function PermissoesPage() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {permissoesCategoria.map(({ key, label, icon: Icon }) => {
-                    const temPermissao =
-                      permissoes[key as keyof typeof permissoes];
+                    // Verificar se é um privilégio de serviço
+                    const isPrivilegioServico = key === 'pioneiro_regular' || key === 'pioneiro_auxiliar';
+                    const temPermissao = isPrivilegioServico 
+                      ? privilegiosServico[key as keyof typeof privilegiosServico]
+                      : permissoes[key as keyof typeof permissoes];
+                    
                     return (
                       <div
                         key={key}
@@ -294,7 +322,9 @@ export default function PermissoesPage() {
                             : "border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-950/30"
                         }`}
                         onClick={() =>
-                          handlePermissaoChange(key, !temPermissao)
+                          isPrivilegioServico 
+                            ? handlePrivilegioServicoChange(key, !temPermissao)
+                            : handlePermissaoChange(key, !temPermissao)
                         }
                       >
                         <div className="flex items-center justify-between">

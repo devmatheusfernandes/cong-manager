@@ -35,10 +35,10 @@ import {
   createMecanica,
   updateMecanica,
   deleteMecanica,
-  getAllUsers,
+  getAllPublicadores,
   type Mecanica,
   type CreateMecanicaData,
-  type User,
+  type Publicador,
 } from "@/lib/auth";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -54,10 +54,46 @@ import {
   Trash2,
 } from "lucide-react";
 
+// Funções para filtrar publicadores por permissões específicas
+const getPublicadoresComPermissao = (publicadores: Publicador[], permissao: string) => {
+  return publicadores.filter(publicador => 
+    publicador.ativo && 
+    publicador.permissions?.includes(permissao)
+  );
+};
+
+const getPublicadoresIndicadores = (publicadores: Publicador[]) => {
+  return getPublicadoresComPermissao(publicadores, "perm_indicador_entrada")
+    .concat(getPublicadoresComPermissao(publicadores, "perm_indicador_palco"))
+    .filter((publicador, index, self) => 
+      index === self.findIndex(p => p.id === publicador.id)
+    );
+};
+
+const getPublicadoresAudioVideo = (publicadores: Publicador[]) => {
+  return getPublicadoresComPermissao(publicadores, "perm_audio_video");
+};
+
+const getPublicadoresVolante = (publicadores: Publicador[]) => {
+  return getPublicadoresComPermissao(publicadores, "perm_volante");
+};
+
+const getPublicadoresPalco = (publicadores: Publicador[]) => {
+  return getPublicadoresComPermissao(publicadores, "perm_palco");
+};
+
+const getPublicadoresLeitor = (publicadores: Publicador[]) => {
+  return getPublicadoresComPermissao(publicadores, "perm_leitor");
+};
+
+const getPublicadoresPresidencia = (publicadores: Publicador[]) => {
+  return getPublicadoresComPermissao(publicadores, "perm_presidencia");
+};
+
 export default function MecanicasPage() {
   // Estados para dados
   const [mecanicas, setMecanicas] = useState<Mecanica[]>([]);
-  const [usuarios, setUsuarios] = useState<User[]>([]);
+  const [publicadores, setPublicadores] = useState<Publicador[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Estados para o modal
@@ -89,13 +125,13 @@ export default function MecanicasPage() {
     const loadData = async () => {
       try {
         setLoading(true);
-        const [mecanicasData, usuariosData] = await Promise.all([
+        const [mecanicasData, publicadoresData] = await Promise.all([
           getAllMecanicas(),
-          getAllUsers(),
+          getAllPublicadores(),
         ]);
 
         setMecanicas(mecanicasData);
-        setUsuarios(usuariosData);
+        setPublicadores(publicadoresData);
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
         toast.error("Erro ao carregar dados");
@@ -163,8 +199,12 @@ export default function MecanicasPage() {
         );
 
         // Recarregar dados
-        const mecanicasData = await getAllMecanicas();
+        const [mecanicasData, publicadoresData] = await Promise.all([
+          getAllMecanicas(),
+          getAllPublicadores(),
+        ]);
         setMecanicas(mecanicasData);
+        setPublicadores(publicadoresData);
 
         // Reset do formulário
         resetForm();
@@ -226,8 +266,12 @@ export default function MecanicasPage() {
         toast.success("Designação excluída com sucesso!");
 
         // Recarregar dados
-        const mecanicasData = await getAllMecanicas();
+        const [mecanicasData, publicadoresData] = await Promise.all([
+          getAllMecanicas(),
+          getAllPublicadores(),
+        ]);
         setMecanicas(mecanicasData);
+        setPublicadores(publicadoresData);
       } else {
         toast.error(result.error || "Erro ao excluir designação");
       }
@@ -355,13 +399,10 @@ export default function MecanicasPage() {
                       <SelectValue placeholder="Selecione o indicador da entrada" />
                     </SelectTrigger>
                     <SelectContent>
-                      {usuarios
-                        .filter((u) =>
-                          u.permissions?.includes("edit_mecanicas")
-                        )
-                        .map((usuario) => (
-                          <SelectItem key={usuario.id} value={usuario.id}>
-                            {usuario.username}
+                      {getPublicadoresIndicadores(publicadores)
+                        .map((publicador) => (
+                          <SelectItem key={publicador.id} value={publicador.id}>
+                            {publicador.nome}
                           </SelectItem>
                         ))}
                     </SelectContent>
@@ -386,13 +427,10 @@ export default function MecanicasPage() {
                       <SelectValue placeholder="Selecione o indicador do auditório" />
                     </SelectTrigger>
                     <SelectContent>
-                      {usuarios
-                        .filter((u) =>
-                          u.permissions?.includes("edit_mecanicas")
-                        )
-                        .map((usuario) => (
-                          <SelectItem key={usuario.id} value={usuario.id}>
-                            {usuario.username}
+                      {getPublicadoresIndicadores(publicadores)
+                        .map((publicador) => (
+                          <SelectItem key={publicador.id} value={publicador.id}>
+                            {publicador.nome}
                           </SelectItem>
                         ))}
                     </SelectContent>
@@ -415,13 +453,10 @@ export default function MecanicasPage() {
                       <SelectValue placeholder="Selecione responsável pelo áudio e vídeo" />
                     </SelectTrigger>
                     <SelectContent>
-                      {usuarios
-                        .filter((u) =>
-                          u.permissions?.includes("edit_mecanicas")
-                        )
-                        .map((usuario) => (
-                          <SelectItem key={usuario.id} value={usuario.id}>
-                            {usuario.username}
+                      {getPublicadoresAudioVideo(publicadores)
+                        .map((publicador) => (
+                          <SelectItem key={publicador.id} value={publicador.id}>
+                            {publicador.nome}
                           </SelectItem>
                         ))}
                     </SelectContent>
@@ -441,13 +476,10 @@ export default function MecanicasPage() {
                       <SelectValue placeholder="Selecione o volante" />
                     </SelectTrigger>
                     <SelectContent>
-                      {usuarios
-                        .filter((u) =>
-                          u.permissions?.includes("edit_mecanicas")
-                        )
-                        .map((usuario) => (
-                          <SelectItem key={usuario.id} value={usuario.id}>
-                            {usuario.username}
+                      {getPublicadoresVolante(publicadores)
+                        .map((publicador) => (
+                          <SelectItem key={publicador.id} value={publicador.id}>
+                            {publicador.nome}
                           </SelectItem>
                         ))}
                     </SelectContent>
@@ -467,13 +499,10 @@ export default function MecanicasPage() {
                       <SelectValue placeholder="Selecione responsável pelo palco" />
                     </SelectTrigger>
                     <SelectContent>
-                      {usuarios
-                        .filter((u) =>
-                          u.permissions?.includes("edit_mecanicas")
-                        )
-                        .map((usuario) => (
-                          <SelectItem key={usuario.id} value={usuario.id}>
-                            {usuario.username}
+                      {getPublicadoresPalco(publicadores)
+                        .map((publicador) => (
+                          <SelectItem key={publicador.id} value={publicador.id}>
+                            {publicador.nome}
                           </SelectItem>
                         ))}
                     </SelectContent>
@@ -501,13 +530,10 @@ export default function MecanicasPage() {
                           <SelectValue placeholder="Selecione o leitor de sentinela" />
                         </SelectTrigger>
                         <SelectContent>
-                          {usuarios
-                            .filter((u) =>
-                              u.permissions?.includes("edit_mecanicas")
-                            )
-                            .map((usuario) => (
-                              <SelectItem key={usuario.id} value={usuario.id}>
-                                {usuario.username}
+                          {getPublicadoresLeitor(publicadores)
+                            .map((publicador) => (
+                              <SelectItem key={publicador.id} value={publicador.id}>
+                                {publicador.nome}
                               </SelectItem>
                             ))}
                         </SelectContent>
@@ -530,13 +556,10 @@ export default function MecanicasPage() {
                           <SelectValue placeholder="Selecione o presidente" />
                         </SelectTrigger>
                         <SelectContent>
-                          {usuarios
-                            .filter((u) =>
-                              u.permissions?.includes("edit_mecanicas")
-                            )
-                            .map((usuario) => (
-                              <SelectItem key={usuario.id} value={usuario.id}>
-                                {usuario.username}
+                          {getPublicadoresPresidencia(publicadores)
+                            .map((publicador) => (
+                              <SelectItem key={publicador.id} value={publicador.id}>
+                                {publicador.nome}
                               </SelectItem>
                             ))}
                         </SelectContent>
@@ -604,9 +627,9 @@ export default function MecanicasPage() {
                         </span>
                       </div>
                       <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                        {usuarios.find(
-                          (u) => u.id === mecanica.indicador_entrada_id
-                        )?.username || "Não designado"}
+                        {publicadores.find(
+                          (p) => p.id === mecanica.indicador_entrada_id
+                        )?.nome || "Não designado"}
                       </p>
                     </div>
 
@@ -619,9 +642,9 @@ export default function MecanicasPage() {
                         </span>
                       </div>
                       <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                        {usuarios.find(
-                          (u) => u.id === mecanica.indicador_auditorio_id
-                        )?.username || "Não designado"}
+                        {publicadores.find(
+                          (p) => p.id === mecanica.indicador_auditorio_id
+                        )?.nome || "Não designado"}
                       </p>
                     </div>
 
@@ -634,8 +657,8 @@ export default function MecanicasPage() {
                         </span>
                       </div>
                       <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                        {usuarios.find((u) => u.id === mecanica.audio_video_id)
-                          ?.username || "Não designado"}
+                        {publicadores.find((p) => p.id === mecanica.audio_video_id)
+                          ?.nome || "Não designado"}
                       </p>
                     </div>
 
@@ -648,8 +671,8 @@ export default function MecanicasPage() {
                         </span>
                       </div>
                       <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                        {usuarios.find((u) => u.id === mecanica.volante_id)
-                          ?.username || "Não designado"}
+                        {publicadores.find((p) => p.id === mecanica.volante_id)
+                          ?.nome || "Não designado"}
                       </p>
                     </div>
 
@@ -662,8 +685,8 @@ export default function MecanicasPage() {
                         </span>
                       </div>
                       <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                        {usuarios.find((u) => u.id === mecanica.palco_id)
-                          ?.username || "Não designado"}
+                        {publicadores.find((p) => p.id === mecanica.palco_id)
+                          ?.nome || "Não designado"}
                       </p>
                     </div>
                   </div>

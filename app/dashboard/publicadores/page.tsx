@@ -28,9 +28,8 @@ function getPrivilegioLabel(privilegio: string) {
   const privilegios: Record<string, string> = {
     anciao: "Ancião",
     servo_ministerial: "Servo Ministerial",
-    pioneiro_regular: "Pioneiro Regular",
-    publicador_batizado: "Publicador Batizado",
-    publicador_nao_batizado: "Publicador Não Batizado"
+    batizado: "Publicador Batizado",
+    nao_batizado: "Publicador Não Batizado"
   };
   return privilegios[privilegio] || privilegio;
 }
@@ -40,9 +39,8 @@ function getPrivilegioBadgeColor(privilegio: string) {
   const cores: Record<string, string> = {
     anciao: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300",
     servo_ministerial: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
-    pioneiro_regular: "bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300",
-    publicador_batizado: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-    publicador_nao_batizado: "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300"
+    batizado: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+    nao_batizado: "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300"
   };
   return cores[privilegio] || "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300";
 }
@@ -244,9 +242,8 @@ export default function NomesDataPage() {
                     <SelectContent>
                       <SelectItem value="anciao">Ancião</SelectItem>
                       <SelectItem value="servo_ministerial">Servo Ministerial</SelectItem>
-                      <SelectItem value="pioneiro_regular">Pioneiro Regular</SelectItem>
-                      <SelectItem value="publicador_batizado">Publicador Batizado</SelectItem>
-                      <SelectItem value="publicador_nao_batizado">Publicador Não Batizado</SelectItem>
+                      <SelectItem value="batizado">Publicador Batizado</SelectItem>
+                      <SelectItem value="nao_batizado">Publicador Não Batizado</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

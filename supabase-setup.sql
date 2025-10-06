@@ -180,7 +180,11 @@ CREATE TABLE IF NOT EXISTS publicadores (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   nome TEXT NOT NULL,
   genero TEXT NOT NULL CHECK (genero IN ('masculino', 'feminino')),
-  privilegio TEXT NOT NULL CHECK (privilegio IN ('nao_batizado', 'batizado', 'pioneiro_regular', 'servo_ministerial', 'anciao')),
+  privilegio TEXT NOT NULL CHECK (privilegio IN ('nao_batizado', 'batizado', 'servo_ministerial', 'anciao')),
+  pioneiro_regular BOOLEAN DEFAULT false,
+  pioneiro_auxiliar BOOLEAN DEFAULT false,
+  telefone TEXT,
+  email TEXT,
   ativo BOOLEAN DEFAULT true,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

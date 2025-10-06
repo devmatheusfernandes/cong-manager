@@ -1,12 +1,97 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CollapsibleCard } from "@/components/collapsible-card";
 import { PermissionGuard, PermissionButton, PermissionStatus } from "@/components/permission-guard";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import mockData from "@/data/mock-data.json";
-import { Plus, Calendar, User, Users } from "lucide-react";
+import { Plus, Calendar, User, Users, CalendarIcon, Info, CheckCircle, AlertCircle } from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { podeEditar } from "@/lib/permissions";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export default function LimpezaPage() {
+  // Estados para os modais
+  const [isNovaEscalaModalOpen, setIsNovaEscalaModalOpen] = useState(false);
+  const [isInstrucoesModalOpen, setIsInstrucoesModalOpen] = useState(false);
+  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [novaEscala, setNovaEscala] = useState({
+    publicadores: [] as string[],
+    observacoes: ""
+  });
+
+  // IDs temporários para simulação
+  const tempUserId = "550e8400-e29b-41d4-a716-446655440001";
+  const tempCongregacaoId = "660e8400-e29b-41d4-a716-446655440001";
+
+  // Verificar permissões
+  const podeGerenciarLimpeza = podeEditar(tempUserId, tempCongregacaoId, "perm_limpeza");
+
+  // Função para submeter nova escala
+  const handleSubmitNovaEscala = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!date) {
+      toast.error("Por favor, selecione uma data");
+      return;
+    }
+
+    if (novaEscala.publicadores.length === 0) {
+      toast.error("Por favor, selecione pelo menos um publicador");
+      return;
+    }
+
+    // Aqui seria feita a chamada para a API
+    console.log("Nova escala:", {
+      data: format(date, "yyyy-MM-dd"),
+      ...novaEscala
+    });
+
+    toast.success("Escala de limpeza criada com sucesso!");
+    
+    // Reset do formulário
+    setDate(undefined);
+    setNovaEscala({
+      publicadores: [],
+      observacoes: ""
+    });
+    setIsNovaEscalaModalOpen(false);
+  };
+
+  // Função para adicionar/remover publicador
+  const togglePublicador = (publicadorId: string) => {
+    setNovaEscala(prev => ({
+      ...prev,
+      publicadores: prev.publicadores.includes(publicadorId)
+        ? prev.publicadores.filter(id => id !== publicadorId)
+        : [...prev.publicadores, publicadorId]
+    }));
+  };
+
   // Ordenar escalas por data
   const escalasOrdenadas = mockData.escala_limpeza.sort(
     (a, b) =>
@@ -20,12 +105,28 @@ export default function LimpezaPage() {
           <h2 className="text-xl font-semibold">Limpeza</h2>
           <PermissionStatus permissao="perm_limpeza" />
         </div>
-        <PermissionButton permissao="perm_limpeza">
-          <Button size="sm">
-            <Plus className="h-4 w-4 mr-2" />
-            Nova Escala
+        <div className="flex gap-2">
+          {/* Botão de Instruções - Visível para todos */}
+          <Button 
+            size="sm" 
+            variant="outline"
+            onClick={() => setIsInstrucoesModalOpen(true)}
+          >
+            <Info className="h-4 w-4 mr-2" />
+            Instruções
           </Button>
-        </PermissionButton>
+          
+          {/* Botão Nova Escala - Apenas para quem tem permissão */}
+          {podeGerenciarLimpeza && (
+            <Button 
+              size="sm"
+              onClick={() => setIsNovaEscalaModalOpen(true)}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Escala
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="space-y-3">
@@ -89,6 +190,178 @@ export default function LimpezaPage() {
           );
         })}
       </div>
+
+      {/* Modal para Nova Escala */}
+      <Dialog open={isNovaEscalaModalOpen} onOpenChange={setIsNovaEscalaModalOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Nova Escala de Limpeza</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmitNovaEscala} className="space-y-4">
+            {/* Data da Limpeza */}
+            <div className="space-y-2">
+              <Label htmlFor="data">Data da Limpeza</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !date && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date ? format(date, "PPP", { locale: ptBR }) : "Selecione uma data"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <CalendarComponent
+                    mode="single"
+                    selected={date}
+                    onSelect={setDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            {/* Seleção de Publicadores */}
+            <div className="space-y-2">
+              <Label>Publicadores Responsáveis</Label>
+              <div className="max-h-48 overflow-y-auto border rounded-lg p-3 space-y-2">
+                {mockData.publicadores.map((publicador) => (
+                  <div
+                    key={publicador.id}
+                    className={cn(
+                      "flex items-center gap-2 p-2 rounded cursor-pointer transition-colors",
+                      novaEscala.publicadores.includes(publicador.id)
+                        ? "bg-primary/10 border border-primary"
+                        : "bg-muted hover:bg-muted/80"
+                    )}
+                    onClick={() => togglePublicador(publicador.id)}
+                  >
+                    <div className={cn(
+                      "w-4 h-4 rounded border-2 flex items-center justify-center",
+                      novaEscala.publicadores.includes(publicador.id)
+                        ? "bg-primary border-primary"
+                        : "border-muted-foreground"
+                    )}>
+                      {novaEscala.publicadores.includes(publicador.id) && (
+                        <CheckCircle className="w-3 h-3 text-primary-foreground" />
+                      )}
+                    </div>
+                    <span className="text-sm">{publicador.nome}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Selecionados: {novaEscala.publicadores.length}
+              </p>
+            </div>
+
+            {/* Observações */}
+            <div className="space-y-2">
+              <Label htmlFor="observacoes">Observações (opcional)</Label>
+              <Input
+                id="observacoes"
+                placeholder="Ex: Limpeza geral do salão, incluir banheiros..."
+                value={novaEscala.observacoes}
+                onChange={(e) => setNovaEscala(prev => ({ ...prev, observacoes: e.target.value }))}
+              />
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                onClick={() => setIsNovaEscalaModalOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" className="flex-1">
+                Criar Escala
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Instruções */}
+      <Dialog open={isInstrucoesModalOpen} onOpenChange={setIsInstrucoesModalOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Info className="h-5 w-5 text-blue-600" />
+              Instruções para Limpeza do Salão do Reino
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6">
+            {/* Antes da Reunião */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                Antes da Reunião
+              </h3>
+              <ul className="space-y-2 text-sm text-muted-foreground ml-6">
+                <li>• Chegar 30 minutos antes do início</li>
+                <li>• Verificar se todas as luzes estão funcionando</li>
+                <li>• Ajustar temperatura do ambiente</li>
+                <li>• Organizar cadeiras e materiais</li>
+                <li>• Verificar funcionamento do sistema de som</li>
+              </ul>
+            </div>
+
+            {/* Durante a Reunião */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-amber-600" />
+                Durante a Reunião
+              </h3>
+              <ul className="space-y-2 text-sm text-muted-foreground ml-6">
+                <li>• Manter vigilância sobre a limpeza geral</li>
+                <li>• Verificar banheiros periodicamente</li>
+                <li>• Repor papel higiênico e toalhas se necessário</li>
+                <li>• Manter área externa limpa</li>
+              </ul>
+            </div>
+
+            {/* Após a Reunião */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-teal-600" />
+                Após a Reunião
+              </h3>
+              <ul className="space-y-2 text-sm text-muted-foreground ml-6">
+                <li>• Organizar cadeiras em suas posições</li>
+                <li>• Varrer e passar pano no salão principal</li>
+                <li>• Limpar banheiros completamente</li>
+                <li>• Esvaziar lixeiras e trocar sacos</li>
+                <li>• Verificar se todas as luzes estão apagadas</li>
+                <li>• Trancar todas as portas e janelas</li>
+              </ul>
+            </div>
+
+            {/* Contatos de Emergência */}
+            <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+              <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">
+                Contatos de Emergência
+              </h4>
+              <div className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+                <p>• Coordenador de Limpeza: (11) 99999-9999</p>
+                <p>• Ancião Responsável: (11) 88888-8888</p>
+                <p>• Emergências: 190 / 193</p>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-4">
+              <Button onClick={() => setIsInstrucoesModalOpen(false)}>
+                Entendi
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

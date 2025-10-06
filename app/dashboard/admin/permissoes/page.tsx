@@ -22,6 +22,7 @@ import {
   Settings,
   Crown,
   User,
+  UserCheck,
 } from "lucide-react";
 import mockData from "@/data/mock-data.json";
 import {
@@ -38,6 +39,7 @@ const PERMISSOES_ICONS: Record<PermissaoSistema, React.ComponentType<{ className
   perm_mecanicas: Settings,
   perm_discurso: Mic,
   perm_limpeza: Sparkles,
+  perm_publicadores: UserCheck,
 };
 
 export default function AdminPermissoesPage() {

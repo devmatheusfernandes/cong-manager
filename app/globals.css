@@ -120,3 +120,17 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Ocultar scrollbar mantendo funcionalidade */
+@layer utilities {
+  .scrollbar-hide {
+    /* Firefox */
+    scrollbar-width: none;
+    /* Safari e Chrome */
+    -ms-overflow-style: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}

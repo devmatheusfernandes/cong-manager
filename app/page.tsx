@@ -42,8 +42,13 @@ export default function LandingPage() {
             Um webapp PWA completo para organizar programações, designações e atividades semanais da sua congregação.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/signup">
+            <Link href="/dashboard">
               <Button size="lg" className="w-full sm:w-auto">
+                Ver Dashboard
+              </Button>
+            </Link>
+            <Link href="/signup">
+              <Button size="lg" className="w-full sm:w-auto" variant="outline">
                 Criar Congregação
               </Button>
             </Link>

@@ -7,7 +7,8 @@ export type PermissaoSistema =
   | 'perm_nvc'
   | 'perm_mecanicas'
   | 'perm_discurso'
-  | 'perm_limpeza';
+  | 'perm_limpeza'
+  | 'perm_publicadores';
 
 // Labels das permissões para exibição
 export const PERMISSOES_LABELS: Record<PermissaoSistema, string> = {
@@ -16,7 +17,8 @@ export const PERMISSOES_LABELS: Record<PermissaoSistema, string> = {
   perm_nvc: 'Nossa Vida Cristã',
   perm_mecanicas: 'Mecânicas',
   perm_discurso: 'Discursos',
-  perm_limpeza: 'Limpeza'
+  perm_limpeza: 'Limpeza',
+  perm_publicadores: 'Publicadores'
 };
 
 // Descrições das permissões
@@ -26,7 +28,8 @@ export const PERMISSOES_DESCRICOES: Record<PermissaoSistema, string> = {
   perm_nvc: 'Gerenciar programação da reunião Nossa Vida Cristã',
   perm_mecanicas: 'Gerenciar escalas de som, palco e indicadores',
   perm_discurso: 'Gerenciar discursos públicos e oradores',
-  perm_limpeza: 'Gerenciar grupos e escalas de limpeza'
+  perm_limpeza: 'Gerenciar grupos e escalas de limpeza',
+  perm_publicadores: 'Gerenciar cadastro de publicadores'
 };
 
 /**
@@ -70,6 +73,25 @@ export function verificarResponsavel(
 }
 
 /**
+ * Verifica se um usuário é administrador (responsável ou tem permissão para gerenciar publicadores)
+ * @param usuarioId ID do usuário
+ * @param congregacaoId ID da congregação
+ * @returns true se o usuário é admin, false caso contrário
+ */
+export function verificarAdmin(
+  usuarioId: string,
+  congregacaoId: string
+): boolean {
+  // Responsáveis sempre são admins
+  if (verificarResponsavel(usuarioId, congregacaoId)) {
+    return true;
+  }
+
+  // Verifica se tem permissão específica para gerenciar publicadores
+  return verificarPermissao(usuarioId, congregacaoId, 'perm_publicadores');
+}
+
+/**
  * Obtém todas as permissões de um usuário
  * @param usuarioId ID do usuário
  * @param congregacaoId ID da congregação
@@ -90,7 +112,8 @@ export function obterPermissoesUsuario(
       perm_nvc: false,
       perm_mecanicas: false,
       perm_discurso: false,
-      perm_limpeza: false
+      perm_limpeza: false,
+      perm_publicadores: false
     };
   }
 
@@ -100,7 +123,8 @@ export function obterPermissoesUsuario(
     perm_nvc: permissaoUsuario.perm_nvc,
     perm_mecanicas: permissaoUsuario.perm_mecanicas,
     perm_discurso: permissaoUsuario.perm_discurso,
-    perm_limpeza: permissaoUsuario.perm_limpeza
+    perm_limpeza: permissaoUsuario.perm_limpeza,
+    perm_publicadores: permissaoUsuario.perm_publicadores
   };
 }
 

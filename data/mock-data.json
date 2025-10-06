@@ -55,7 +55,8 @@
       "perm_nvc": true,
       "perm_mecanicas": true,
       "perm_discurso": true,
-      "perm_limpeza": true
+      "perm_limpeza": true,
+      "perm_publicadores": true
     },
     {
       "id": "770e8400-e29b-41d4-a716-446655440002",
@@ -66,7 +67,8 @@
       "perm_nvc": true,
       "perm_mecanicas": false,
       "perm_discurso": false,
-      "perm_limpeza": true
+      "perm_limpeza": true,
+      "perm_publicadores": false
     },
     {
       "id": "770e8400-e29b-41d4-a716-446655440003",
@@ -77,7 +79,8 @@
       "perm_nvc": false,
       "perm_mecanicas": false,
       "perm_discurso": false,
-      "perm_limpeza": false
+      "perm_limpeza": false,
+      "perm_publicadores": false
     }
   ],
   "publicadores": [

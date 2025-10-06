@@ -1,10 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CollapsibleCard } from "@/components/collapsible-card";
 import mockData from "@/data/mock-data.json";
 import { Plus, User, Phone, Mail, Shield, Settings } from "lucide-react";
+import { verificarAdmin } from "@/lib/permissions";
+import { toast } from "sonner";
 import Link from "next/link";
 
 // Função para obter o label do privilégio
@@ -32,14 +39,127 @@ function getPrivilegioBadgeColor(privilegio: string) {
 }
 
 export default function NomesDataPage() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [novoPublicador, setNovoPublicador] = useState({
+    nome: "",
+    telefone: "",
+    email: "",
+    privilegio: ""
+  });
+
+  // IDs padrão para teste - em produção viriam do contexto de autenticação
+  const usuarioId = "550e8400-e29b-41d4-a716-446655440001";
+  const congregacaoId = "660e8400-e29b-41d4-a716-446655440001";
+  
+  const ehAdmin = verificarAdmin(usuarioId, congregacaoId);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!novoPublicador.nome || !novoPublicador.privilegio) {
+      toast.error("Nome e privilégio são obrigatórios");
+      return;
+    }
+
+    // Aqui seria feita a chamada para a API para criar o publicador
+    console.log("Criando publicador:", novoPublicador);
+    toast.success("Publicador criado com sucesso!");
+    
+    // Reset do formulário
+    setNovoPublicador({
+      nome: "",
+      telefone: "",
+      email: "",
+      privilegio: ""
+    });
+    setIsModalOpen(false);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Nomes e Datas</h2>
-        <Button size="sm">
-          <Plus className="h-4 w-4 mr-2" />
-          Novo Publicador
-        </Button>
+        {ehAdmin && (
+          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Publicador
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Criar Novo Publicador</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="nome">Nome *</Label>
+                  <Input
+                    id="nome"
+                    value={novoPublicador.nome}
+                    onChange={(e) => setNovoPublicador(prev => ({ ...prev, nome: e.target.value }))}
+                    placeholder="Nome completo do publicador"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="telefone">Telefone</Label>
+                  <Input
+                    id="telefone"
+                    value={novoPublicador.telefone}
+                    onChange={(e) => setNovoPublicador(prev => ({ ...prev, telefone: e.target.value }))}
+                    placeholder="(11) 99999-9999"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email">E-mail</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={novoPublicador.email}
+                    onChange={(e) => setNovoPublicador(prev => ({ ...prev, email: e.target.value }))}
+                    placeholder="email@exemplo.com"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="privilegio">Privilégio *</Label>
+                  <Select 
+                    value={novoPublicador.privilegio} 
+                    onValueChange={(value) => setNovoPublicador(prev => ({ ...prev, privilegio: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o privilégio" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="anciao">Ancião</SelectItem>
+                      <SelectItem value="servo_ministerial">Servo Ministerial</SelectItem>
+                      <SelectItem value="pioneiro_regular">Pioneiro Regular</SelectItem>
+                      <SelectItem value="publicador_batizado">Publicador Batizado</SelectItem>
+                      <SelectItem value="publicador_nao_batizado">Publicador Não Batizado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex gap-2 pt-4">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setIsModalOpen(false)}
+                    className="flex-1"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button type="submit" className="flex-1">
+                    Criar Publicador
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
       <div className="space-y-3">

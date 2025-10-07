@@ -6,7 +6,7 @@ import { CollapsibleCard } from "@/components/collapsible-card";
 import { GrupoDialog } from "@/components/grupo-dialog";
 import { PermissionWrapper } from "@/components/permission-wrapper";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Users, User, Crown, UserCheck, Phone, Mail, Edit, Trash2, Loader2 } from "lucide-react";
+import { Users, User, Crown, UserCheck, Phone, Mail, Edit, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface Publicador {
@@ -224,7 +224,7 @@ export default function GruposPage() {
                         <AlertDialogHeader>
                           <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Tem certeza que deseja excluir o grupo "{grupo.nome}"? 
+                            Tem certeza que deseja excluir o grupo &quot;{grupo.nome}&quot;? 
                             Esta ação não pode ser desfeita.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
@@ -248,7 +248,7 @@ export default function GruposPage() {
             <div className="text-center py-8">
               <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">Nenhum grupo encontrado</p>
-              <p className="text-sm text-muted-foreground">Clique em "Novo Grupo" para começar</p>
+              <p className="text-sm text-muted-foreground">Clique em &quot;Novo Grupo&quot; para começar</p>
             </div>
           )}
         </div>

@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 
 // GET - Listar todos os publicadores
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const { data: publicadores, error } = await supabase
       .from('publicadores')

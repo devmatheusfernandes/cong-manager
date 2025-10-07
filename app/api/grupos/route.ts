@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 
 // GET - Listar todos os grupos
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Buscar todos os grupos
     const { data: grupos, error: gruposError } = await supabase

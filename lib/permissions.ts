@@ -63,7 +63,7 @@ export function verificarPermissao(
  */
 export function verificarResponsavel(
   usuarioId: string,
-  congregacaoId: string
+  congregacaoId: string // Reserved for future database filtering
 ): boolean {
   const usuarioCongregacao = mockData.usuarios_congregacoes.find(
     uc => uc.usuario_id === usuarioId
@@ -99,7 +99,7 @@ export function verificarAdmin(
  */
 export function obterPermissoesUsuario(
   usuarioId: string,
-  congregacaoId: string
+  congregacaoId: string // Reserved for future database filtering
 ) {
   const permissaoUsuario = mockData.permissoes_sistema.find(
     p => p.usuario_id === usuarioId

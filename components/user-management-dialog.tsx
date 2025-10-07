@@ -168,7 +168,8 @@ export function UserManagementDialog({ open, onOpenChange, user, onUserSaved }: 
       } else {
         toast.error(result.error || "Erro ao salvar usuário")
       }
-    } catch (_) {
+    } catch (error) {
+      console.error("Erro ao salvar usuário:", error);
       toast.error("Erro interno do servidor")
     } finally {
       setLoading(false)

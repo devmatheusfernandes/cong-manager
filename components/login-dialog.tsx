@@ -33,7 +33,8 @@ export function LoginDialog() {
       } else {
         toast.error("Senha incorreta!");
       }
-    } catch (_) {
+    } catch (error) {
+      console.error("Erro ao fazer login:", error);
       toast.error("Erro ao fazer login!");
     }
   };

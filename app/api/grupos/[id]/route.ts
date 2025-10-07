@@ -4,10 +4,10 @@ import { supabase } from '@/lib/supabase'
 // GET - Buscar grupo específico
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const { id } = await params
 
     const { data: grupo, error: grupoError } = await supabase
       .from('grupos')
@@ -58,10 +58,10 @@ export async function GET(
 // PUT - Atualizar grupo
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const { id } = await params
     const body = await request.json()
     const { nome, superintendente_id, servo_id, membros } = body
 
@@ -124,10 +124,10 @@ export async function PUT(
 // DELETE - Excluir grupo
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const { id } = await params
 
     // Primeiro, remover todos os membros do grupo
     await supabase

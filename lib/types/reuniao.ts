@@ -20,6 +20,7 @@ export interface NossaVidaCristaParte {
 }
 
 export interface NovaReuniaoData {
+  comentarios: any;
   periodo: string;
   leituraBiblica: string;
   presidente?: Pessoa;

@@ -1,11 +1,13 @@
 "use client";
 
+import { useState, useEffect, JSXElementConstructor,  ReactElement, ReactNode, ReactPortal, Key } from "react";
 import { Button } from "@/components/ui/button";
 import { CollapsibleCard } from "@/components/collapsible-card";
 import { Badge } from "@/components/ui/badge";
-import mockData from "@/data/mock-data.json";
+import { ImportPdfDialog } from "@/components/import-pdf-dialog";
 import type { NossaVidaCristaParte } from "@/lib/mock-data-reunioes";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   Calendar,
   BookOpen,
@@ -19,23 +21,108 @@ import {
   Users,
   AlertTriangle,
   Plus,
+  Upload,
+  Loader2,
 } from "lucide-react";
 
 export default function NVCPage() {
   const router = useRouter();
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [reunioes, setReunioes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Função para buscar reuniões do Supabase
+  const fetchReunioes = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch('/api/nvc');
+      
+      if (!response.ok) {
+        throw new Error('Erro ao buscar reuniões');
+      }
+      
+      const data = await response.json();
+      
+      if (data.success && data.data?.nossa_vida_crista) {
+        setReunioes(data.data.nossa_vida_crista);
+      } else {
+        setReunioes([]);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar reuniões:', error);
+      setError(error instanceof Error ? error.message : 'Erro desconhecido');
+      toast.error('Erro ao carregar reuniões');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Carregar reuniões ao montar o componente
+  useEffect(() => {
+    fetchReunioes();
+  }, []);
+
+  const handleImportSuccess = (importedData: any) => {
+    // Após importar com sucesso, recarregar os dados do Supabase
+    fetchReunioes();
+    toast.success('Reuniões importadas com sucesso!');
+  };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Nossa Vida Cristã</h2>
-        <Button onClick={() => router.push("/dashboard/nvc/nova")}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nova Reunião
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => setShowImportDialog(true)}
+            disabled={loading}
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            Importar PDF
+          </Button>
+          <Button 
+            onClick={() => router.push("/dashboard/nvc/nova")}
+            disabled={loading}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nova Reunião
+          </Button>
+        </div>
       </div>
 
-      <div className="space-y-3">
-        {mockData.nossa_vida_crista.map((reuniao) => {
+      {loading && (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-6 w-6 animate-spin mr-2" />
+          <span>Carregando reuniões...</span>
+        </div>
+      )}
+
+      {error && (
+        <div className="p-4 bg-red-50 dark:bg-red-950/30 rounded-lg border border-red-200 dark:border-red-800 text-center">
+          <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400 mx-auto mb-2" />
+          <h3 className="text-lg font-semibold text-red-600 dark:text-red-400 mb-1">
+            Erro ao carregar reuniões
+          </h3>
+          <p className="text-sm text-red-700 dark:text-red-300 mb-3">
+            {error}
+          </p>
+          <Button 
+            variant="outline" 
+            onClick={fetchReunioes}
+            className="border-red-300 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-950/50"
+          >
+            Tentar novamente
+          </Button>
+        </div>
+      )}
+
+      {!loading && !error && (
+        <div className="space-y-3">
+        {reunioes.map((reuniao) => {
           // Verificar se é evento especial
           if (reuniao.eventoEspecial) {
             return (
@@ -235,7 +322,7 @@ export default function NVCPage() {
                   </div>
 
                   <div className="space-y-3">
-                    {reuniao.facaSeuMelhor?.map((parte, index) => (
+                    {reuniao.facaSeuMelhor?.map((parte: { tipo: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; duracao: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; descricao: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; responsavel: { nome: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; }; ajudante: { nome: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; }; }, index: Key | null | undefined) => (
                       <div key={index} className="p-3 bg-white dark:bg-gray-800 rounded-lg border">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-3">
@@ -286,7 +373,7 @@ export default function NVCPage() {
                   </div>
 
                   <div className="space-y-3">
-                    {reuniao.nossaVidaCrista?.map((parte, index) => (
+                    {reuniao.nossaVidaCrista?.map((parte: NossaVidaCristaParte, index: Key | null | undefined) => (
                       <div key={index} className="p-3 bg-white dark:bg-gray-800 rounded-lg border">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-3">
@@ -339,7 +426,14 @@ export default function NVCPage() {
             </CollapsibleCard>
           );
         })}
-      </div>
+        </div>
+      )}
+
+      <ImportPdfDialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+        onImportSuccess={handleImportSuccess}
+      />
     </div>
   );
 }

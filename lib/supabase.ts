@@ -9,6 +9,29 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 export interface Database {
   public: {
     Tables: {
+      congregacoes: {
+        Row: {
+          id: string;
+          nome: string;
+          endereco: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          nome: string;
+          endereco?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          nome?: string;
+          endereco?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
       users: {
         Row: {
           id: string
@@ -134,6 +157,162 @@ export interface Database {
           privilegio?: string | null
           created_at?: string
           updated_at?: string
+        }
+      }
+      reunioes_nvc: {
+        Row: {
+          id: string
+          congregacao_id: string
+          periodo: string
+          leitura_biblica: string | null
+          presidente_id: string | null
+          oracao_inicial_id: string | null
+          oracao_final_id: string | null
+          cantico_inicial: string | null
+          cantico_intermediario: string | null
+          cantico_final: string | null
+          comentarios_iniciais: string | null
+          comentarios_finais: string | null
+          tesouros_titulo: string | null
+          tesouros_duracao: string | null
+          tesouros_responsavel_id: string | null
+          joias_texto: string | null
+          joias_pergunta: string | null
+          joias_referencia: string | null
+          joias_duracao: string | null
+          joias_responsavel_id: string | null
+          leitura_biblica_texto: string | null
+          leitura_biblica_duracao: string | null
+          leitura_biblica_responsavel_id: string | null
+          evento_especial: string | null
+          semana_visita_superintendente: boolean
+          dia_terca: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          congregacao_id: string
+          periodo: string
+          leitura_biblica?: string | null
+          presidente_id?: string | null
+          oracao_inicial_id?: string | null
+          oracao_final_id?: string | null
+          cantico_inicial?: string | null
+          cantico_intermediario?: string | null
+          cantico_final?: string | null
+          comentarios_iniciais?: string | null
+          comentarios_finais?: string | null
+          tesouros_titulo?: string | null
+          tesouros_duracao?: string | null
+          tesouros_responsavel_id?: string | null
+          joias_texto?: string | null
+          joias_pergunta?: string | null
+          joias_referencia?: string | null
+          joias_duracao?: string | null
+          joias_responsavel_id?: string | null
+          leitura_biblica_texto?: string | null
+          leitura_biblica_duracao?: string | null
+          leitura_biblica_responsavel_id?: string | null
+          evento_especial?: string | null
+          semana_visita_superintendente?: boolean
+          dia_terca?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          congregacao_id?: string
+          periodo?: string
+          leitura_biblica?: string | null
+          presidente_id?: string | null
+          oracao_inicial_id?: string | null
+          oracao_final_id?: string | null
+          cantico_inicial?: string | null
+          cantico_intermediario?: string | null
+          cantico_final?: string | null
+          comentarios_iniciais?: string | null
+          comentarios_finais?: string | null
+          tesouros_titulo?: string | null
+          tesouros_duracao?: string | null
+          tesouros_responsavel_id?: string | null
+          joias_texto?: string | null
+          joias_pergunta?: string | null
+          joias_referencia?: string | null
+          joias_duracao?: string | null
+          joias_responsavel_id?: string | null
+          leitura_biblica_texto?: string | null
+          leitura_biblica_duracao?: string | null
+          leitura_biblica_responsavel_id?: string | null
+          evento_especial?: string | null
+          semana_visita_superintendente?: boolean
+          dia_terca?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      faca_seu_melhor_partes: {
+        Row: {
+          id: string
+          reuniao_nvc_id: string
+          tipo: string
+          duracao: string
+          descricao: string | null
+          responsavel_id: string | null
+          ajudante_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          reuniao_nvc_id: string
+          tipo: string
+          duracao: string
+          descricao?: string | null
+          responsavel_id?: string | null
+          ajudante_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          reuniao_nvc_id?: string
+          tipo?: string
+          duracao?: string
+          descricao?: string | null
+          responsavel_id?: string | null
+          ajudante_id?: string | null
+          created_at?: string
+        }
+      }
+      nossa_vida_crista_partes: {
+        Row: {
+          id: string
+          reuniao_nvc_id: string
+          tipo: string
+          duracao: string
+          conteudo: string | null
+          responsavel_id: string | null
+          leitor_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          reuniao_nvc_id: string
+          tipo: string
+          duracao: string
+          conteudo?: string | null
+          responsavel_id?: string | null
+          leitor_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          reuniao_nvc_id?: string
+          tipo?: string
+          duracao?: string
+          conteudo?: string | null
+          responsavel_id?: string | null
+          leitor_id?: string | null
+          created_at?: string
         }
       }
     }

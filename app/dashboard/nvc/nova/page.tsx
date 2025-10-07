@@ -58,6 +58,7 @@ export default function NovaReuniaoPage() {
   const [formData, setFormData] = useState<NovaReuniaoData>({
     periodo: formatPeriod(getNextMonday()),
     leituraBiblica: "",
+    comentarios: null,
     oracoes: {},
     canticos: {
       inicial: "",
@@ -205,7 +206,7 @@ export default function NovaReuniaoPage() {
     fetchPublicadores();
   }, []);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validações básicas
     if (!formData.periodo) {
       toast.error("Período é obrigatório");
@@ -217,9 +218,49 @@ export default function NovaReuniaoPage() {
       return;
     }
 
-    // Simular salvamento
-    toast.success("Reunião criada com sucesso!");
-    router.push("/dashboard/nvc");
+    try {
+      // Preparar dados para envio
+      const reuniaoData = {
+        nossa_vida_crista: [{
+          id: `nova-${Date.now()}`,
+          congregacao_id: "660e8400-e29b-41d4-a716-446655440001", // ID padrão da congregação
+          periodo: formData.periodo,
+          leituraBiblica: formData.leituraBiblica,
+          presidente: formData.presidente,
+          oracoes: formData.oracoes,
+          canticos: formData.canticos,
+          comentarios: formData.comentarios,
+          tesourosPalavra: formData.tesourosPalavra,
+          facaSeuMelhor: formData.facaSeuMelhor,
+          nossaVidaCrista: formData.nossaVidaCrista,
+          eventoEspecial: formData.eventoEspecial || null,
+          semanaVisitaSuperintendente: formData.semanaVisitaSuperintendente,
+          diaTerca: formData.diaTerca
+        }]
+      };
+
+      // Salvar no Supabase
+      const response = await fetch('/api/nvc/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(reuniaoData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erro ao salvar reunião');
+      }
+
+      const result = await response.json();
+      
+      toast.success("Reunião criada e salva no Supabase com sucesso!");
+      router.push("/dashboard/nvc");
+    } catch (error) {
+      console.error('Erro ao salvar reunião:', error);
+      toast.error(`Erro ao salvar reunião: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    }
   };
 
   const selectedBookData = BIBLE_BOOKS.find(book => book.name === selectedBook);

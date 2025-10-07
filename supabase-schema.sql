@@ -97,7 +97,68 @@ CREATE TABLE IF NOT EXISTS designacoes_territorio (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Tabela de reuniões NVC (Nossa Vida Cristã)
+CREATE TABLE IF NOT EXISTS reunioes_nvc (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    congregacao_id UUID NOT NULL REFERENCES congregacoes(id),
+    periodo TEXT NOT NULL,
+    leitura_biblica TEXT,
+    presidente_id UUID REFERENCES publicadores(id),
+    oracao_inicial_id UUID REFERENCES publicadores(id),
+    oracao_final_id UUID REFERENCES publicadores(id),
+    cantico_inicial TEXT,
+    cantico_intermediario TEXT,
+    cantico_final TEXT,
+    comentarios_iniciais TEXT,
+    comentarios_finais TEXT,
+    tesouros_titulo TEXT,
+    tesouros_duracao TEXT,
+    tesouros_responsavel_id UUID REFERENCES publicadores(id),
+    joias_texto TEXT,
+    joias_pergunta TEXT,
+    joias_referencia TEXT,
+    joias_duracao TEXT,
+    joias_responsavel_id UUID REFERENCES publicadores(id),
+    leitura_biblica_texto TEXT,
+    leitura_biblica_duracao TEXT,
+    leitura_biblica_responsavel_id UUID REFERENCES publicadores(id),
+    evento_especial TEXT,
+    semana_visita_superintendente BOOLEAN DEFAULT FALSE,
+    dia_terca BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Tabela para partes "Faça seu Melhor"
+CREATE TABLE IF NOT EXISTS faca_seu_melhor_partes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    reuniao_nvc_id UUID NOT NULL REFERENCES reunioes_nvc(id) ON DELETE CASCADE,
+    ordem INTEGER NOT NULL,
+    tipo TEXT NOT NULL,
+    duracao TEXT NOT NULL,
+    descricao TEXT NOT NULL,
+    responsavel_id UUID REFERENCES publicadores(id),
+    ajudante_id UUID REFERENCES publicadores(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Tabela para partes "Nossa Vida Cristã"
+CREATE TABLE IF NOT EXISTS nossa_vida_crista_partes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    reuniao_nvc_id UUID NOT NULL REFERENCES reunioes_nvc(id) ON DELETE CASCADE,
+    ordem INTEGER NOT NULL,
+    tipo TEXT NOT NULL,
+    duracao TEXT NOT NULL,
+    conteudo TEXT,
+    responsavel_id UUID REFERENCES publicadores(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Triggers para atualizar updated_at automaticamente
+CREATE TRIGGER update_reunioes_nvc_updated_at 
+    BEFORE UPDATE ON reunioes_nvc 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 CREATE TRIGGER update_territorios_updated_at 
     BEFORE UPDATE ON territorios 
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -107,6 +168,10 @@ CREATE TRIGGER update_designacoes_territorio_updated_at
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Índices para melhor performance
+CREATE INDEX IF NOT EXISTS idx_reunioes_nvc_congregacao_id ON reunioes_nvc(congregacao_id);
+CREATE INDEX IF NOT EXISTS idx_reunioes_nvc_periodo ON reunioes_nvc(periodo);
+CREATE INDEX IF NOT EXISTS idx_faca_seu_melhor_partes_reuniao_id ON faca_seu_melhor_partes(reuniao_nvc_id);
+CREATE INDEX IF NOT EXISTS idx_nossa_vida_crista_partes_reuniao_id ON nossa_vida_crista_partes(reuniao_nvc_id);
 CREATE INDEX IF NOT EXISTS idx_territorios_congregacao_id ON territorios(congregacao_id);
 CREATE INDEX IF NOT EXISTS idx_designacoes_territorio_territorio_id ON designacoes_territorio(territorio_id);
 CREATE INDEX IF NOT EXISTS idx_designacoes_territorio_publicador_id ON designacoes_territorio(publicador_id);

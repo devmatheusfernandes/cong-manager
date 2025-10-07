@@ -71,9 +71,22 @@ export async function POST(request: NextRequest) {
         console.log('👥 Nomes para buscar IDs:', nomes);
         const publicadorIds = await buscarPublicadorIds(nomes);
 
-        // Inserir reunião principal
-        console.log('💾 Inserindo reunião principal no Supabase...');
-        const reuniaoInsert = {
+        // Verificar se a reunião já existe para este período e congregação
+        console.log('🔍 Verificando se reunião já existe...');
+        const { data: reuniaoExistente, error: buscarError } = await supabase
+          .from('reunioes_nvc')
+          .select('id')
+          .eq('congregacao_id', congregacao.id)
+          .eq('periodo', reuniao.periodo)
+          .single();
+
+        if (buscarError && buscarError.code !== 'PGRST116') {
+          console.log('❌ Erro ao buscar reunião existente:', buscarError);
+          errors.push(`Erro ao verificar reunião ${reuniao.periodo}: ${buscarError.message}`);
+          continue;
+        }
+
+        const reuniaoData = {
           congregacao_id: congregacao.id,
           periodo: reuniao.periodo,
           leitura_biblica: reuniao.leituraBiblica,
@@ -100,27 +113,57 @@ export async function POST(request: NextRequest) {
           semana_visita_superintendente: reuniao.semanaVisitaSuperintendente,
           dia_terca: reuniao.diaTerca
         };
-        
-        console.log('📋 Dados para inserir:', JSON.stringify(reuniaoInsert, null, 2));
-        
-        const { data: reuniaoData, error: reuniaoError } = await supabase
-          .from('reunioes_nvc')
-          .insert(reuniaoInsert)
-          .select()
-          .single();
 
-        if (reuniaoError) {
-          console.log('❌ Erro ao inserir reunião:', reuniaoError);
-          errors.push(`Erro ao salvar reunião ${reuniao.periodo}: ${reuniaoError.message}`);
-          continue;
+        let reuniaoResult;
+
+        if (reuniaoExistente) {
+          // Atualizar reunião existente
+          console.log('🔄 Atualizando reunião existente...');
+          const { data: updatedReuniao, error: updateError } = await supabase
+            .from('reunioes_nvc')
+            .update(reuniaoData)
+            .eq('id', reuniaoExistente.id)
+            .select()
+            .single();
+
+          if (updateError) {
+            console.log('❌ Erro ao atualizar reunião:', updateError);
+            errors.push(`Erro ao atualizar reunião ${reuniao.periodo}: ${updateError.message}`);
+            continue;
+          }
+
+          reuniaoResult = updatedReuniao;
+          console.log('✅ Reunião atualizada com sucesso:', reuniaoResult.id);
+
+          // Remover partes antigas antes de inserir as novas
+          await supabase.from('faca_seu_melhor_partes').delete().eq('reuniao_nvc_id', reuniaoResult.id);
+          await supabase.from('nossa_vida_crista_partes').delete().eq('reuniao_nvc_id', reuniaoResult.id);
+
+        } else {
+          // Inserir nova reunião
+          console.log('💾 Inserindo nova reunião...');
+          const { data: newReuniao, error: insertError } = await supabase
+            .from('reunioes_nvc')
+            .insert(reuniaoData)
+            .select()
+            .single();
+
+          if (insertError) {
+            console.log('❌ Erro ao inserir reunião:', insertError);
+            errors.push(`Erro ao salvar reunião ${reuniao.periodo}: ${insertError.message}`);
+            continue;
+          }
+
+          reuniaoResult = newReuniao;
+          console.log('✅ Reunião inserida com sucesso:', reuniaoResult.id);
         }
         
-        console.log('✅ Reunião inserida com sucesso:', reuniaoData.id);
+        console.log('✅ Reunião inserida com sucesso:', reuniaoResult.id);
 
         // Inserir partes "Faça seu Melhor"
         if (reuniao.facaSeuMelhor && reuniao.facaSeuMelhor.length > 0) {
           const facaSeuMelhorPartes = reuniao.facaSeuMelhor.map((parte, index) => ({
-            reuniao_nvc_id: reuniaoData.id,
+            reuniao_nvc_id: reuniaoResult.id,
             ordem: index + 1,
             tipo: parte.tipo,
             duracao: parte.duracao,
@@ -141,7 +184,7 @@ export async function POST(request: NextRequest) {
         // Inserir partes "Nossa Vida Cristã"
         if (reuniao.nossaVidaCrista && reuniao.nossaVidaCrista.length > 0) {
           const nossaVidaCristaPartes = reuniao.nossaVidaCrista.map((parte, index) => ({
-            reuniao_nvc_id: reuniaoData.id,
+            reuniao_nvc_id: reuniaoResult.id,
             ordem: index + 1,
             tipo: parte.tipo,
             duracao: parte.duracao,
@@ -159,7 +202,7 @@ export async function POST(request: NextRequest) {
         }
 
         savedReunioes.push({
-          id: reuniaoData.id,
+          id: reuniaoResult.id,
           periodo: reuniao.periodo
         });
 

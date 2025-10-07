@@ -6,6 +6,9 @@ import { CollapsibleCard } from "@/components/collapsible-card";
 import { Badge } from "@/components/ui/badge";
 import { ImportPdfDialog } from "@/components/import-pdf-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import type { NossaVidaCristaParte } from "@/lib/mock-data-reunioes";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -27,6 +30,8 @@ import {
   Upload,
   Loader2,
   Filter,
+  Edit,
+  Printer,
 } from "lucide-react";
 
 export default function NVCPage() {
@@ -36,6 +41,19 @@ export default function NVCPage() {
   const [reunioes, setReunioes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editingReuniao, setEditingReuniao] = useState<any>(null);
+  const [publicadores, setPublicadores] = useState<any[]>([]);
+  const [loadingPublicadores, setLoadingPublicadores] = useState(false);
+  
+  // Estados para controlar os valores dos selects
+  const [presidenteValue, setPresidenteValue] = useState<string>("");
+  const [oracaoInicialValue, setOracaoInicialValue] = useState<string>("");
+  const [oracaoFinalValue, setOracaoFinalValue] = useState<string>("");
+  const [tesourosPalavraResponsavelValue, setTesourosPalavraResponsavelValue] = useState<string>("");
+  const [joiasResponsavelValue, setJoiasResponsavelValue] = useState<string>("");
+  const [leituraResponsavelValue, setLeituraResponsavelValue] = useState<string>("");
+  const [facaSeuMelhorResponsaveis, setFacaSeuMelhorResponsaveis] = useState<string[]>([]);
+  const [nossaVidaCristaResponsaveis, setNossaVidaCristaResponsaveis] = useState<string[]>([]);
   
   // Estados para filtros
   const [selectedMes, setSelectedMes] = useState<string>(() => {
@@ -94,10 +112,438 @@ export default function NVCPage() {
     }
   };
 
+  // Função para buscar publicadores
+  const fetchPublicadores = async () => {
+    try {
+      setLoadingPublicadores(true);
+      const response = await fetch('/api/publicadores');
+      if (response.ok) {
+        const data = await response.json();
+        setPublicadores(data);
+      } else {
+        toast.error('Erro ao carregar publicadores');
+      }
+    } catch (error) {
+      console.error('Erro ao buscar publicadores:', error);
+      toast.error('Erro ao carregar publicadores');
+    } finally {
+      setLoadingPublicadores(false);
+    }
+  };
+
+  // Função para abrir modal de edição
+  const handleEditReuniao = (reuniao: any) => {
+    setEditingReuniao(reuniao);
+    
+    // Inicializar valores dos selects
+    setPresidenteValue(reuniao.presidente?.nome || "");
+    setOracaoInicialValue(reuniao.oracoes?.inicial?.nome || "");
+    setOracaoFinalValue(reuniao.oracoes?.final?.nome || "");
+    setTesourosPalavraResponsavelValue(reuniao.tesourosPalavra?.responsavel?.nome || "");
+    setJoiasResponsavelValue(reuniao.tesourosPalavra?.joiasEspirituais?.responsavel?.nome || "");
+    setLeituraResponsavelValue(reuniao.tesourosPalavra?.leituraBiblica?.responsavel?.nome || "");
+    
+    // Inicializar arrays de responsáveis
+    if (Array.isArray(reuniao.facaSeuMelhor)) {
+      setFacaSeuMelhorResponsaveis(reuniao.facaSeuMelhor.map((parte: any) => parte.responsavel?.nome || ""));
+    } else {
+      setFacaSeuMelhorResponsaveis([]);
+    }
+    
+    if (Array.isArray(reuniao.nossaVidaCrista)) {
+      setNossaVidaCristaResponsaveis(reuniao.nossaVidaCrista.map((parte: any) => parte.responsavel?.nome || ""));
+    } else {
+      setNossaVidaCristaResponsaveis([]);
+    }
+  };
+
+  // Função para verificar conflitos (mesma pessoa em semanas seguidas)
+  const verificarConflitos = (publicadorNome: string, reuniaoAtual: any) => {
+    if (!publicadorNome || !reuniaoAtual) return [];
+    
+    const conflitos: { reuniao: any; partes: string[]; }[] = [];
+    const dataAtual = new Date(reuniaoAtual.periodo);
+    
+    // Verificar reuniões próximas (semana anterior e posterior)
+    reunioes.forEach(reuniao => {
+      if (reuniao.id === reuniaoAtual.id) return;
+      
+      const dataReuniao = new Date(reuniao.periodo);
+      const diffDias = Math.abs((dataAtual.getTime() - dataReuniao.getTime()) / (1000 * 60 * 60 * 24));
+      
+      // Se a diferença for de 7 dias (uma semana)
+      if (diffDias === 7) {
+        // Verificar se a pessoa tem alguma parte nesta reunião
+        const temParte = verificarSeTemParte(publicadorNome, reuniao);
+        if (temParte.length > 0) {
+          conflitos.push({
+            reuniao: reuniao.periodo,
+            partes: temParte
+          });
+        }
+      }
+    });
+    
+    return conflitos;
+  };
+
+  // Função auxiliar para verificar se uma pessoa tem parte em uma reunião
+  const verificarSeTemParte = (publicadorNome: string, reuniao: any) => {
+    const partes = [];
+    
+    // Verificar presidente
+    if (reuniao.presidente?.nome === publicadorNome) {
+      partes.push('Presidente');
+    }
+    
+    // Verificar orações
+    if (reuniao.oracoes?.inicial?.nome === publicadorNome) {
+      partes.push('Oração Inicial');
+    }
+    if (reuniao.oracoes?.final?.nome === publicadorNome) {
+      partes.push('Oração Final');
+    }
+    
+    // Verificar Tesouros da Palavra de Deus
+    if (Array.isArray(reuniao.tesourosPalavra)) {
+      reuniao.tesourosPalavra.forEach((parte: any, index: number) => {
+        if (parte.responsavel?.nome === publicadorNome) {
+          partes.push(`Tesouros - ${parte.tipo || `Parte ${index + 1}`}`);
+        }
+      });
+    }
+    
+    // Verificar Faça Seu Melhor no Ministério
+    if (Array.isArray(reuniao.facaSeuMelhor)) {
+      reuniao.facaSeuMelhor.forEach((parte: any, index: number) => {
+        if (parte.responsavel?.nome === publicadorNome) {
+          partes.push(`Ministério - ${parte.tipo || `Parte ${index + 1}`}`);
+        }
+        if (parte.ajudante?.nome === publicadorNome) {
+          partes.push(`Ministério - ${parte.tipo || `Parte ${index + 1}`} (Ajudante)`);
+        }
+      });
+    }
+    
+    // Verificar Nossa Vida Cristã
+    if (Array.isArray(reuniao.nossaVidaCrista)) {
+      reuniao.nossaVidaCrista.forEach((parte: any, index: number) => {
+        if (parte.responsavel?.nome === publicadorNome) {
+          partes.push(`NVC - ${parte.tipo || `Parte ${index + 1}`}`);
+        }
+        if (parte.leitor?.nome === publicadorNome) {
+          partes.push(`NVC - ${parte.tipo || `Parte ${index + 1}`} (Leitor)`);
+        }
+      });
+    }
+    
+    return partes;
+  };
+
+  // Função para imprimir reuniões do mês
+  const handleSaveReuniao = async () => {
+    if (!editingReuniao) return;
+
+    try {
+      // Coletar dados dos inputs
+      const formData = new FormData();
+      
+      // Dados básicos - usando valores dos estados
+      const presidente = presidenteValue;
+      const oracaoInicial = oracaoInicialValue;
+      const oracaoFinal = oracaoFinalValue;
+
+      // Tesouros da Palavra
+      const tesourosPalavraResponsavel = tesourosPalavraResponsavelValue;
+      const joiasResponsavel = joiasResponsavelValue;
+      const leituraResponsavel = leituraResponsavelValue;
+      
+      // Coletar valores dos campos das Jóias Espirituais
+      const joiasTexto = (document.getElementById('joias-texto') as HTMLInputElement)?.value || '';
+      const joiasPergunta = (document.getElementById('joias-pergunta') as HTMLInputElement)?.value || '';
+      const joiasReferencia = (document.getElementById('joias-referencia') as HTMLInputElement)?.value || '';
+      
+      const tesourosPalavra = editingReuniao.tesourosPalavra ? {
+        titulo: editingReuniao.tesourosPalavra.titulo || '',
+        duracao: editingReuniao.tesourosPalavra.duracao || '',
+        responsavel: tesourosPalavraResponsavel ? { nome: tesourosPalavraResponsavel, id: tesourosPalavraResponsavel } : { nome: '', id: '' },
+        joiasEspirituais: {
+          texto: joiasTexto,
+          pergunta: joiasPergunta,
+          referencia: joiasReferencia,
+          duracao: editingReuniao.tesourosPalavra.joiasEspirituais?.duracao || '',
+          responsavel: joiasResponsavel ? { nome: joiasResponsavel, id: joiasResponsavel } : { nome: '', id: '' }
+        },
+        leituraBiblica: {
+          texto: editingReuniao.tesourosPalavra.leituraBiblica?.texto || '',
+          duracao: editingReuniao.tesourosPalavra.leituraBiblica?.duracao || '',
+          responsavel: leituraResponsavel ? { nome: leituraResponsavel, id: leituraResponsavel } : { nome: '', id: '' }
+        }
+      } : null;
+
+      // Faça Seu Melhor no Ministério
+      const facaSeuMelhor = Array.isArray(editingReuniao.facaSeuMelhor)
+        ? editingReuniao.facaSeuMelhor.map((parte: any, index: number) => {
+            const responsavelNome = facaSeuMelhorResponsaveis[index] || '';
+            const ajudanteNome = (document.querySelector(`[id="ministerio-ajudante-${index}"] [data-state="closed"]`) as HTMLElement)?.textContent?.trim() || '';
+            
+            return {
+              ...parte,
+              responsavel: responsavelNome ? { nome: responsavelNome, id: responsavelNome } : { nome: '', id: '' },
+              ...(parte.ajudante && {
+                ajudante: ajudanteNome ? { nome: ajudanteNome, id: ajudanteNome } : { nome: '', id: '' }
+              })
+            };
+          })
+        : [];
+
+      // Nossa Vida Cristã
+      const nossaVidaCrista = Array.isArray(editingReuniao.nossaVidaCrista)
+        ? editingReuniao.nossaVidaCrista.map((parte: any, index: number) => {
+            const responsavelNome = nossaVidaCristaResponsaveis[index] || '';
+            const leitorNome = (document.querySelector(`[id="nvc-leitor-${index}"] [data-state="closed"]`) as HTMLElement)?.textContent?.trim() || '';
+            
+            return {
+              ...parte,
+              responsavel: responsavelNome ? { nome: responsavelNome, id: responsavelNome } : { nome: '', id: '' },
+              ...(parte.leitor && {
+                leitor: leitorNome ? { nome: leitorNome, id: leitorNome } : { nome: '', id: '' }
+              })
+            };
+          })
+        : [];
+
+      const updatedReuniao = {
+        ...editingReuniao,
+        presidente: presidente ? { nome: presidente, id: presidente } : null,
+        oracoes: {
+          inicial: oracaoInicial ? { nome: oracaoInicial, id: oracaoInicial } : { nome: '', id: '' },
+          final: oracaoFinal ? { nome: oracaoFinal, id: oracaoFinal } : { nome: '', id: '' }
+        },
+        tesourosPalavra,
+        facaSeuMelhor,
+        nossaVidaCrista
+      };
+
+      // Formato esperado pelo validador: { nossa_vida_crista: [reuniao] }
+      const dataToSend = {
+        nossa_vida_crista: [updatedReuniao]
+      };
+
+      const response = await fetch('/api/nvc/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dataToSend),
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao salvar reunião');
+      }
+
+      toast.success('Reunião salva com sucesso!');
+      setEditingReuniao(null);
+      
+      // Recarregar dados
+      await fetchReunioes();
+      
+    } catch (error) {
+      console.error('Erro ao salvar reunião:', error);
+      toast.error('Erro ao salvar reunião');
+    }
+  };
+
+  const imprimirMes = (mesNumero: string) => {
+    // Filtrar reuniões do mês específico
+    const reunioesMes = reunioes.filter(reuniao => {
+      if (mesNumero === "all") return true;
+      
+      const mesesPortugues = [
+        'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+        'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'
+      ];
+      
+      const mesNome = mesesPortugues[parseInt(mesNumero) - 1];
+      return reuniao.periodo?.toLowerCase().includes(mesNome);
+    });
+
+    if (reunioesMes.length === 0) {
+      toast.error('Nenhuma reunião encontrada para este mês');
+      return;
+    }
+
+    // Gerar HTML para impressão
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html lang="pt-BR">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Programação da Reunião do Meio de Semana</title>
+          <style>
+              body {
+                  font-family: Arial, sans-serif;
+                  margin: 20px;
+                  font-size: 12px;
+                  background-color: #fdfdfd;
+              }
+              table {
+                  width: 100%;
+                  border-collapse: collapse;
+                  margin-bottom: 30px;
+              }
+              td, th {
+                  border: 1px solid #ccc;
+                  padding: 5px 8px;
+                  vertical-align: top;
+                  text-align: left;
+              }
+              .header {
+                  font-weight: bold;
+                  background-color: #f0f0f0;
+                  text-align: center;
+                  font-size: 14px;
+              }
+              .section-header {
+                  font-weight: bold;
+                  color: #fff;
+                  text-align: center;
+                  text-transform: uppercase;
+              }
+              .section-treasures {
+                  background-color: #4F46E5;
+              }
+              .section-ministry {
+                  background-color: #F59E0B;
+              }
+              .section-life {
+                  background-color: #F43F5E;
+              }
+              .date-header {
+                  font-weight: bold;
+                  font-size: 13px;
+              }
+              .name-field {
+                  background-color: #f9f9f9;
+                  font-weight: normal;
+              }
+              .spacer td {
+                  border: none;
+              }
+              @media print {
+                  body {
+                      font-size: 10pt;
+                      margin: 1cm;
+                  }
+                  table {
+                      margin-bottom: 1.5cm;
+                  }
+                  #schedules-container table:nth-of-type(2n) {
+                      page-break-after: always;
+                  }
+                  #schedules-container table:last-of-type {
+                      page-break-after: auto;
+                  }
+              }
+          </style>
+      </head>
+      <body>
+          <div id="schedules-container">
+              ${reunioesMes.map(reuniao => `
+                  <table>
+                      <tr class="header">
+                          <td colspan="2">${reuniao.periodo} • ${reuniao.leituraBiblica}</td>
+                      </tr>
+                      <tr>
+                          <td class="date-header">Presidente:</td>
+                          <td class="name-field">${reuniao.presidente?.nome || ''}</td>
+                      </tr>
+                      <tr>
+                          <td class="date-header">Cântico inicial:</td>
+                          <td class="name-field">${reuniao.canticos?.inicial || ''}</td>
+                      </tr>
+                      <tr>
+                          <td class="date-header">Oração inicial:</td>
+                          <td class="name-field">${reuniao.oracoes?.inicial?.nome || ''}</td>
+                      </tr>
+                      <tr class="section-header section-treasures">
+                          <td colspan="2">Tesouros da Palavra de Deus</td>
+                      </tr>
+                      ${reuniao.tesourosPalavra ? `
+                          <tr>
+                              <td>${reuniao.tesourosPalavra.titulo || ''}</td>
+                              <td class="name-field">${reuniao.tesourosPalavra.responsavel?.nome || ''}</td>
+                          </tr>
+                          ${reuniao.tesourosPalavra.joiasEspirituais ? `
+                              <tr>
+                                  <td>Jóias espirituais (${reuniao.tesourosPalavra.joiasEspirituais.duracao || ''})</td>
+                                  <td class="name-field">${reuniao.tesourosPalavra.joiasEspirituais.responsavel?.nome || ''}</td>
+                              </tr>
+                          ` : ''}
+                          ${reuniao.tesourosPalavra.leituraBiblica ? `
+                              <tr>
+                                  <td>Leitura da Bíblia (${reuniao.tesourosPalavra.leituraBiblica.duracao || ''})</td>
+                                  <td class="name-field">${reuniao.tesourosPalavra.leituraBiblica.responsavel?.nome || ''}</td>
+                              </tr>
+                          ` : ''}
+                      ` : ''}
+                      <tr class="section-header section-ministry">
+                          <td colspan="2">Faça Seu Melhor no Ministério</td>
+                      </tr>
+                      ${reuniao.facaSeuMelhor?.map((item: any) => `
+                          <tr>
+                              <td>${item.tipo || ''} (${item.duracao || ''})</td>
+                              <td class="name-field">${item.responsavel?.nome || ''}</td>
+                          </tr>
+                      `).join('') || ''}
+                      <tr class="section-header section-life">
+                          <td colspan="2">Nossa Vida Cristã</td>
+                      </tr>
+                      ${reuniao.nossaVidaCrista?.map((item: any) => `
+                          <tr>
+                              <td>${item.tipo || ''} (${item.duracao || ''})</td>
+                              <td class="name-field">${item.responsavel?.nome || ''}</td>
+                          </tr>
+                      `).join('') || ''}
+                      <tr>
+                          <td class="date-header">Comentários finais:</td>
+                          <td class="name-field">${reuniao.comentarios?.finais || ''}</td>
+                      </tr>
+                      <tr>
+                          <td class="date-header">Cântico final:</td>
+                          <td class="name-field">${reuniao.canticos?.final || ''}</td>
+                      </tr>
+                      <tr>
+                          <td class="date-header">Oração final:</td>
+                          <td class="name-field">${reuniao.oracoes?.final?.nome || ''}</td>
+                      </tr>
+                  </table>
+              `).join('')}
+          </div>
+      </body>
+      </html>
+    `;
+
+    // Abrir nova janela para impressão
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+    }
+  };
+
   // Carregar reuniões ao montar o componente e quando filtros mudarem
   useEffect(() => {
     fetchReunioes();
   }, [selectedMes]);
+
+  // Carregar publicadores ao montar o componente
+  useEffect(() => {
+    fetchPublicadores();
+  }, []);
 
   const handleImportSuccess = (importedData: any) => {
     // Após importar com sucesso, recarregar os dados do Supabase
@@ -183,6 +629,16 @@ export default function NVCPage() {
             Limpar Filtros
           </Button>
         )}
+
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => imprimirMes(selectedMes)}
+          disabled={loading || reunioes.length === 0}
+        >
+          <Printer className="h-4 w-4 mr-2" />
+          Imprimir
+        </Button>
       </div>
 
       {loading && (
@@ -505,22 +961,543 @@ export default function NVCPage() {
 
 
 
-                <div className="flex gap-2 pt-2">
-                  {canEditNVC && (
-                    <Button size="sm" variant="outline" className="flex-1">
+                {canEditNVC && (
+                  <div className="flex gap-2 pt-2">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="w-full flex items-center gap-2"
+                      onClick={() => handleEditReuniao(reuniao)}
+                    >
+                      <Edit className="h-4 w-4" />
                       Editar
                     </Button>
-                  )}
-                  <Button size="sm" variant="outline" className={canEditNVC ? "flex-1" : "w-full"}>
-                    Imprimir
-                  </Button>
-                </div>
+                  </div>
+                )}
               </div>
             </CollapsibleCard>
           );
         })}
         </div>
       )}
+
+      <Dialog open={!!editingReuniao} onOpenChange={() => setEditingReuniao(null)}>
+        <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto">
+          <DialogHeader className="pb-4 border-b">
+            <DialogTitle className="text-xl font-bold">
+              Editar Reunião - {editingReuniao?.periodo}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {editingReuniao && (
+            <div className="space-y-8 py-4">
+              {/* Presidente e Orações */}
+              <div className="space-y-4 p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 border-b pb-2">
+                  👨‍💼 Presidente e Orações
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="presidente">Presidente</Label>
+                    <Select value={presidenteValue} onValueChange={setPresidenteValue}>
+                      <SelectTrigger id="presidente">
+                        <SelectValue placeholder="Selecione o presidente" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {publicadores
+                          .filter(pub => pub.privilegio === 'anciao' || pub.privilegio === 'servo_ministerial')
+                          .map(publicador => {
+                            const conflitos = verificarConflitos(publicador.nome, editingReuniao);
+                            return (
+                              <SelectItem 
+                                key={publicador.id} 
+                                value={publicador.nome}
+                                className={conflitos.length > 0 ? "text-amber-600 font-medium" : ""}
+                              >
+                                {publicador.nome}
+                                {conflitos.length > 0 && " ⚠️"}
+                              </SelectItem>
+                            );
+                          })}
+                      </SelectContent>
+                    </Select>
+                    {(() => {
+                      const nomePresidente = editingReuniao.presidente?.nome;
+                      if (nomePresidente) {
+                        const conflitos = verificarConflitos(nomePresidente, editingReuniao);
+                        if (conflitos.length > 0) {
+                          return (
+                            <div className="text-sm text-amber-600 mt-1">
+                              ⚠️ Conflito: {conflitos.map(c => `${c.reuniao} (${c.partes.join(', ')})`).join('; ')}
+                            </div>
+                          );
+                        }
+                      }
+                      return null;
+                    })()}
+                  </div>
+                  <div>
+                    <Label htmlFor="oracaoInicial">Oração Inicial</Label>
+                    <Select value={oracaoInicialValue} onValueChange={setOracaoInicialValue}>
+                      <SelectTrigger id="oracaoInicial">
+                        <SelectValue placeholder="Selecione para oração inicial" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {publicadores.map(publicador => {
+                          const conflitos = verificarConflitos(publicador.nome, editingReuniao);
+                          return (
+                            <SelectItem 
+                              key={publicador.id} 
+                              value={publicador.nome}
+                              className={conflitos.length > 0 ? "text-amber-600 font-medium" : ""}
+                            >
+                              {publicador.nome}
+                              {conflitos.length > 0 && " ⚠️"}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                    {(() => {
+                      const nomeOracaoInicial = editingReuniao.oracoes?.inicial?.nome;
+                      if (nomeOracaoInicial) {
+                        const conflitos = verificarConflitos(nomeOracaoInicial, editingReuniao);
+                        if (conflitos.length > 0) {
+                          return (
+                            <div className="text-sm text-amber-600 mt-1">
+                              ⚠️ Conflito: {conflitos.map(c => `${c.reuniao} (${c.partes.join(', ')})`).join('; ')}
+                            </div>
+                          );
+                        }
+                      }
+                      return null;
+                    })()}
+                  </div>
+                  <div>
+                    <Label htmlFor="oracaoFinal">Oração Final</Label>
+                    <Select value={oracaoFinalValue} onValueChange={setOracaoFinalValue}>
+                      <SelectTrigger id="oracaoFinal">
+                        <SelectValue placeholder="Selecione para oração final" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {publicadores.map(publicador => {
+                          const conflitos = verificarConflitos(publicador.nome, editingReuniao);
+                          return (
+                            <SelectItem 
+                              key={publicador.id} 
+                              value={publicador.nome}
+                              className={conflitos.length > 0 ? "text-amber-600 font-medium" : ""}
+                            >
+                              {publicador.nome}
+                              {conflitos.length > 0 && " ⚠️"}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                    {(() => {
+                      const nomeOracaoFinal = editingReuniao.oracoes?.final?.nome;
+                      if (nomeOracaoFinal) {
+                        const conflitos = verificarConflitos(nomeOracaoFinal, editingReuniao);
+                        if (conflitos.length > 0) {
+                          return (
+                            <div className="text-sm text-amber-600 mt-1">
+                              ⚠️ Conflito: {conflitos.map(c => `${c.reuniao} (${c.partes.join(', ')})`).join('; ')}
+                            </div>
+                          );
+                        }
+                      }
+                      return null;
+                    })()}
+                  </div>
+                </div>
+              </div>
+
+              {/* Tesouros da Palavra de Deus */}
+              <div className="space-y-4 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200 border-b pb-2">
+                  💎 Tesouros da Palavra de Deus
+                </h3>
+                <div className="space-y-4">
+                  {editingReuniao.tesourosPalavra && (
+                    <>
+                      {/* Discurso Principal */}
+                      <div className="p-4 border-2 border-blue-200 dark:border-blue-800 rounded-lg bg-white dark:bg-slate-800">
+                        <h4 className="font-semibold text-blue-700 dark:text-blue-300 mb-3">🎤 Discurso Principal</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label className="font-medium">Título: {editingReuniao.tesourosPalavra.titulo}</Label>
+                            <Label className="text-sm text-muted-foreground block mt-1">Duração: {editingReuniao.tesourosPalavra.duracao}</Label>
+                          </div>
+                          <div>
+                            <Label htmlFor="tesouros-responsavel">Responsável</Label>
+                            <Select value={tesourosPalavraResponsavelValue} onValueChange={setTesourosPalavraResponsavelValue}>
+                              <SelectTrigger id="tesouros-responsavel">
+                                <SelectValue placeholder="Selecione responsável" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {publicadores
+                                  .filter(p => p.anciao || p.servo_ministerial)
+                                  .map(publicador => {
+                                    const conflitos = verificarConflitos(publicador.nome, editingReuniao);
+                                    return (
+                                      <SelectItem 
+                                        key={publicador.id} 
+                                        value={publicador.nome}
+                                        className={conflitos.length > 0 ? "text-amber-600 font-medium" : ""}
+                                      >
+                                        {publicador.nome}
+                                        {conflitos.length > 0 && " ⚠️"}
+                                      </SelectItem>
+                                    );
+                                  })}
+                              </SelectContent>
+                            </Select>
+                            {(() => {
+                              const nomeResponsavel = editingReuniao.tesourosPalavra.responsavel?.nome;
+                              if (nomeResponsavel) {
+                                const conflitos = verificarConflitos(nomeResponsavel, editingReuniao);
+                                if (conflitos.length > 0) {
+                                  return (
+                                    <div className="text-sm text-amber-600 mt-1">
+                                      ⚠️ Conflito: {conflitos.map(c => `${c.reuniao} (${c.partes.join(', ')})`).join('; ')}
+                                    </div>
+                                  );
+                                }
+                              }
+                              return null;
+                            })()}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Jóias Espirituais */}
+                      {editingReuniao.tesourosPalavra.joiasEspirituais && (
+                        <div className="p-4 border-2 border-blue-200 dark:border-blue-800 rounded-lg bg-white dark:bg-slate-800">
+                          <h4 className="font-semibold text-blue-700 dark:text-blue-300 mb-3">💍 Jóias Espirituais</h4>
+                          <div className="grid grid-cols-1 gap-4">
+                            <div>
+                              <Label className="text-sm text-muted-foreground">Duração: {editingReuniao.tesourosPalavra.joiasEspirituais.duracao}</Label>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <Label htmlFor="joias-texto">Texto</Label>
+                                <Input 
+                                  id="joias-texto"
+                                  defaultValue={editingReuniao.tesourosPalavra.joiasEspirituais.texto || ''}
+                                  placeholder="Texto das Jóias Espirituais"
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="joias-pergunta">Pergunta</Label>
+                                <Input 
+                                  id="joias-pergunta"
+                                  defaultValue={editingReuniao.tesourosPalavra.joiasEspirituais.pergunta || ''}
+                                  placeholder="Pergunta das Jóias Espirituais"
+                                />
+                              </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <Label htmlFor="joias-referencia">Referência</Label>
+                                <Input 
+                                  id="joias-referencia"
+                                  defaultValue={editingReuniao.tesourosPalavra.joiasEspirituais.referencia || ''}
+                                  placeholder="Referência das Jóias Espirituais"
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="joias-responsavel">Responsável</Label>
+                                <Select value={joiasResponsavelValue} onValueChange={setJoiasResponsavelValue}>
+                                  <SelectTrigger id="joias-responsavel">
+                                    <SelectValue placeholder="Selecione responsável" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {publicadores.map(publicador => {
+                                      const conflitos = verificarConflitos(publicador.nome, editingReuniao);
+                                      return (
+                                        <SelectItem 
+                                          key={publicador.id} 
+                                          value={publicador.nome}
+                                          className={conflitos.length > 0 ? "text-amber-600 font-medium" : ""}
+                                        >
+                                          {publicador.nome}
+                                          {conflitos.length > 0 && " ⚠️"}
+                                        </SelectItem>
+                                      );
+                                    })}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Leitura da Bíblia */}
+                      {editingReuniao.tesourosPalavra.leituraBiblica && (
+                        <div className="p-4 border-2 border-blue-200 dark:border-blue-800 rounded-lg bg-white dark:bg-slate-800">
+                          <h4 className="font-semibold text-blue-700 dark:text-blue-300 mb-3">📖 Leitura da Bíblia</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <Label className="font-medium">Texto: {editingReuniao.tesourosPalavra.leituraBiblica.texto}</Label>
+                              <Label className="text-sm text-muted-foreground block mt-1">Duração: {editingReuniao.tesourosPalavra.leituraBiblica.duracao}</Label>
+                            </div>
+                            <div>
+                              <Label htmlFor="leitura-responsavel">Responsável</Label>
+                              <Select value={leituraResponsavelValue} onValueChange={setLeituraResponsavelValue}>
+                                <SelectTrigger id="leitura-responsavel">
+                                  <SelectValue placeholder="Selecione responsável" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {publicadores.map(publicador => {
+                                    const conflitos = verificarConflitos(publicador.nome, editingReuniao);
+                                    return (
+                                      <SelectItem 
+                                        key={publicador.id} 
+                                        value={publicador.nome}
+                                        className={conflitos.length > 0 ? "text-amber-600 font-medium" : ""}
+                                      >
+                                        {publicador.nome}
+                                        {conflitos.length > 0 && " ⚠️"}
+                                      </SelectItem>
+                                    );
+                                  })}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Faça Seu Melhor no Ministério */}
+              <div className="space-y-4 p-4 bg-green-50 dark:bg-green-950 rounded-lg">
+                <h3 className="text-lg font-semibold text-green-800 dark:text-green-200 border-b pb-2">
+                  🎯 Faça Seu Melhor no Ministério
+                </h3>
+                <div className="space-y-4">
+                  {Array.isArray(editingReuniao.facaSeuMelhor) && editingReuniao.facaSeuMelhor.map((parte: any, index: number) => (
+                    <div key={index} className="p-4 border-2 border-green-200 dark:border-green-800 rounded-lg bg-white dark:bg-slate-800">
+                      <h4 className="font-semibold text-green-700 dark:text-green-300 mb-3">
+                        📝 Parte {index + 1}: {parte.tipo}
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <Label className="text-sm text-muted-foreground">Duração: {parte.duracao}</Label>
+                        </div>
+                        <div>
+                          <Label htmlFor={`ministerio-responsavel-${index}`}>Responsável</Label>
+                          <Select 
+                            value={facaSeuMelhorResponsaveis[index] || ""} 
+                            onValueChange={(value) => {
+                              const newResponsaveis = [...facaSeuMelhorResponsaveis];
+                              newResponsaveis[index] = value;
+                              setFacaSeuMelhorResponsaveis(newResponsaveis);
+                            }}
+                          >
+                            <SelectTrigger id={`ministerio-responsavel-${index}`}>
+                              <SelectValue placeholder="Selecione responsável" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {publicadores.map(publicador => {
+                                const conflitos = verificarConflitos(publicador.nome, editingReuniao);
+                                return (
+                                  <SelectItem 
+                                    key={publicador.id} 
+                                    value={publicador.nome}
+                                    className={conflitos.length > 0 ? "text-amber-600 font-medium" : ""}
+                                  >
+                                    {publicador.nome}
+                                    {conflitos.length > 0 && " ⚠️"}
+                                  </SelectItem>
+                                );
+                              })}
+                            </SelectContent>
+                          </Select>
+                          {(() => {
+                            const nomeResponsavel = parte.responsavel?.nome;
+                            if (nomeResponsavel) {
+                              const conflitos = verificarConflitos(nomeResponsavel, editingReuniao);
+                              if (conflitos.length > 0) {
+                                return (
+                                  <div className="text-sm text-amber-600 mt-1">
+                                    ⚠️ Conflito: {conflitos.map(c => `${c.reuniao} (${c.partes.join(', ')})`).join('; ')}
+                                  </div>
+                                );
+                              }
+                            }
+                            return null;
+                          })()}
+                        </div>
+                        {parte.ajudante && (
+                          <div>
+                            <Label htmlFor={`ministerio-ajudante-${index}`}>Ajudante</Label>
+                            <Select defaultValue={parte.ajudante?.nome || undefined}>
+                              <SelectTrigger id={`ministerio-ajudante-${index}`}>
+                                <SelectValue placeholder="Selecione ajudante" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {publicadores.map(publicador => {
+                                  const conflitos = verificarConflitos(publicador.nome, editingReuniao);
+                                  return (
+                                    <SelectItem 
+                                      key={publicador.id} 
+                                      value={publicador.nome}
+                                      className={conflitos.length > 0 ? "text-amber-600 font-medium" : ""}
+                                    >
+                                      {publicador.nome}
+                                      {conflitos.length > 0 && " ⚠️"}
+                                    </SelectItem>
+                                  );
+                                })}
+                              </SelectContent>
+                            </Select>
+                            {(() => {
+                              const nomeAjudante = parte.ajudante?.nome;
+                              if (nomeAjudante) {
+                                const conflitos = verificarConflitos(nomeAjudante, editingReuniao);
+                                if (conflitos.length > 0) {
+                                  return (
+                                    <div className="text-sm text-amber-600 mt-1">
+                                      ⚠️ Conflito: {conflitos.map(c => `${c.reuniao} (${c.partes.join(', ')})`).join('; ')}
+                                    </div>
+                                  );
+                                }
+                              }
+                              return null;
+                            })()}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Nossa Vida Cristã */}
+              <div className="space-y-4 p-4 bg-purple-50 dark:bg-purple-950 rounded-lg">
+                <h3 className="text-lg font-semibold text-purple-800 dark:text-purple-200 border-b pb-2">
+                  ❤️ Nossa Vida Cristã
+                </h3>
+                <div className="space-y-4">
+                  {Array.isArray(editingReuniao.nossaVidaCrista) && editingReuniao.nossaVidaCrista.map((parte: any, index: number) => (
+                    <div key={index} className="p-4 border-2 border-purple-200 dark:border-purple-800 rounded-lg bg-white dark:bg-slate-800">
+                      <h4 className="font-semibold text-purple-700 dark:text-purple-300 mb-3">
+                        🎭 Parte {index + 1}: {parte.tipo}
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <Label className="text-sm text-muted-foreground">Duração: {parte.duracao}</Label>
+                        </div>
+                        <div>
+                          <Label htmlFor={`nvc-responsavel-${index}`}>Responsável</Label>
+                          <Select 
+                            value={nossaVidaCristaResponsaveis[index] || ""} 
+                            onValueChange={(value) => {
+                              const newResponsaveis = [...nossaVidaCristaResponsaveis];
+                              newResponsaveis[index] = value;
+                              setNossaVidaCristaResponsaveis(newResponsaveis);
+                            }}
+                          >
+                            <SelectTrigger id={`nvc-responsavel-${index}`}>
+                              <SelectValue placeholder="Selecione responsável" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {publicadores
+                                .filter(p => p.anciao || p.servo_ministerial)
+                                .map(publicador => {
+                                  const conflitos = verificarConflitos(publicador.nome, editingReuniao);
+                                  return (
+                                    <SelectItem 
+                                      key={publicador.id} 
+                                      value={publicador.nome}
+                                      className={conflitos.length > 0 ? "text-amber-600 font-medium" : ""}
+                                    >
+                                      {publicador.nome}
+                                      {conflitos.length > 0 && " ⚠️"}
+                                    </SelectItem>
+                                  );
+                                })}
+                            </SelectContent>
+                          </Select>
+                          {(() => {
+                            const nomeResponsavel = parte.responsavel?.nome;
+                            if (nomeResponsavel) {
+                              const conflitos = verificarConflitos(nomeResponsavel, editingReuniao);
+                              if (conflitos.length > 0) {
+                                return (
+                                  <div className="text-sm text-amber-600 mt-1">
+                                    ⚠️ Conflito: {conflitos.map(c => `${c.reuniao} (${c.partes.join(', ')})`).join('; ')}
+                                  </div>
+                                );
+                              }
+                            }
+                            return null;
+                          })()}
+                        </div>
+                        {parte.leitor && (
+                          <div>
+                            <Label htmlFor={`nvc-leitor-${index}`}>Leitor</Label>
+                            <Select defaultValue={parte.leitor?.nome || undefined}>
+                              <SelectTrigger id={`nvc-leitor-${index}`}>
+                                <SelectValue placeholder="Selecione leitor" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {publicadores.map(publicador => {
+                                  const conflitos = verificarConflitos(publicador.nome, editingReuniao);
+                                  return (
+                                    <SelectItem 
+                                      key={publicador.id} 
+                                      value={publicador.nome}
+                                      className={conflitos.length > 0 ? "text-amber-600 font-medium" : ""}
+                                    >
+                                      {publicador.nome}
+                                      {conflitos.length > 0 && " ⚠️"}
+                                    </SelectItem>
+                                  );
+                                })}
+                              </SelectContent>
+                            </Select>
+                            {(() => {
+                              const nomeLeitor = parte.leitor?.nome;
+                              if (nomeLeitor) {
+                                const conflitos = verificarConflitos(nomeLeitor, editingReuniao);
+                                if (conflitos.length > 0) {
+                                  return (
+                                    <div className="text-sm text-amber-600 mt-1">
+                                      ⚠️ Conflito: {conflitos.map(c => `${c.reuniao} (${c.partes.join(', ')})`).join('; ')}
+                                    </div>
+                                  );
+                                }
+                              }
+                              return null;
+                            })()}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingReuniao(null)}>
+              Cancelar
+            </Button>
+            <Button onClick={() => handleSaveReuniao()}>
+              Salvar Alterações
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <ImportPdfDialog
         open={showImportDialog}

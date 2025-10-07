@@ -24,13 +24,9 @@ export default function CongregacaoPage() {
   const congregacao = mockData.congregacoes[0];
 
   // Contando estatísticas
-  const totalPublicadores = mockData.publicadores.filter(
-    (p) => p.congregacao_id === congregacao.id
-  ).length;
+  const totalPublicadores = mockData.publicadores.length;
 
-  const totalUsuarios = mockData.usuarios_congregacoes.filter(
-    (uc) => uc.congregacao_id === congregacao.id
-  ).length;
+  const totalUsuarios = mockData.usuarios_congregacoes.length;
 
   return (
     <div className="p-4 space-y-6">

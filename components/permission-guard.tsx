@@ -3,13 +3,12 @@
 import { ReactNode } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Shield, Lock } from "lucide-react";
-import { podeEditar, type PermissaoSistema } from "@/lib/permissions";
+import { canEdit } from "@/lib/auth";
+import { useAuth } from "@/components/auth-provider";
 
 interface PermissionGuardProps {
   children: ReactNode;
-  permissao: PermissaoSistema;
-  usuarioId?: string;
-  congregacaoId?: string;
+  permissao: string;
   fallback?: ReactNode;
   showAlert?: boolean;
 }
@@ -21,12 +20,11 @@ interface PermissionGuardProps {
 export function PermissionGuard({
   children,
   permissao,
-  usuarioId = "550e8400-e29b-41d4-a716-446655440001", // ID padrão para teste
-  congregacaoId = "660e8400-e29b-41d4-a716-446655440001", // ID padrão para teste
   fallback,
   showAlert = true
 }: PermissionGuardProps) {
-  const temPermissao = podeEditar(usuarioId, congregacaoId, permissao);
+  const { user } = useAuth();
+  const temPermissao = canEdit(user, permissao);
 
   if (temPermissao) {
     return <>{children}</>;
@@ -53,13 +51,10 @@ export function PermissionGuard({
 /**
  * Hook para verificar permissões em componentes
  */
-export function usePermissionCheck(
-  permissao: PermissaoSistema,
-  usuarioId: string = "550e8400-e29b-41d4-a716-446655440001",
-  congregacaoId: string = "660e8400-e29b-41d4-a716-446655440001"
-) {
+export function usePermissionCheck(permissao: string) {
+  const { user } = useAuth();
   return {
-    podeEditar: podeEditar(usuarioId, congregacaoId, permissao),
+    podeEditar: canEdit(user, permissao),
     permissao
   };
 }
@@ -69,20 +64,17 @@ export function usePermissionCheck(
  */
 interface PermissionButtonProps {
   children: ReactNode;
-  permissao: PermissaoSistema;
-  usuarioId?: string;
-  congregacaoId?: string;
+  permissao: string;
   className?: string;
 }
 
 export function PermissionButton({
   children,
   permissao,
-  usuarioId = "550e8400-e29b-41d4-a716-446655440001",
-  congregacaoId = "660e8400-e29b-41d4-a716-446655440001",
   className
 }: PermissionButtonProps) {
-  const temPermissao = podeEditar(usuarioId, congregacaoId, permissao);
+  const { user } = useAuth();
+  const temPermissao = canEdit(user, permissao);
 
   if (!temPermissao) {
     return null;
@@ -95,19 +87,16 @@ export function PermissionButton({
  * Componente para mostrar status de permissão
  */
 interface PermissionStatusProps {
-  permissao: PermissaoSistema;
-  usuarioId?: string;
-  congregacaoId?: string;
+  permissao: string;
   showIcon?: boolean;
 }
 
 export function PermissionStatus({
   permissao,
-  usuarioId = "550e8400-e29b-41d4-a716-446655440001",
-  congregacaoId = "660e8400-e29b-41d4-a716-446655440001",
   showIcon = true
 }: PermissionStatusProps) {
-  const temPermissao = podeEditar(usuarioId, congregacaoId, permissao);
+  const { user } = useAuth();
+  const temPermissao = canEdit(user, permissao);
 
   return (
     <div className={`flex items-center gap-2 text-sm ${

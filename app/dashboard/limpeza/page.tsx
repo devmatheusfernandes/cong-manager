@@ -25,14 +25,15 @@ import {
   createEscalaLimpeza,
   deleteEscalaLimpeza,
   type EscalaLimpeza,
-  type CreateEscalaLimpezaData
+  type CreateEscalaLimpezaData,
+  canEdit
 } from "@/lib/auth";
 import { Plus, Calendar, User, Users, CalendarIcon, Info, CheckCircle, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { podeEditar } from "@/lib/permissions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/components/auth-provider";
 
 // Função para filtrar publicadores com permissão de limpeza
 const getPublicadoresLimpeza = (publicadores: Publicador[]) => {
@@ -43,6 +44,9 @@ const getPublicadoresLimpeza = (publicadores: Publicador[]) => {
 };
 
 export default function LimpezaPage() {
+  // Hook de autenticação
+  const { user } = useAuth();
+  
   // Estados para dados
   const [publicadores, setPublicadores] = useState<Publicador[]>([]);
   const [escalasLimpeza, setEscalasLimpeza] = useState<EscalaLimpeza[]>([]);
@@ -56,10 +60,6 @@ export default function LimpezaPage() {
     publicadores: [] as string[],
     observacoes: ""
   });
-
-  // IDs temporários para simulação
-  const tempUserId = "550e8400-e29b-41d4-a716-446655440001";
-  const tempCongregacaoId = "660e8400-e29b-41d4-a716-446655440001";
 
   // Carregamento de dados
   useEffect(() => {
@@ -84,7 +84,7 @@ export default function LimpezaPage() {
   }, []);
 
   // Verificar permissões
-  const podeGerenciarLimpeza = podeEditar(tempUserId, tempCongregacaoId, "perm_limpeza");
+  const podeGerenciarLimpeza = canEdit(user, "limpeza");
 
   // Função para submeter nova escala
   const handleSubmitNovaEscala = async (e: React.FormEvent) => {
@@ -102,10 +102,10 @@ export default function LimpezaPage() {
 
     try {
       const novaEscalaData: CreateEscalaLimpezaData = {
-        grupo_id: tempCongregacaoId,
         data_limpeza: format(date, "yyyy-MM-dd"),
         publicadores: novaEscala.publicadores,
-        observacoes: novaEscala.observacoes
+        observacoes: novaEscala.observacoes,
+        grupo_id: ""
       };
 
       const result = await createEscalaLimpeza(novaEscalaData);
@@ -262,7 +262,7 @@ export default function LimpezaPage() {
                   </div>
                 </div>
 
-                <PermissionGuard permissao="perm_limpeza">
+                <PermissionGuard permissao="limpeza">
                   <div className="flex gap-2 pt-2">
                     <Button size="sm" variant="outline" className="flex-1">
                       Editar

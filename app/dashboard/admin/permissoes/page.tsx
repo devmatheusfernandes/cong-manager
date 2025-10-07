@@ -45,22 +45,14 @@ const PERMISSOES_ICONS: Record<PermissaoSistema, React.ComponentType<{ className
 export default function AdminPermissoesPage() {
   const [permissoes, setPermissoes] = useState(mockData.permissoes_sistema);
 
-  // Obter usuários da congregação
-  const usuarios = mockData.usuarios.filter((usuario) =>
-    mockData.usuarios_congregacoes.some(
-      (uc) =>
-        uc.usuario_id === usuario.id &&
-        uc.congregacao_id === "660e8400-e29b-41d4-a716-446655440001"
-    )
-  );
+  // Obter todos os usuários
+  const usuarios = mockData.usuarios;
 
   // Verificar se usuário é responsável
   const isResponsavel = (usuarioId: string) => {
     return (
       mockData.usuarios_congregacoes.find(
-        (uc) =>
-          uc.usuario_id === usuarioId &&
-          uc.congregacao_id === "660e8400-e29b-41d4-a716-446655440001"
+        (uc) => uc.usuario_id === usuarioId
       )?.eh_responsavel === true
     );
   };

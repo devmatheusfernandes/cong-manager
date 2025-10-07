@@ -361,20 +361,36 @@ export interface UpdateMecanicaData {
 // ===== FUNÇÕES CRUD PARA MECÂNICAS =====
 
 // Buscar todas as mecânicas
+// Função auxiliar para buscar dados de usuário ou publicador
+async function getUserOrPublicadorData(id: string): Promise<User | null> {
+  if (!id) return null;
+  
+  // Se o ID tem prefixo 'pub_', buscar na tabela publicadores
+  if (id.startsWith('pub_')) {
+    const publicador = await getPublicadorById(id);
+    if (publicador) {
+      // Converter publicador para formato User para compatibilidade
+      return {
+        id: publicador.id,
+        username: publicador.nome,
+        password: '', // Não usado para exibição
+        role: 'pregacao' as UserRole, // Role padrão para publicadores
+        permissions: [] // Não usado para exibição
+      };
+    }
+  } else {
+    // Buscar na tabela users
+    return await getUserFromDatabase(id);
+  }
+  
+  return null;
+}
+
 export async function getAllMecanicas(): Promise<Mecanica[]> {
   try {
     const { data, error } = await supabase
       .from('mecanicas')
-      .select(`
-        *,
-        indicador_entrada:users!indicador_entrada_id(id, username),
-        indicador_auditorio:users!indicador_auditorio_id(id, username),
-        audio_video:users!audio_video_id(id, username),
-        volante:users!volante_id(id, username),
-        palco:users!palco_id(id, username),
-        leitor_sentinela:users!leitor_sentinela_id(id, username),
-        presidente:users!presidente_id(id, username)
-      `)
+      .select('*')
       .order('data', { ascending: true })
 
     if (error) {
@@ -382,7 +398,43 @@ export async function getAllMecanicas(): Promise<Mecanica[]> {
       return []
     }
 
-    return data || []
+    if (!data) return [];
+
+    // Buscar dados dos usuários/publicadores para cada mecânica
+    const mecanicasComDados = await Promise.all(
+      data.map(async (mecanica) => {
+        const [
+          indicador_entrada,
+          indicador_auditorio,
+          audio_video,
+          volante,
+          palco,
+          leitor_sentinela,
+          presidente
+        ] = await Promise.all([
+          getUserOrPublicadorData(mecanica.indicador_entrada_id),
+          getUserOrPublicadorData(mecanica.indicador_auditorio_id),
+          getUserOrPublicadorData(mecanica.audio_video_id),
+          getUserOrPublicadorData(mecanica.volante_id),
+          getUserOrPublicadorData(mecanica.palco_id),
+          getUserOrPublicadorData(mecanica.leitor_sentinela_id),
+          getUserOrPublicadorData(mecanica.presidente_id)
+        ]);
+
+        return {
+          ...mecanica,
+          indicador_entrada,
+          indicador_auditorio,
+          audio_video,
+          volante,
+          palco,
+          leitor_sentinela,
+          presidente
+        };
+      })
+    );
+
+    return mecanicasComDados;
   } catch (error) {
     console.error('Erro ao buscar mecânicas:', error)
     return []
@@ -394,16 +446,7 @@ export async function getMecanicaById(id: string): Promise<Mecanica | null> {
   try {
     const { data, error } = await supabase
       .from('mecanicas')
-      .select(`
-        *,
-        indicador_entrada:users!indicador_entrada_id(id, username),
-        indicador_auditorio:users!indicador_auditorio_id(id, username),
-        audio_video:users!audio_video_id(id, username),
-        volante:users!volante_id(id, username),
-        palco:users!palco_id(id, username),
-        leitor_sentinela:users!leitor_sentinela_id(id, username),
-        presidente:users!presidente_id(id, username)
-      `)
+      .select('*')
       .eq('id', id)
       .single()
 
@@ -412,7 +455,37 @@ export async function getMecanicaById(id: string): Promise<Mecanica | null> {
       return null
     }
 
-    return data
+    if (!data) return null
+
+    // Buscar dados dos usuários/publicadores separadamente
+    const [
+      indicador_entrada,
+      indicador_auditorio,
+      audio_video,
+      volante,
+      palco,
+      leitor_sentinela,
+      presidente
+    ] = await Promise.all([
+      data.indicador_entrada_id ? getUserOrPublicadorData(data.indicador_entrada_id) : null,
+      data.indicador_auditorio_id ? getUserOrPublicadorData(data.indicador_auditorio_id) : null,
+      data.audio_video_id ? getUserOrPublicadorData(data.audio_video_id) : null,
+      data.volante_id ? getUserOrPublicadorData(data.volante_id) : null,
+      data.palco_id ? getUserOrPublicadorData(data.palco_id) : null,
+      data.leitor_sentinela_id ? getUserOrPublicadorData(data.leitor_sentinela_id) : null,
+      data.presidente_id ? getUserOrPublicadorData(data.presidente_id) : null
+    ])
+
+    return {
+      ...data,
+      indicador_entrada: indicador_entrada || undefined,
+      indicador_auditorio: indicador_auditorio || undefined,
+      audio_video: audio_video || undefined,
+      volante: volante || undefined,
+      palco: palco || undefined,
+      leitor_sentinela: leitor_sentinela || undefined,
+      presidente: presidente || undefined
+    }
   } catch (error) {
     console.error('Erro ao buscar mecânica:', error)
     return null
@@ -436,16 +509,7 @@ export async function createMecanica(mecanicaData: CreateMecanicaData): Promise<
     const { data, error } = await supabase
       .from('mecanicas')
       .insert([mecanicaData])
-      .select(`
-        *,
-        indicador_entrada:users!indicador_entrada_id(id, username),
-        indicador_auditorio:users!indicador_auditorio_id(id, username),
-        audio_video:users!audio_video_id(id, username),
-        volante:users!volante_id(id, username),
-        palco:users!palco_id(id, username),
-        leitor_sentinela:users!leitor_sentinela_id(id, username),
-        presidente:users!presidente_id(id, username)
-      `)
+      .select('*')
       .single()
 
     if (error) {
@@ -492,16 +556,7 @@ export async function updateMecanica(id: string, mecanicaData: UpdateMecanicaDat
       .from('mecanicas')
       .update(mecanicaData)
       .eq('id', id)
-      .select(`
-        *,
-        indicador_entrada:users!indicador_entrada_id(id, username),
-        indicador_auditorio:users!indicador_auditorio_id(id, username),
-        audio_video:users!audio_video_id(id, username),
-        volante:users!volante_id(id, username),
-        palco:users!palco_id(id, username),
-        leitor_sentinela:users!leitor_sentinela_id(id, username),
-        presidente:users!presidente_id(id, username)
-      `)
+      .select('*')
       .single()
 
     if (error) {
@@ -509,7 +564,41 @@ export async function updateMecanica(id: string, mecanicaData: UpdateMecanicaDat
       return { success: false, error: 'Erro ao atualizar designação' }
     }
 
-    return { success: true, mecanica: data }
+    if (!data) {
+      return { success: false, error: 'Erro ao atualizar designação' }
+    }
+
+    // Buscar dados dos usuários/publicadores separadamente
+    const [
+      indicador_entrada,
+      indicador_auditorio,
+      audio_video,
+      volante,
+      palco,
+      leitor_sentinela,
+      presidente
+    ] = await Promise.all([
+      data.indicador_entrada_id ? getUserOrPublicadorData(data.indicador_entrada_id) : null,
+      data.indicador_auditorio_id ? getUserOrPublicadorData(data.indicador_auditorio_id) : null,
+      data.audio_video_id ? getUserOrPublicadorData(data.audio_video_id) : null,
+      data.volante_id ? getUserOrPublicadorData(data.volante_id) : null,
+      data.palco_id ? getUserOrPublicadorData(data.palco_id) : null,
+      data.leitor_sentinela_id ? getUserOrPublicadorData(data.leitor_sentinela_id) : null,
+      data.presidente_id ? getUserOrPublicadorData(data.presidente_id) : null
+    ])
+
+    const mecanicaWithUsers = {
+      ...data,
+      indicador_entrada: indicador_entrada || undefined,
+      indicador_auditorio: indicador_auditorio || undefined,
+      audio_video: audio_video || undefined,
+      volante: volante || undefined,
+      palco: palco || undefined,
+      leitor_sentinela: leitor_sentinela || undefined,
+      presidente: presidente || undefined
+    }
+
+    return { success: true, mecanica: mecanicaWithUsers }
   } catch (error) {
     console.error('Erro ao atualizar mecânica:', error)
     return { success: false, error: 'Erro interno do servidor' }
@@ -1054,10 +1143,7 @@ export async function getAllDiscursos(): Promise<Discurso[]> {
   try {
     const { data, error } = await supabase
       .from('discursos')
-      .select(`
-        *,
-        orador:oradores(*)
-      `)
+      .select('*')
       .order('data', { ascending: false })
 
     if (error) {
@@ -1065,7 +1151,33 @@ export async function getAllDiscursos(): Promise<Discurso[]> {
       return []
     }
 
-    return data || []
+    if (!data) return []
+
+    // Buscar dados dos oradores para cada discurso
+    const discursosComOradores = await Promise.all(
+      data.map(async (discurso) => {
+        // Primeiro tentar buscar na tabela oradores
+        let orador = await getOradorById(discurso.orador_id)
+        let oradorId = discurso.orador_id
+
+        // Se não encontrou, pode ser um publicador
+        if (!orador) {
+          const publicadorId = `pub_${discurso.orador_id}`
+          orador = await getOradorCombinadoById(publicadorId)
+          if (orador) {
+            oradorId = publicadorId // Usar ID com prefixo
+          }
+        }
+
+        return {
+          ...discurso,
+          orador_id: oradorId,
+          orador
+        }
+      })
+    )
+
+    return discursosComOradores
   } catch (error) {
     console.error('Erro ao buscar discursos:', error)
     return []
@@ -1077,10 +1189,7 @@ export async function getDiscursoById(id: string): Promise<Discurso | null> {
   try {
     const { data, error } = await supabase
       .from('discursos')
-      .select(`
-        *,
-        orador:oradores(*)
-      `)
+      .select('*')
       .eq('id', id)
       .single()
 
@@ -1088,7 +1197,27 @@ export async function getDiscursoById(id: string): Promise<Discurso | null> {
       return null
     }
 
-    return data
+    // Buscar dados do orador separadamente
+    let orador = null
+    let oradorId = data.orador_id
+
+    // Primeiro tentar buscar como orador regular
+    orador = await getOradorById(data.orador_id)
+    
+    // Se não encontrou, tentar como publicador
+    if (!orador) {
+      const publicadorId = `pub_${data.orador_id}`
+      orador = await getOradorCombinadoById(publicadorId)
+      if (orador) {
+        oradorId = publicadorId // Usar ID com prefixo
+      }
+    }
+
+    return {
+      ...data,
+      orador_id: oradorId,
+      orador
+    }
   } catch (error) {
     console.error('Erro ao buscar discurso:', error)
     return null
@@ -1098,29 +1227,40 @@ export async function getDiscursoById(id: string): Promise<Discurso | null> {
 // Criar novo discurso
 export async function createDiscurso(discursoData: CreateDiscursoData): Promise<{ success: boolean; error?: string; discurso?: Discurso }> {
   try {
-    // Verificar se orador existe
-    const orador = await getOradorById(discursoData.orador_id)
+    // Verificar se orador existe (incluindo publicadores)
+    const orador = await getOradorCombinadoById(discursoData.orador_id)
     if (!orador) {
       return { success: false, error: 'Orador não encontrado' }
     }
+
+    // Extrair UUID do orador_id (remover prefixo 'pub_' se existir)
+    const oradorUuid = discursoData.orador_id.startsWith('pub_') 
+      ? discursoData.orador_id.substring(4) 
+      : discursoData.orador_id
 
     const { data, error } = await supabase
       .from('discursos')
       .insert([{
         ...discursoData,
+        orador_id: oradorUuid, // Usar UUID limpo
         tem_imagem: discursoData.tem_imagem || false
       }])
-      .select(`
-        *,
-        orador:oradores(*)
-      `)
+      .select('*')
       .single()
 
     if (error || !data) {
+      console.error('Erro ao criar discurso no Supabase:', error)
       return { success: false, error: 'Erro ao criar discurso' }
     }
 
-    return { success: true, discurso: data }
+    // Adicionar dados do orador ao resultado com o ID original
+    const discursoComOrador = {
+      ...data,
+      orador_id: discursoData.orador_id, // Manter ID original com prefixo
+      orador
+    }
+
+    return { success: true, discurso: discursoComOrador }
   } catch (error) {
     console.error('Erro ao criar discurso:', error)
     return { success: false, error: 'Erro interno do servidor' }
@@ -1136,29 +1276,44 @@ export async function updateDiscurso(id: string, discursoData: UpdateDiscursoDat
       return { success: false, error: 'Discurso não encontrado' }
     }
 
-    // Se está alterando o orador, verificar se existe
+    // Se está alterando o orador, verificar se existe (incluindo publicadores)
     if (discursoData.orador_id) {
-      const orador = await getOradorById(discursoData.orador_id)
+      const orador = await getOradorCombinadoById(discursoData.orador_id)
       if (!orador) {
         return { success: false, error: 'Orador não encontrado' }
       }
     }
 
+    // Preparar dados para atualização, extraindo UUID se necessário
+    const updateData = { ...discursoData }
+    if (updateData.orador_id) {
+      updateData.orador_id = updateData.orador_id.startsWith('pub_') 
+        ? updateData.orador_id.substring(4) 
+        : updateData.orador_id
+    }
+
     const { data, error } = await supabase
       .from('discursos')
-      .update(discursoData)
+      .update(updateData)
       .eq('id', id)
-      .select(`
-        *,
-        orador:oradores(*)
-      `)
+      .select('*')
       .single()
 
     if (error || !data) {
+      console.error('Erro ao atualizar discurso no Supabase:', error)
       return { success: false, error: 'Erro ao atualizar discurso' }
     }
 
-    return { success: true, discurso: data }
+    // Buscar dados do orador atualizado
+    const oradorId = discursoData.orador_id || data.orador_id
+    const orador = await getOradorCombinadoById(oradorId)
+    const discursoComOrador = {
+      ...data,
+      orador_id: oradorId, // Manter ID original com prefixo se aplicável
+      orador
+    }
+
+    return { success: true, discurso: discursoComOrador }
   } catch (error) {
     console.error('Erro ao atualizar discurso:', error)
     return { success: false, error: 'Erro interno do servidor' }

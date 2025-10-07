@@ -45,7 +45,7 @@ export function verificarPermissao(
   permissao: PermissaoSistema
 ): boolean {
   const permissaoUsuario = mockData.permissoes_sistema.find(
-    p => p.usuario_id === usuarioId && p.congregacao_id === congregacaoId
+    p => p.usuario_id === usuarioId
   );
 
   if (!permissaoUsuario) {
@@ -66,7 +66,7 @@ export function verificarResponsavel(
   congregacaoId: string
 ): boolean {
   const usuarioCongregacao = mockData.usuarios_congregacoes.find(
-    uc => uc.usuario_id === usuarioId && uc.congregacao_id === congregacaoId
+    uc => uc.usuario_id === usuarioId
   );
 
   return usuarioCongregacao?.eh_responsavel === true;
@@ -102,7 +102,7 @@ export function obterPermissoesUsuario(
   congregacaoId: string
 ) {
   const permissaoUsuario = mockData.permissoes_sistema.find(
-    p => p.usuario_id === usuarioId && p.congregacao_id === congregacaoId
+    p => p.usuario_id === usuarioId
   );
 
   if (!permissaoUsuario) {

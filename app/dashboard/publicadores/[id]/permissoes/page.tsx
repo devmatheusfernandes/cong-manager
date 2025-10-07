@@ -237,7 +237,7 @@ export default function PermissoesPage() {
   );
 
   return (
-    <PermissionGuard permissao="perm_publicadores">
+    <PermissionGuard permissao="publicadores">
       <div className="p-4 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">

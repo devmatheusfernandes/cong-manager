@@ -9,9 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CollapsibleCard } from "@/components/collapsible-card";
 import { Plus, User, Shield, Settings, Edit, Trash2 } from "lucide-react";
-import { verificarAdmin } from "@/lib/permissions";
 import { PermissionGuard } from "@/components/permission-guard";
 import { toast } from "sonner";
+import { useAuth } from "@/components/auth-provider";
 import Link from "next/link";
 import { 
   getAllPublicadores, 
@@ -45,7 +45,8 @@ function getPrivilegioBadgeColor(privilegio: string) {
   return cores[privilegio] || "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300";
 }
 
-export default function NomesDataPage() {
+export default function PublicadoresPage() {
+  const { user } = useAuth();
   const [publicadores, setPublicadores] = useState<Publicador[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -57,11 +58,8 @@ export default function NomesDataPage() {
     privilegio: ""
   });
 
-  // IDs padrão para teste - em produção viriam do contexto de autenticação
-  const usuarioId = "550e8400-e29b-41d4-a716-446655440001";
-  const congregacaoId = "660e8400-e29b-41d4-a716-446655440001";
-  
-  const ehAdmin = verificarAdmin(usuarioId, congregacaoId);
+  // Verificar se é admin (usuário com permissão edit_all)
+  const ehAdmin = user?.permissions.includes('edit_all') || false;
 
   // Carregar publicadores
   useEffect(() => {
@@ -181,7 +179,7 @@ export default function NomesDataPage() {
   };
 
   return (
-    <PermissionGuard permissao="perm_publicadores">
+    <PermissionGuard permissao="publicadores">
       <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Nomes e Datas</h2>

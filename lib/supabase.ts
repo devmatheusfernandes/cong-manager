@@ -55,6 +55,87 @@ export interface Database {
           created_at?: string
         }
       }
+      grupos: {
+        Row: {
+          id: string
+          congregacao_id: string
+          nome: string
+          superintendente_id: string | null
+          servo_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          congregacao_id: string
+          nome: string
+          superintendente_id?: string | null
+          servo_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          congregacao_id?: string
+          nome?: string
+          superintendente_id?: string | null
+          servo_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      grupo_publicadores: {
+        Row: {
+          id: string
+          grupo_id: string
+          publicador_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          grupo_id: string
+          publicador_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          grupo_id?: string
+          publicador_id?: string
+          created_at?: string
+        }
+      }
+      publicadores: {
+        Row: {
+          id: string
+          congregacao_id: string
+          nome: string
+          telefone: string | null
+          email: string | null
+          privilegio: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          congregacao_id: string
+          nome: string
+          telefone?: string | null
+          email?: string | null
+          privilegio?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          congregacao_id?: string
+          nome?: string
+          telefone?: string | null
+          email?: string | null
+          privilegio?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
   }
 }

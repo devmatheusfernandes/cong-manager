@@ -5,6 +5,8 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const congregacaoId = searchParams.get('congregacao_id');
+    const mes = searchParams.get('mes');
+    const ano = searchParams.get('ano');
 
     let query = supabase
       .from('reunioes_nvc')
@@ -26,11 +28,27 @@ export async function GET(request: NextRequest) {
           responsavel:responsavel_id(id, nome)
         )
       `)
-      .order('periodo', { ascending: true });
+;
 
     if (congregacaoId) {
       query = query.eq('congregacao_id', congregacaoId);
     }
+
+    // Filtros de mês
+    // Como o campo periodo é texto (ex: "1-7 DE SETEMBRO"), vamos filtrar por padrão de texto
+    if (mes && mes !== "all") {
+      // Filtrar por mês específico
+      const meses = [
+        '', 'JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO',
+        'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'
+      ];
+      const nomeDoMes = meses[parseInt(mes)];
+      if (nomeDoMes) {
+        query = query.ilike('periodo', `%${nomeDoMes}%`);
+      }
+    }
+    
+    // Nota: O filtro de ano foi removido pois os dados atuais não contêm ano explícito no campo periodo
 
     const { data: reunioes, error } = await query;
 
@@ -42,8 +60,39 @@ export async function GET(request: NextRequest) {
       }, { status: 500 });
     }
 
+    // Função para converter período textual em valor ordenável
+    const parseDataPeriodo = (periodo: string): number => {
+      const meses: { [key: string]: number } = {
+        'JANEIRO': 1, 'FEVEREIRO': 2, 'MARÇO': 3, 'ABRIL': 4,
+        'MAIO': 5, 'JUNHO': 6, 'JULHO': 7, 'AGOSTO': 8,
+        'SETEMBRO': 9, 'OUTUBRO': 10, 'NOVEMBRO': 11, 'DEZEMBRO': 12
+      };
+
+      // Extrair o primeiro dia e o mês do período
+      // Ex: "6-12 DE OUTUBRO" -> dia: 6, mês: 10
+      const match = periodo.match(/(\d+)(?:-\d+)?\s+DE\s+(\w+)/);
+      if (match) {
+        const dia = parseInt(match[1]);
+        const mesNome = match[2];
+        const mesNumero = meses[mesNome] || 0;
+        
+        // Criar um valor ordenável: mês * 100 + dia
+        // Ex: Outubro (10) dia 6 = 1006, Outubro dia 13 = 1013
+        return mesNumero * 100 + dia;
+      }
+      
+      return 0; // Fallback para períodos não reconhecidos
+    };
+
+    // Ordenar reuniões por data (mais recente primeiro)
+    const reunioesOrdenadas = reunioes?.sort((a, b) => {
+      const dataA = parseDataPeriodo(a.periodo);
+      const dataB = parseDataPeriodo(b.periodo);
+      return dataB - dataA; // Ordem decrescente (mais recente primeiro)
+    }) || [];
+
     // Transformar os dados para o formato esperado pelo frontend
-    const reunioesFormatadas = reunioes?.map(reuniao => ({
+    const reunioesFormatadas = reunioesOrdenadas?.map(reuniao => ({
       id: reuniao.id,
       congregacao_id: reuniao.congregacao_id,
       periodo: reuniao.periodo,

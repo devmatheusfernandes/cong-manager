@@ -5,9 +5,12 @@ import { Button } from "@/components/ui/button";
 import { CollapsibleCard } from "@/components/collapsible-card";
 import { Badge } from "@/components/ui/badge";
 import { ImportPdfDialog } from "@/components/import-pdf-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { NossaVidaCristaParte } from "@/lib/mock-data-reunioes";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useAuth } from "@/components/auth-provider";
+import { canEdit } from "@/lib/auth";
 import {
   Calendar,
   BookOpen,
@@ -23,22 +26,41 @@ import {
   Plus,
   Upload,
   Loader2,
+  Filter,
 } from "lucide-react";
 
 export default function NVCPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [reunioes, setReunioes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Estados para filtros
+  const [selectedMes, setSelectedMes] = useState<string>(() => {
+    // Definir o mês corrente como padrão
+    const currentMonth = new Date().getMonth() + 1; // getMonth() retorna 0-11, então +1 para 1-12
+    return currentMonth.toString();
+  });
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
+
+  // Verificar se o usuário pode editar NVC
+  const canEditNVC = canEdit(user, 'nvc');
 
   // Função para buscar reuniões do Supabase
-  const fetchReunioes = async () => {
+  const fetchReunioes = async (fallbackToAll = false) => {
     try {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('/api/nvc');
+      // Construir URL com filtros
+      const params = new URLSearchParams();
+      if (selectedMes && selectedMes !== "all" && !fallbackToAll) {
+        params.append('mes', selectedMes);
+      }
+      
+      const response = await fetch(`/api/nvc?${params.toString()}`);
       
       if (!response.ok) {
         throw new Error('Erro ao buscar reuniões');
@@ -47,23 +69,35 @@ export default function NVCPage() {
       const data = await response.json();
       
       if (data.success && data.data?.nossa_vida_crista) {
-        setReunioes(data.data.nossa_vida_crista);
+        const reunioesData = data.data.nossa_vida_crista;
+        
+        // Se é o carregamento inicial e não há dados para o mês corrente, buscar todos
+        if (!initialLoadDone && reunioesData.length === 0 && selectedMes !== "all" && !fallbackToAll) {
+          setSelectedMes("all");
+          await fetchReunioes(true);
+          return;
+        }
+        
+        setReunioes(reunioesData);
+        setInitialLoadDone(true);
       } else {
         setReunioes([]);
+        setInitialLoadDone(true);
       }
     } catch (error) {
       console.error('Erro ao buscar reuniões:', error);
       setError(error instanceof Error ? error.message : 'Erro desconhecido');
       toast.error('Erro ao carregar reuniões');
+      setInitialLoadDone(true);
     } finally {
       setLoading(false);
     }
   };
 
-  // Carregar reuniões ao montar o componente
+  // Carregar reuniões ao montar o componente e quando filtros mudarem
   useEffect(() => {
     fetchReunioes();
-  }, []);
+  }, [selectedMes]);
 
   const handleImportSuccess = (importedData: any) => {
     // Após importar com sucesso, recarregar os dados do Supabase
@@ -71,27 +105,84 @@ export default function NVCPage() {
     toast.success('Reuniões importadas com sucesso!');
   };
 
+  // Lista de meses
+  const months = [
+    { value: "1", label: "Janeiro" },
+    { value: "2", label: "Fevereiro" },
+    { value: "3", label: "Março" },
+    { value: "4", label: "Abril" },
+    { value: "5", label: "Maio" },
+    { value: "6", label: "Junho" },
+    { value: "7", label: "Julho" },
+    { value: "8", label: "Agosto" },
+    { value: "9", label: "Setembro" },
+    { value: "10", label: "Outubro" },
+    { value: "11", label: "Novembro" },
+    { value: "12", label: "Dezembro" }
+  ];
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Nossa Vida Cristã</h2>
-        <div className="flex gap-2">
+        {canEditNVC && (
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowImportDialog(true)}
+              disabled={loading}
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Importar PDF
+            </Button>
+            <Button 
+              onClick={() => router.push("/dashboard/nvc/nova")}
+              disabled={loading}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Reunião
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* Filtros de Mês */}
+      <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-950/30 rounded-lg border border-slate-200 dark:border-slate-800">
+        <div className="flex items-center gap-2">
+          <Filter className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+          <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
+            Filtros:
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-slate-600 dark:text-slate-400">Mês:</span>
+          <Select value={selectedMes} onValueChange={setSelectedMes}>
+            <SelectTrigger className="w-36">
+              <SelectValue placeholder="Todos" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os meses</SelectItem>
+              {months.map((month) => (
+                <SelectItem key={month.value} value={month.value}>
+                  {month.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {selectedMes !== "all" && (
           <Button 
             variant="outline" 
-            onClick={() => setShowImportDialog(true)}
-            disabled={loading}
+            size="sm"
+            onClick={() => {
+              setSelectedMes("all");
+            }}
           >
-            <Upload className="h-4 w-4 mr-2" />
-            Importar PDF
+            Limpar Filtros
           </Button>
-          <Button 
-            onClick={() => router.push("/dashboard/nvc/nova")}
-            disabled={loading}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Nova Reunião
-          </Button>
-        </div>
+        )}
       </div>
 
       {loading && (
@@ -112,7 +203,7 @@ export default function NVCPage() {
           </p>
           <Button 
             variant="outline" 
-            onClick={fetchReunioes}
+            onClick={() => fetchReunioes()}
             className="border-red-300 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-950/50"
           >
             Tentar novamente
@@ -415,10 +506,12 @@ export default function NVCPage() {
 
 
                 <div className="flex gap-2 pt-2">
-                  <Button size="sm" variant="outline" className="flex-1">
-                    Editar
-                  </Button>
-                  <Button size="sm" variant="outline" className="flex-1">
+                  {canEditNVC && (
+                    <Button size="sm" variant="outline" className="flex-1">
+                      Editar
+                    </Button>
+                  )}
+                  <Button size="sm" variant="outline" className={canEditNVC ? "flex-1" : "w-full"}>
                     Imprimir
                   </Button>
                 </div>

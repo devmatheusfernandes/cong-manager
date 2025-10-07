@@ -72,6 +72,47 @@ CREATE INDEX IF NOT EXISTS idx_grupos_servo_id ON grupos(servo_id);
 CREATE INDEX IF NOT EXISTS idx_grupo_publicadores_grupo_id ON grupo_publicadores(grupo_id);
 CREATE INDEX IF NOT EXISTS idx_grupo_publicadores_publicador_id ON grupo_publicadores(publicador_id);
 
+-- Tabela de territórios
+CREATE TABLE IF NOT EXISTS territorios (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    congregacao_id UUID NOT NULL REFERENCES congregacoes(id),
+    nome TEXT NOT NULL,
+    coordenadas JSONB, -- Para armazenar GeoJSON
+    imagem_url TEXT,
+    cidade TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Tabela de designações de territórios
+CREATE TABLE IF NOT EXISTS designacoes_territorio (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    territorio_id UUID NOT NULL REFERENCES territorios(id),
+    publicador_id UUID NOT NULL REFERENCES publicadores(id),
+    data_inicio DATE NOT NULL,
+    data_fim DATE, -- Data de devolução
+    observacoes TEXT,
+    status TEXT DEFAULT 'ativo' CHECK (status = ANY (ARRAY['ativo'::text, 'finalizado'::text, 'cancelado'::text])),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Triggers para atualizar updated_at automaticamente
+CREATE TRIGGER update_territorios_updated_at 
+    BEFORE UPDATE ON territorios 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_designacoes_territorio_updated_at 
+    BEFORE UPDATE ON designacoes_territorio 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Índices para melhor performance
+CREATE INDEX IF NOT EXISTS idx_territorios_congregacao_id ON territorios(congregacao_id);
+CREATE INDEX IF NOT EXISTS idx_designacoes_territorio_territorio_id ON designacoes_territorio(territorio_id);
+CREATE INDEX IF NOT EXISTS idx_designacoes_territorio_publicador_id ON designacoes_territorio(publicador_id);
+CREATE INDEX IF NOT EXISTS idx_designacoes_territorio_status ON designacoes_territorio(status);
+CREATE INDEX IF NOT EXISTS idx_designacoes_territorio_data_inicio ON designacoes_territorio(data_inicio);
+
 -- Dados iniciais (opcional)
 -- Insere uma congregação padrão se não existir
 INSERT INTO congregacoes (nome, endereco) 

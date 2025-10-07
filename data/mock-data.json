@@ -429,6 +429,20 @@
       "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
       "periodo": "1-7 de setembro",
       "leituraBiblica": "Provérbios 29",
+      "presidente": {
+        "nome": "João Silva",
+        "id": "880e8400-e29b-41d4-a716-446655440001"
+      },
+      "oracoes": {
+        "inicial": {
+          "nome": "Pedro Oliveira",
+          "id": "880e8400-e29b-41d4-a716-446655440003"
+        },
+        "final": {
+          "nome": "Carlos Santos",
+          "id": "880e8400-e29b-41d4-a716-446655440005"
+        }
+      },
       "canticos": {
         "inicial": "28",
         "intermediario": "159",
@@ -441,65 +455,103 @@
       "tesourosPalavra": {
         "titulo": "Rejeite crenças e costumes que não são baseados na Bíblia",
         "duracao": "10 min",
-        "pontos": [
-          "Obedeça a Jeová e seja feliz de verdade. (Pro. 29:18; wp16.6 6, quadro)",
-          "Peça a Jeová sabedoria para entender se um costume agrada a ele ou não. (Pro. 29:3a; w19.04 17 § 13)",
-          "Não deixe que outros pressionem você a participar de costumes errados. (Pro. 29:25; w18.11 11 § 12)"
-        ],
-        "joiasEspirituais": [
-          {
-            "texto": "Pro. 29:5",
-            "pergunta": "O que significa bajular, ou lisonjear, e como 'o homem que bajula seu próximo arma uma rede para os pés dele'?",
-            "referencia": "it 'Lisonja' § 1",
-            "duracao": "10 min"
+        "responsavel": {
+          "nome": "Ana Costa",
+          "id": "880e8400-e29b-41d4-a716-446655440002"
+        },
+        "joiasEspirituais": {
+          "texto": "Pro. 29:5",
+          "pergunta": "O que significa bajular, ou lisonjear, e como 'o homem que bajula seu próximo arma uma rede para os pés dele'?",
+          "referencia": "it 'Lisonja' § 1",
+          "duracao": "10 min",
+          "responsavel": {
+            "nome": "Maria Santos",
+            "id": "880e8400-e29b-41d4-a716-446655440004"
           }
-        ],
+        },
         "leituraBiblica": {
           "texto": "Pro. 29:1-18",
-          "referencia": "th lição 5",
-          "duracao": "4 min"
+          "duracao": "4 min",
+          "responsavel": {
+            "nome": "Lucas Ferreira",
+            "id": "880e8400-e29b-41d4-a716-446655440006"
+          }
         }
       },
       "facaSeuMelhor": [
         {
           "tipo": "Iniciando conversas",
           "duracao": "3 min",
-          "formato": "TESTEMUNHO INFORMAL",
           "descricao": "Convide a pessoa para o discurso especial.",
-          "referencia": "lmd lição 2 ponto 3"
+          "responsavel": {
+            "nome": "Fernanda Lima",
+            "id": "880e8400-e29b-41d4-a716-446655440007"
+          },
+          "ajudante": {
+            "nome": "Roberto Silva",
+            "id": "880e8400-e29b-41d4-a716-446655440008"
+          }
         },
         {
-          "tipo": "Iniciando conversas",
+          "tipo": "Fazendo discípulos",
           "duracao": "4 min",
-          "formato": "DE CASA EM CASA",
           "descricao": "Use A Sentinela N.º 1 de 2025 para começar a conversa. A pessoa mostra interesse em outro assunto. Ajuste sua apresentação.",
-          "referencia": "lmd lição 3 ponto 3"
-        },
-        {
-          "tipo": "Iniciando conversas",
-          "duracao": "5 min",
-          "formato": "TESTEMUNHO INFORMAL",
-          "descricao": "Ofereça A Sentinela N.º 1 de 2025 para alguém que está preocupado com as guerras.",
-          "referencia": "lmd lição 3 ponto 4"
+          "responsavel": {
+            "nome": "Juliana Costa",
+            "id": "880e8400-e29b-41d4-a716-446655440009"
+          },
+          "ajudante": {
+            "nome": "Marcos Oliveira",
+            "id": "880e8400-e29b-41d4-a716-446655440010"
+          }
         }
       ],
       "nossaVidaCrista": [
         {
           "tipo": "Necessidades locais",
-          "duracao": "15 min"
+          "duracao": "15 min",
+          "responsavel": {
+            "nome": "Elder Rodrigues",
+            "id": "880e8400-e29b-41d4-a716-446655440011"
+          }
         },
         {
           "tipo": "Estudo bíblico de congregação",
           "duracao": "30 min",
-          "conteudo": "lfb introdução da seção 4 e histórias 14-15"
+          "conteudo": "lfb introdução da seção 4 e histórias 14-15",
+          "responsavel": {
+            "nome": "João Silva",
+            "id": "880e8400-e29b-41d4-a716-446655440001"
+          },
+          "leitor": {
+            "nome": "Marcos Silva",
+            "id": "880e8400-e29b-41d4-a716-446655440012"
+          }
         }
-      ]
+      ],
+      "eventoEspecial": null,
+      "semanaVisitaSuperintendente": false,
+      "diaTerca": false
     },
     {
       "id": "220e8400-e29b-41d4-a716-446655440002",
       "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
       "periodo": "8-14 de setembro",
       "leituraBiblica": "Provérbios 30",
+      "presidente": {
+        "nome": "Elder Rodrigues",
+        "id": "880e8400-e29b-41d4-a716-446655440011"
+      },
+      "oracoes": {
+        "inicial": {
+          "nome": "Carlos Santos",
+          "id": "880e8400-e29b-41d4-a716-446655440005"
+        },
+        "final": {
+          "nome": "Pedro Oliveira",
+          "id": "880e8400-e29b-41d4-a716-446655440003"
+        }
+      },
       "canticos": {
         "inicial": "45",
         "intermediario": "78",
@@ -512,56 +564,194 @@
       "tesourosPalavra": {
         "titulo": "Seja humilde e reconheça suas limitações",
         "duracao": "10 min",
-        "pontos": [
-          "Reconheça que você precisa da orientação de Jeová. (Pro. 30:2-3; w20.05 14 § 6)",
-          "Seja modesto e não se ache melhor que os outros. (Pro. 30:13; w19.08 26 § 14)",
-          "Confie na sabedoria de Jeová, não na sua própria. (Pro. 30:5-6; w18.07 8 § 8)"
-        ],
-        "joiasEspirituais": [
-          {
-            "texto": "Pro. 30:8-9",
-            "pergunta": "Por que Agur pediu a Jeová que não lhe desse nem pobreza nem riqueza?",
-            "referencia": "w19.11 20 § 12",
-            "duracao": "10 min"
+        "responsavel": {
+          "nome": "Maria Santos",
+          "id": "880e8400-e29b-41d4-a716-446655440004"
+        },
+        "joiasEspirituais": {
+          "texto": "Pro. 30:8-9",
+          "pergunta": "Por que Agur pediu a Jeová que não lhe desse nem pobreza nem riqueza?",
+          "referencia": "w19.11 20 § 12",
+          "duracao": "10 min",
+          "responsavel": {
+            "nome": "Ana Costa",
+            "id": "880e8400-e29b-41d4-a716-446655440002"
           }
-        ],
+        },
         "leituraBiblica": {
           "texto": "Pro. 30:1-20",
-          "referencia": "th lição 6",
-          "duracao": "4 min"
+          "duracao": "4 min",
+          "responsavel": {
+            "nome": "Roberto Silva",
+            "id": "880e8400-e29b-41d4-a716-446655440008"
+          }
         }
       },
       "facaSeuMelhor": [
         {
           "tipo": "Fazendo discípulos",
           "duracao": "3 min",
-          "formato": "ESTUDO BÍBLICO",
           "descricao": "Ajude o estudante a entender a importância da oração.",
-          "referencia": "lmd lição 4 ponto 2"
-        },
-        {
-          "tipo": "Fazendo discípulos",
-          "duracao": "4 min",
-          "formato": "REVISITA",
-          "descricao": "Use o vídeo 'Por que estudar a Bíblia?' para motivar a pessoa a aceitar um estudo.",
-          "referencia": "lmd lição 4 ponto 3"
+          "responsavel": {
+            "nome": "Juliana Costa",
+            "id": "880e8400-e29b-41d4-a716-446655440009"
+          },
+          "ajudante": {
+            "nome": "Lucas Ferreira",
+            "id": "880e8400-e29b-41d4-a716-446655440006"
+          }
         }
       ],
       "nossaVidaCrista": [
         {
           "tipo": "Cântico e oração",
-          "duracao": "5 min"
+          "duracao": "5 min",
+          "responsavel": {
+            "nome": "Fernanda Lima",
+            "id": "880e8400-e29b-41d4-a716-446655440007"
+          }
         },
         {
           "tipo": "Necessidades locais",
-          "duracao": "15 min"
+          "duracao": "15 min",
+          "responsavel": {
+            "nome": "Marcos Oliveira",
+            "id": "880e8400-e29b-41d4-a716-446655440010"
+          }
         },
         {
           "tipo": "Estudo bíblico de congregação",
           "duracao": "30 min",
-          "conteudo": "lfb histórias 16-17"
+          "conteudo": "lfb histórias 16-17",
+          "responsavel": {
+            "nome": "Elder Rodrigues",
+            "id": "880e8400-e29b-41d4-a716-446655440011"
+          },
+          "leitor": {
+            "nome": "Pedro Almeida",
+            "id": "880e8400-e29b-41d4-a716-446655440013"
+          }
         }
-      ]
+      ],
+      "eventoEspecial": null,
+      "semanaVisitaSuperintendente": false,
+      "diaTerca": false
+    },
+    {
+      "id": "220e8400-e29b-41d4-a716-446655440003",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "periodo": "15-21 de setembro",
+      "leituraBiblica": "Provérbios 31",
+      "presidente": {
+        "nome": "João Silva",
+        "id": "880e8400-e29b-41d4-a716-446655440001"
+      },
+      "oracoes": {
+        "inicial": {
+          "nome": "Lucas Ferreira",
+          "id": "880e8400-e29b-41d4-a716-446655440006"
+        },
+        "final": {
+          "nome": "Roberto Silva",
+          "id": "880e8400-e29b-41d4-a716-446655440008"
+        }
+      },
+      "canticos": {
+        "inicial": "12",
+        "intermediario": "89",
+        "final": "134"
+      },
+      "comentarios": {
+        "iniciais": "1 min",
+        "finais": "3 min"
+      },
+      "tesourosPalavra": {
+        "titulo": "A mulher virtuosa é uma coroa para seu marido",
+        "duracao": "10 min",
+        "responsavel": {
+          "nome": "Ana Costa",
+          "id": "880e8400-e29b-41d4-a716-446655440002"
+        },
+        "joiasEspirituais": {
+          "texto": "Pro. 31:10-31",
+          "pergunta": "Que qualidades da mulher virtuosa podem ser imitadas por todos os cristãos?",
+          "referencia": "w20.03 14-15 § 8-10",
+          "duracao": "10 min",
+          "responsavel": {
+            "nome": "Maria Santos",
+            "id": "880e8400-e29b-41d4-a716-446655440004"
+          }
+        },
+        "leituraBiblica": {
+          "texto": "Pro. 31:1-31",
+          "duracao": "4 min",
+          "responsavel": {
+            "nome": "Marcos Oliveira",
+            "id": "880e8400-e29b-41d4-a716-446655440010"
+          }
+        }
+      },
+      "facaSeuMelhor": [
+        {
+          "tipo": "Explicando suas crenças",
+          "duracao": "4 min",
+          "descricao": "Explique por que acreditamos que Jesus é o Messias prometido.",
+          "responsavel": {
+            "nome": "Pedro Oliveira",
+            "id": "880e8400-e29b-41d4-a716-446655440003"
+          },
+          "ajudante": {
+            "nome": "Fernanda Lima",
+            "id": "880e8400-e29b-41d4-a716-446655440007"
+          }
+        }
+      ],
+      "nossaVidaCrista": [
+        {
+          "tipo": "Discurso",
+          "duracao": "30 min",
+          "conteudo": "Visita do Superintendente de Circuito",
+          "responsavel": {
+            "nome": "Superintendente de Circuito",
+            "id": "superintendente"
+          }
+        }
+      ],
+      "eventoEspecial": null,
+      "semanaVisitaSuperintendente": true,
+      "diaTerca": true
+    },
+    {
+      "id": "220e8400-e29b-41d4-a716-446655440004",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "periodo": "22-28 de setembro",
+      "leituraBiblica": null,
+      "presidente": null,
+      "oracoes": null,
+      "canticos": null,
+      "comentarios": null,
+      "tesourosPalavra": null,
+      "facaSeuMelhor": null,
+      "nossaVidaCrista": null,
+      "eventoEspecial": "Assembleia com Superintendente",
+      "semanaVisitaSuperintendente": false,
+      "diaTerca": false
+    },
+    {
+      "id": "220e8400-e29b-41d4-a716-446655440005",
+      "congregacao_id": "660e8400-e29b-41d4-a716-446655440001",
+      "periodo": "29 de setembro - 5 de outubro",
+      "leituraBiblica": null,
+      "presidente": null,
+      "oracoes": null,
+      "canticos": null,
+      "comentarios": null,
+      "tesourosPalavra": null,
+      "facaSeuMelhor": null,
+      "nossaVidaCrista": null,
+      "eventoEspecial": "Celebração",
+      "semanaVisitaSuperintendente": false,
+      "diaTerca": false
     }
   ],
   "nvc_partes": [

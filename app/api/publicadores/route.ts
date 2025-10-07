@@ -1,22 +1,10 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { getAllPublicadores } from '@/lib/auth'
 
-// GET - Listar todos os publicadores
+// GET - Listar todos os publicadores com permissões
 export async function GET() {
   try {
-    const { data: publicadores, error } = await supabase
-      .from('publicadores')
-      .select('id, nome, telefone, email, privilegio')
-      .order('nome')
-
-    if (error) {
-      console.error('Erro ao buscar publicadores:', error)
-      return NextResponse.json(
-        { error: 'Erro ao buscar publicadores' },
-        { status: 500 }
-      )
-    }
-
+    const publicadores = await getAllPublicadores()
     return NextResponse.json(publicadores)
   } catch (error) {
     console.error('Erro na API de publicadores:', error)

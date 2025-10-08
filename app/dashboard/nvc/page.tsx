@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { CollapsibleCard } from "@/components/collapsible-card";
 import { ImportPdfDialog } from "@/components/import-pdf-dialog";
+import { DeleteNVCDialog } from "@/components/delete-nvc-dialog";
 import {
   Select,
   SelectContent,
@@ -51,6 +52,7 @@ import {
   Filter,
   Edit,
   Printer,
+  Trash2,
 } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
@@ -58,6 +60,7 @@ export default function NVCPage() {
   const router = useRouter();
   const { user } = useAuth();
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [reunioes, setReunioes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -712,6 +715,11 @@ export default function NVCPage() {
     toast.success("Reuniões importadas com sucesso!");
   };
 
+  const handleDeleteSuccess = () => {
+    // Após deletar com sucesso, recarregar os dados do Supabase
+    fetchReunioes();
+  };
+
   // Lista de meses
   const months = [
     { value: "1", label: "Janeiro" },
@@ -802,6 +810,19 @@ export default function NVCPage() {
           <Printer className="h-4 w-4 mr-2" />
           Imprimir
         </Button>
+
+        {canEditNVC && reunioes.length > 0 && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowDeleteDialog(true)}
+            disabled={loading}
+            className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200"
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Deletar
+          </Button>
+        )}
       </div>
 
       {loading && (
@@ -2103,6 +2124,13 @@ export default function NVCPage() {
         open={showImportDialog}
         onOpenChange={setShowImportDialog}
         onImportSuccess={handleImportSuccess}
+      />
+
+      <DeleteNVCDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        onSuccess={handleDeleteSuccess}
+        reunioes={reunioes}
       />
     </div>
   );

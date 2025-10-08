@@ -1,6 +1,165 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const tipo = searchParams.get("tipo"); // "semana" ou "mes"
+    const periodo = searchParams.get("periodo"); // período específico ou mês
+    const congregacaoId = searchParams.get("congregacao_id");
+
+    if (!tipo || !periodo) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Parâmetros 'tipo' e 'periodo' são obrigatórios",
+        },
+        { status: 400 }
+      );
+    }
+
+    let query = supabase.from("reunioes_nvc").select("id");
+
+    if (congregacaoId) {
+      query = query.eq("congregacao_id", congregacaoId);
+    }
+
+    if (tipo === "semana") {
+      // Deletar uma semana específica
+      query = query.eq("periodo", periodo);
+    } else if (tipo === "mes") {
+      // Deletar todas as reuniões de um mês específico
+      const meses = [
+        "",
+        "JANEIRO",
+        "FEVEREIRO",
+        "MARÇO",
+        "ABRIL",
+        "MAIO",
+        "JUNHO",
+        "JULHO",
+        "AGOSTO",
+        "SETEMBRO",
+        "OUTUBRO",
+        "NOVEMBRO",
+        "DEZEMBRO",
+      ];
+      const nomeDoMes = meses[parseInt(periodo)];
+      if (nomeDoMes) {
+        query = query.ilike("periodo", `%${nomeDoMes}%`);
+      } else {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Mês inválido",
+          },
+          { status: 400 }
+        );
+      }
+    } else {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Tipo deve ser 'semana' ou 'mes'",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Buscar as reuniões que serão deletadas
+    const { data: reunioesParaDeletar, error: buscarError } = await query;
+
+    if (buscarError) {
+      console.error("Erro ao buscar reuniões para deletar:", buscarError);
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Erro ao buscar reuniões",
+        },
+        { status: 500 }
+      );
+    }
+
+    if (!reunioesParaDeletar || reunioesParaDeletar.length === 0) {
+      return NextResponse.json(
+        {
+          success: true,
+          message: "Nenhuma reunião encontrada para deletar",
+          deletedCount: 0,
+        }
+      );
+    }
+
+    const reuniaoIds = reunioesParaDeletar.map(r => r.id);
+
+    // Deletar as partes relacionadas primeiro (devido às foreign keys)
+    const { error: deleteFacaSeuMelhorError } = await supabase
+      .from("faca_seu_melhor_partes")
+      .delete()
+      .in("reuniao_nvc_id", reuniaoIds);
+
+    if (deleteFacaSeuMelhorError) {
+      console.error("Erro ao deletar partes Faça seu Melhor:", deleteFacaSeuMelhorError);
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Erro ao deletar partes relacionadas",
+        },
+        { status: 500 }
+      );
+    }
+
+    const { error: deleteNossaVidaCristaError } = await supabase
+      .from("nossa_vida_crista_partes")
+      .delete()
+      .in("reuniao_nvc_id", reuniaoIds);
+
+    if (deleteNossaVidaCristaError) {
+      console.error("Erro ao deletar partes Nossa Vida Cristã:", deleteNossaVidaCristaError);
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Erro ao deletar partes relacionadas",
+        },
+        { status: 500 }
+      );
+    }
+
+    // Agora deletar as reuniões principais
+    const { error: deleteReuniaoError } = await supabase
+      .from("reunioes_nvc")
+      .delete()
+      .in("id", reuniaoIds);
+
+    if (deleteReuniaoError) {
+      console.error("Erro ao deletar reuniões:", deleteReuniaoError);
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Erro ao deletar reuniões",
+        },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: `${reunioesParaDeletar.length} reunião(ões) deletada(s) com sucesso`,
+      deletedCount: reunioesParaDeletar.length,
+    });
+
+  } catch (error) {
+    console.error("Erro ao deletar reuniões NVC:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Erro interno do servidor",
+      },
+      { status: 500 }
+    );
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

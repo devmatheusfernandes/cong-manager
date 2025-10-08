@@ -97,36 +97,47 @@ export async function PUT(
   }
 }
 
-// DELETE - Desativar horário (soft delete)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params
+    const { id } = await params;
 
-    const { error } = await supabase
-      .from('carrinho_horarios')
-      .update({
-        ativo: false,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id)
+    // Primeiro, exclua todas as escalas associadas a este horário
+    const { error: escalasError } = await supabase
+      .from("carrinho_escalas")
+      .delete()
+      .eq("horario_id", id);
 
-    if (error) {
-      console.error('Erro ao desativar horário:', error)
+    if (escalasError) {
+      console.error("Erro ao excluir escalas associadas:", escalasError);
       return NextResponse.json(
-        { error: 'Erro ao desativar horário' },
+        { error: "Erro ao excluir escalas associadas" },
         { status: 500 }
-      )
+      );
     }
 
-    return NextResponse.json({ message: 'Horário desativado com sucesso' })
+    // Em seguida, exclua o horário
+    const { error } = await supabase
+      .from("carrinho_horarios")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.error("Erro ao excluir horário:", error);
+      return NextResponse.json(
+        { error: "Erro ao excluir horário" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ message: "Horário excluído com sucesso" });
   } catch (error) {
-    console.error('Erro interno:', error)
+    console.error("Erro inesperado ao excluir horário:", error);
     return NextResponse.json(
-      { error: 'Erro interno do servidor' },
+      { error: "Erro interno do servidor" },
       { status: 500 }
-    )
+    );
   }
 }

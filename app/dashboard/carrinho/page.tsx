@@ -7,7 +7,9 @@ import { EditableContent } from "@/components/permission-wrapper";
 import { LocalCarrinhoDialog } from "@/components/local-carrinho-dialog";
 import { HorarioCarrinhoDialog } from "@/components/horario-carrinho-dialog";
 import { EscalaCarrinhoDialog } from "@/components/escala-carrinho-dialog";
-import { Plus, ShoppingCart, MapPin, Clock, User, Calendar, Edit, Loader2 } from "lucide-react";
+import { DeleteLocalCarrinhoDialog } from "@/components/delete-local-carrinho-dialog";
+import { DeleteHorarioCarrinhoDialog } from "@/components/delete-horario-carrinho-dialog";
+import { Plus, ShoppingCart, MapPin, Clock, User, Calendar, Edit, Loader2, Trash } from "lucide-react";
 import { toast } from "sonner";
 
 interface EscalaCarrinho {
@@ -224,6 +226,21 @@ export default function CarrinhoPage() {
                                 >
                                   <Edit className="h-3 w-3" />
                                 </Button>
+                                <DeleteHorarioCarrinhoDialog
+                                  horarioId={horario.id}
+                                  horarioInfo={`${diasSemana[horario.dia_semana]} ${horario.hora_inicio} às ${horario.hora_fim}`}
+                                  onSuccess={handleHorarioSuccess}
+                                  trigger={
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-6 w-6 p-0"
+                                      title="Excluir Horário"
+                                    >
+                                      <Trash className="h-3 w-3" />
+                                    </Button>
+                                  }
+                                />
                               </div>
                             </EditableContent>
                           </div>
@@ -288,6 +305,11 @@ export default function CarrinhoPage() {
                       <Edit className="h-3 w-3 mr-1" />
                       Editar Local
                     </Button>
+                    <DeleteLocalCarrinhoDialog
+                      localId={local.id}
+                      localNome={local.nome}
+                      onSuccess={handleLocalSuccess}
+                    />
                   </div>
                 </EditableContent>
               </div>

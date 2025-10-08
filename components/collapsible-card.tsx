@@ -34,15 +34,14 @@ export function CollapsibleCard({
             <span className="font-semibold">{title}</span>
           </div>
           <div className="flex items-center gap-2">
-            {badge && (
-              typeof badge === 'string' ? (
+            {badge &&
+              (typeof badge === "string" ? (
                 <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
                   {badge}
                 </span>
               ) : (
                 badge
-              )
-            )}
+              ))}
             {isExpanded ? (
               <ChevronUp className="h-4 w-4 text-muted-foreground" />
             ) : (
@@ -51,7 +50,7 @@ export function CollapsibleCard({
           </div>
         </div>
       </div>
-      
+
       <AnimatePresence>
         {isExpanded && (
           <motion.div
@@ -61,9 +60,7 @@ export function CollapsibleCard({
             transition={{ duration: 0.2, ease: "easeInOut" }}
             className="overflow-hidden"
           >
-            <div className="p-4 pt-0 border-t border-border/50">
-              {children}
-            </div>
+            <div className="p-4 pt-0 border-t border-border/50">{children}</div>
           </motion.div>
         )}
       </AnimatePresence>

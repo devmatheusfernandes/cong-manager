@@ -3,19 +3,16 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter, usePathname } from "next/navigation";
-import {
-  ChevronUp,
-  Shield,
-} from "lucide-react";
-import { CarrinhoIcon } from './icons/carrinho-icon';
-import { CongregacaoIcon } from './icons/congregacao-icon';
-import { DiscursoIcon } from './icons/discurso-icon';
-import { GruposIcon } from './icons/grupos-icon';
-import { LimpezaIcon } from './icons/limpeza-icon';
-import { MecanicasIcon } from './icons/mecanicas-icon';
-import { NvcIcon } from './icons/nvc-icon';
-import { PregacaoIcon } from './icons/pregacao-icon';
-import { PublicadoresIcon } from './icons/publicadores-icon';
+import { ChevronUp, Shield } from "lucide-react";
+import { CarrinhoIcon } from "./icons/carrinho-icon";
+import { CongregacaoIcon } from "./icons/congregacao-icon";
+import { DiscursoIcon } from "./icons/discurso-icon";
+import { GruposIcon } from "./icons/grupos-icon";
+import { LimpezaIcon } from "./icons/limpeza-icon";
+import { MecanicasIcon } from "./icons/mecanicas-icon";
+import { NvcIcon } from "./icons/nvc-icon";
+import { PregacaoIcon } from "./icons/pregacao-icon";
+import { PublicadoresIcon } from "./icons/publicadores-icon";
 import { BottomSheet } from "./bottom-sheet";
 import { useAuth } from "./auth-provider";
 import { getAvailableTabs } from "@/lib/auth";
@@ -40,7 +37,12 @@ const allTabs: TabItem[] = [
     icon: MecanicasIcon,
     path: "/dashboard/mecanicas",
   },
-  { id: "limpeza", label: "Limpeza", icon: LimpezaIcon, path: "/dashboard/limpeza" },
+  {
+    id: "limpeza",
+    label: "Limpeza",
+    icon: LimpezaIcon,
+    path: "/dashboard/limpeza",
+  },
   { id: "nvc", label: "Nossa Vida", icon: NvcIcon, path: "/dashboard/nvc" },
   {
     id: "carrinho",
@@ -48,7 +50,12 @@ const allTabs: TabItem[] = [
     icon: CarrinhoIcon,
     path: "/dashboard/carrinho",
   },
-  { id: "grupos", label: "Grupos", icon: GruposIcon, path: "/dashboard/grupos" },
+  {
+    id: "grupos",
+    label: "Grupos",
+    icon: GruposIcon,
+    path: "/dashboard/grupos",
+  },
   {
     id: "pregacao",
     label: "Pregação",
@@ -99,8 +106,8 @@ function TabButton({
         relative flex flex-col items-center justify-center p-3 min-h-[60px] transition-colors rounded-lg
         ${
           isActive
-            ? "text-[hsl(264,39%,38%)]"
-            : "text-muted-foreground hover:text-[hsl(264,39%,38%)]"
+            ? "text-violet-600"
+            : "text-muted-foreground hover:text-violet-600"
         }
         ${className}
       `}
@@ -108,7 +115,7 @@ function TabButton({
       {isActive && (
         <motion.div
           layoutId="activeTab"
-          className="absolute inset-0 bg-[hsl(264,39%,38%)]/10 rounded-lg"
+          className="absolute inset-0 bg-violet-600/10 rounded-lg"
           initial={false}
           transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
         />
@@ -216,7 +223,7 @@ export function BottomNavigation({ className }: BottomNavigationProps) {
                 {/* 5ª posição: botão "mais" */}
                 <button
                   onClick={() => setIsSheetOpen(true)}
-                  className="relative flex flex-col items-center justify-center p-3 min-h-[60px] transition-colors text-muted-foreground hover:text-[hsl(264,39%,38%)]"
+                  className="relative flex flex-col items-center justify-center p-3 min-h-[60px] transition-colors text-muted-foreground hover:text-violet-600"
                 >
                   <div className="flex flex-col items-center gap-1">
                     <ChevronUp className="h-5 w-5" />

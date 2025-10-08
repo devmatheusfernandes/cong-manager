@@ -7,7 +7,14 @@ import { TerritorioDialog } from "@/components/territorio-dialog";
 import { DesignarTerritorioDialog } from "@/components/designar-territorio-dialog";
 import { DevolverTerritorioDialog } from "@/components/devolver-territorio-dialog";
 import { HistoricoTerritorioDialog } from "@/components/historico-territorio-dialog";
-import { Plus, MapPin, CheckCircle, AlertCircle, Clock, UserCheck, Edit, History, RotateCcw } from "lucide-react";
+import {
+  MapPin,
+  Clock,
+  UserCheck,
+  Edit,
+  History,
+  RotateCcw,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/components/auth-provider";
 import { canEdit } from "@/lib/auth";
@@ -38,22 +45,22 @@ export default function PregacaoPage() {
   const { user } = useAuth();
   const [territorios, setTerritorios] = useState<Territorio[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  const canEditPregacao = canEdit(user, 'pregacao');
+
+  const canEditPregacao = canEdit(user, "pregacao");
 
   const fetchTerritorios = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/territorios');
+      const response = await fetch("/api/territorios");
       if (response.ok) {
         const data = await response.json();
         setTerritorios(data);
       } else {
-        toast.error('Erro ao carregar territórios');
+        toast.error("Erro ao carregar territórios");
       }
     } catch (error) {
-      console.error('Erro ao buscar territórios:', error);
-      toast.error('Erro ao carregar territórios');
+      console.error("Erro ao buscar territórios:", error);
+      toast.error("Erro ao carregar territórios");
     } finally {
       setLoading(false);
     }
@@ -65,22 +72,22 @@ export default function PregacaoPage() {
 
   const getStatusFromDesignacoes = (designacoes?: Array<any>) => {
     if (!designacoes || designacoes.length === 0) {
-      return 'disponivel';
+      return "disponivel";
     }
-    
-    const designacaoAtiva = designacoes.find(d => d.status === 'ativo');
+
+    const designacaoAtiva = designacoes.find((d) => d.status === "ativo");
     if (designacaoAtiva) {
-      return 'designado';
+      return "designado";
     }
-    
-    return 'disponivel';
+
+    return "disponivel";
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'designado':
+      case "designado":
         return UserCheck;
-      case 'disponivel':
+      case "disponivel":
         return MapPin;
       default:
         return MapPin;
@@ -89,23 +96,23 @@ export default function PregacaoPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'designado':
-        return 'text-amber-600 bg-amber-50 border-amber-200';
-      case 'disponivel':
-        return 'text-teal-600 bg-teal-50 border-teal-200';
+      case "designado":
+        return "text-amber-600 bg-amber-50 border-amber-200";
+      case "disponivel":
+        return "text-teal-600 bg-teal-50 border-teal-200";
       default:
-        return 'text-gray-600 bg-gray-50 border-gray-200';
+        return "text-gray-600 bg-gray-50 border-gray-200";
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'designado':
-        return 'Designado';
-      case 'disponivel':
-        return 'Disponível';
+      case "designado":
+        return "Designado";
+      case "disponivel":
+        return "Disponível";
       default:
-        return 'Desconhecido';
+        return "Desconhecido";
     }
   };
 
@@ -136,16 +143,17 @@ export default function PregacaoPage() {
           </div>
         )}
       </div>
-      
+
       {territorios.length === 0 ? (
         <div className="text-center py-8">
           <MapPin className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <h3 className="text-lg font-medium mb-2">Nenhum território cadastrado</h3>
+          <h3 className="text-lg font-medium mb-2">
+            Nenhum território cadastrado
+          </h3>
           <p className="text-muted-foreground mb-4">
-            {canEditPregacao 
+            {canEditPregacao
               ? "Comece criando seu primeiro território para organizar a pregação."
-              : "Nenhum território foi cadastrado ainda."
-            }
+              : "Nenhum território foi cadastrado ainda."}
           </p>
           {canEditPregacao && <TerritorioDialog onSuccess={fetchTerritorios} />}
         </div>
@@ -156,8 +164,10 @@ export default function PregacaoPage() {
             const StatusIcon = getStatusIcon(status);
             const statusColor = getStatusColor(status);
             const statusText = getStatusText(status);
-            const designacaoAtiva = territorio.designacoes?.find(d => d.status === 'ativo');
-            
+            const designacaoAtiva = territorio.designacoes?.find(
+              (d) => d.status === "ativo"
+            );
+
             return (
               <CollapsibleCard
                 key={territorio.id}
@@ -170,45 +180,67 @@ export default function PregacaoPage() {
                   <div className={`p-3 rounded-lg border ${statusColor}`}>
                     <div className="flex items-center gap-2 mb-2">
                       <StatusIcon className="h-4 w-4" />
-                      <span className="text-sm font-medium">Status: {statusText}</span>
+                      <span className="text-sm font-medium">
+                        Status: {statusText}
+                      </span>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 gap-3 mt-3">
                       {territorio.cidade && (
                         <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded border">
-                          <span className="text-xs text-muted-foreground">Cidade:</span>
-                          <p className="text-sm font-medium">{territorio.cidade}</p>
+                          <span className="text-xs text-muted-foreground">
+                            Cidade:
+                          </span>
+                          <p className="text-sm font-medium">
+                            {territorio.cidade}
+                          </p>
                         </div>
                       )}
-                      
+
                       {territorio.coordenadas && (
                         <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded border">
-                          <span className="text-xs text-muted-foreground">Coordenadas:</span>
-                          <p className="text-sm font-medium">GeoJSON definido</p>
+                          <span className="text-xs text-muted-foreground">
+                            Coordenadas:
+                          </span>
+                          <p className="text-sm font-medium">
+                            GeoJSON definido
+                          </p>
                         </div>
                       )}
-                      
+
                       {designacaoAtiva && (
                         <div className="p-2 bg-amber-50 dark:bg-amber-950/30 rounded border border-amber-200 dark:border-amber-800">
-                          <span className="text-xs text-amber-600 dark:text-amber-400">Designado para:</span>
+                          <span className="text-xs text-amber-600 dark:text-amber-400">
+                            Designado para:
+                          </span>
                           <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
                             {designacaoAtiva.publicador.nome}
                           </p>
-                          <span className="text-xs text-amber-600 dark:text-amber-400">Desde:</span>
+                          <span className="text-xs text-amber-600 dark:text-amber-400">
+                            Desde:
+                          </span>
                           <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
-                            {new Date(designacaoAtiva.data_inicio).toLocaleDateString('pt-BR')}
+                            {new Date(
+                              designacaoAtiva.data_inicio
+                            ).toLocaleDateString("pt-BR")}
                           </p>
                           {designacaoAtiva.data_fim && (
                             <>
-                              <span className="text-xs text-amber-600 dark:text-amber-400">Devolução prevista:</span>
+                              <span className="text-xs text-amber-600 dark:text-amber-400">
+                                Devolução prevista:
+                              </span>
                               <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
-                                {new Date(designacaoAtiva.data_fim).toLocaleDateString('pt-BR')}
+                                {new Date(
+                                  designacaoAtiva.data_fim
+                                ).toLocaleDateString("pt-BR")}
                               </p>
                             </>
                           )}
                           {designacaoAtiva.observacoes && (
                             <>
-                              <span className="text-xs text-amber-600 dark:text-amber-400">Observações:</span>
+                              <span className="text-xs text-amber-600 dark:text-amber-400">
+                                Observações:
+                              </span>
                               <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
                                 {designacaoAtiva.observacoes}
                               </p>
@@ -218,14 +250,18 @@ export default function PregacaoPage() {
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="flex gap-2 pt-2">
                     {canEditPregacao && (
-                      <TerritorioDialog 
-                        territorio={territorio} 
+                      <TerritorioDialog
+                        territorio={territorio}
                         onSuccess={fetchTerritorios}
                         trigger={
-                          <Button size="sm" variant="outline" className="flex-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1"
+                          >
                             <Edit className="h-4 w-4 mr-2" />
                             Editar
                           </Button>
@@ -239,7 +275,11 @@ export default function PregacaoPage() {
                         publicadorNome={designacaoAtiva.publicador.nome}
                         onSuccess={fetchTerritorios}
                         trigger={
-                          <Button size="sm" variant="outline" className="flex-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1"
+                          >
                             <RotateCcw className="h-4 w-4 mr-2" />
                             Devolver
                           </Button>

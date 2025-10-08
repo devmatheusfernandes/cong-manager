@@ -5,19 +5,26 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { toast } from "sonner";
 import { BIBLE_BOOKS, formatPeriod, getNextMonday } from "@/lib/bible-books";
 import {
-  type Pessoa,
-  type FacaSeuMelhorParte,
-  type NossaVidaCristaParte,
   type NovaReuniaoData,
   EVENTOS_ESPECIAIS,
   TIPOS_FACA_SEU_MELHOR,
@@ -27,20 +34,13 @@ import {
   Plus,
   Minus,
   Calendar as CalendarIcon,
-  Music,
-  MessageSquare,
-  Lightbulb,
   Target,
   Heart,
   AlertTriangle,
   Users,
   ArrowLeft,
   BookOpen,
-  CalendarDays,
-  Settings,
   Clock,
-  ToggleLeft,
-  ToggleRight,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -54,11 +54,11 @@ export default function NovaReuniaoPage() {
   const [isRange, setIsRange] = useState<boolean>(false);
   const [publicadores, setPublicadores] = useState<any[]>([]);
   const [loadingPublicadores, setLoadingPublicadores] = useState(true);
-  
+
   const [formData, setFormData] = useState<NovaReuniaoData>({
     periodo: formatPeriod(getNextMonday()),
     leituraBiblica: "",
-    comentarios: null,
+    comentarios: "",
     oracoes: {},
     canticos: {
       inicial: "",
@@ -93,7 +93,7 @@ export default function NovaReuniaoPage() {
         const daysToMonday = dayOfWeek === 0 ? 1 : 8 - dayOfWeek;
         date.setDate(date.getDate() + daysToMonday);
       }
-      
+
       setSelectedDate(date);
       setFormData({
         ...formData,
@@ -124,7 +124,7 @@ export default function NovaReuniaoPage() {
 
   const updateBibleReading = (start: string, end: string) => {
     if (!selectedBook) return;
-    
+
     let reading = selectedBook;
     if (start) {
       if (isRange && end && start !== end) {
@@ -133,7 +133,7 @@ export default function NovaReuniaoPage() {
         reading = `${selectedBook} ${start}`;
       }
     }
-    
+
     setFormData({
       ...formData,
       leituraBiblica: reading,
@@ -153,23 +153,23 @@ export default function NovaReuniaoPage() {
   // Gerenciar automaticamente o estudo bíblico de congregação
   useEffect(() => {
     const hasEstudoBiblico = formData.nossaVidaCrista.some(
-      parte => parte.tipo === "Estudo bíblico de congregação"
+      (parte) => parte.tipo === "Estudo bíblico de congregação"
     );
 
     if (formData.semanaVisitaSuperintendente) {
       // Se for visita do superintendente, remover estudo bíblico
       if (hasEstudoBiblico) {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           nossaVidaCrista: prev.nossaVidaCrista.filter(
-            parte => parte.tipo !== "Estudo bíblico de congregação"
-          )
+            (parte) => parte.tipo !== "Estudo bíblico de congregação"
+          ),
         }));
       }
     } else {
       // Se não for visita, garantir que tem estudo bíblico
       if (!hasEstudoBiblico) {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           nossaVidaCrista: [
             ...prev.nossaVidaCrista,
@@ -178,9 +178,9 @@ export default function NovaReuniaoPage() {
               duracao: "30 min",
               responsavel: { id: "", nome: "" },
               leitor: { id: "", nome: "" },
-              tema: ""
-            }
-          ]
+              tema: "",
+            },
+          ],
         }));
       }
     }
@@ -190,14 +190,14 @@ export default function NovaReuniaoPage() {
   useEffect(() => {
     const fetchPublicadores = async () => {
       try {
-        const response = await fetch('/api/publicadores');
+        const response = await fetch("/api/publicadores");
         if (response.ok) {
           const data = await response.json();
           setPublicadores(data);
         }
       } catch (error) {
-        console.error('Erro ao buscar publicadores:', error);
-        toast.error('Erro ao carregar publicadores');
+        console.error("Erro ao buscar publicadores:", error);
+        toast.error("Erro ao carregar publicadores");
       } finally {
         setLoadingPublicadores(false);
       }
@@ -221,60 +221,68 @@ export default function NovaReuniaoPage() {
     try {
       // Preparar dados para envio
       const reuniaoData = {
-        nossa_vida_crista: [{
-          id: `nova-${Date.now()}`,
-          congregacao_id: "660e8400-e29b-41d4-a716-446655440001", // ID padrão da congregação
-          periodo: formData.periodo,
-          leituraBiblica: formData.leituraBiblica,
-          presidente: formData.presidente,
-          oracoes: formData.oracoes,
-          canticos: formData.canticos,
-          comentarios: formData.comentarios,
-          tesourosPalavra: formData.tesourosPalavra,
-          facaSeuMelhor: formData.facaSeuMelhor,
-          nossaVidaCrista: formData.nossaVidaCrista,
-          eventoEspecial: formData.eventoEspecial || null,
-          semanaVisitaSuperintendente: formData.semanaVisitaSuperintendente,
-          diaTerca: formData.diaTerca
-        }]
+        nossa_vida_crista: [
+          {
+            id: `nova-${Date.now()}`,
+            congregacao_id: "660e8400-e29b-41d4-a716-446655440001", // ID padrão da congregação
+            periodo: formData.periodo,
+            leituraBiblica: formData.leituraBiblica,
+            presidente: formData.presidente,
+            oracoes: formData.oracoes,
+            canticos: formData.canticos,
+            comentarios: formData.comentarios,
+            tesourosPalavra: formData.tesourosPalavra,
+            facaSeuMelhor: formData.facaSeuMelhor,
+            nossaVidaCrista: formData.nossaVidaCrista,
+            eventoEspecial: formData.eventoEspecial || null,
+            semanaVisitaSuperintendente: formData.semanaVisitaSuperintendente,
+            diaTerca: formData.diaTerca,
+          },
+        ],
       };
 
       // Salvar no Supabase
-      const response = await fetch('/api/nvc/save', {
-        method: 'POST',
+      const response = await fetch("/api/nvc/save", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(reuniaoData),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Erro ao salvar reunião');
+        throw new Error(errorData.error || "Erro ao salvar reunião");
       }
 
       const result = await response.json();
-      
+
       toast.success("Reunião criada e salva no Supabase com sucesso!");
       router.push("/dashboard/nvc");
     } catch (error) {
-      console.error('Erro ao salvar reunião:', error);
-      toast.error(`Erro ao salvar reunião: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+      console.error("Erro ao salvar reunião:", error);
+      toast.error(
+        `Erro ao salvar reunião: ${
+          error instanceof Error ? error.message : "Erro desconhecido"
+        }`
+      );
     }
   };
 
-  const selectedBookData = BIBLE_BOOKS.find(book => book.name === selectedBook);
+  const selectedBookData = BIBLE_BOOKS.find(
+    (book) => book.name === selectedBook
+  );
 
   // Função auxiliar para atualizar campos aninhados
   const updateFormField = (path: string, value: any) => {
-    const keys = path.split('.');
+    const keys = path.split(".");
     const newFormData = { ...formData } as any;
     let current = newFormData;
-    
+
     for (let i = 0; i < keys.length - 1; i++) {
       current = current[keys[i]];
     }
-    
+
     current[keys[keys.length - 1]] = value;
     setFormData(newFormData);
   };
@@ -291,9 +299,9 @@ export default function NovaReuniaoPage() {
             duracao: "15 min",
             responsavel: { id: "", nome: "" },
             ajudante: { id: "", nome: "" },
-            descricao: ""
-          }
-        ]
+            descricao: "",
+          },
+        ],
       });
     }
   };
@@ -316,9 +324,9 @@ export default function NovaReuniaoPage() {
             duracao: "15 min",
             responsavel: { id: "", nome: "" },
             conteudo: "",
-            leitor: { id: "", nome: "" }
-          }
-        ]
+            leitor: { id: "", nome: "" },
+          },
+        ],
       });
     }
   };
@@ -336,10 +344,10 @@ export default function NovaReuniaoPage() {
       const minutos = parseInt(parte.duracao.replace(" min", ""));
       return total + minutos;
     }, 0);
-    
+
     // Adicionar 1 minuto de comentário presidencial por parte
     const tempoComentarios = formData.facaSeuMelhor.length * 1;
-    
+
     return tempoPartes + tempoComentarios;
   };
 
@@ -349,35 +357,42 @@ export default function NovaReuniaoPage() {
   // Filtrar publicadores por permissão
   const getPublicadoresPorPermissao = (permissao?: string) => {
     if (!permissao) return publicadores;
-    return publicadores.filter(pub => 
-      pub.ativo && pub.permissions && pub.permissions.includes(permissao)
+    return publicadores.filter(
+      (pub) =>
+        pub.ativo && pub.permissions && pub.permissions.includes(permissao)
     );
   };
 
   // Componente de select para publicadores
-  const PublicadorSelect = ({ 
-    value, 
-    onChange, 
-    placeholder, 
-    permissao 
-  }: { 
-    value: string; 
-    onChange: (value: string) => void; 
-    placeholder: string; 
+  const PublicadorSelect = ({
+    value,
+    onChange,
+    placeholder,
+    permissao,
+  }: {
+    value: string;
+    onChange: (value: string) => void;
+    placeholder: string;
     permissao?: string;
   }) => {
     const publicadoresFiltrados = getPublicadoresPorPermissao(permissao);
-    
+
     return (
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger>
-          <SelectValue placeholder={loadingPublicadores ? "Carregando..." : placeholder} />
+          <SelectValue
+            placeholder={loadingPublicadores ? "Carregando..." : placeholder}
+          />
         </SelectTrigger>
         <SelectContent>
           {loadingPublicadores ? (
-            <SelectItem value="__loading__" disabled>Carregando publicadores...</SelectItem>
+            <SelectItem value="__loading__" disabled>
+              Carregando publicadores...
+            </SelectItem>
           ) : publicadoresFiltrados.length === 0 ? (
-            <SelectItem value="__empty__" disabled>Nenhum publicador encontrado</SelectItem>
+            <SelectItem value="__empty__" disabled>
+              Nenhum publicador encontrado
+            </SelectItem>
           ) : (
             publicadoresFiltrados.map((pub) => (
               <SelectItem key={pub.id} value={pub.id}>
@@ -393,11 +408,7 @@ export default function NovaReuniaoPage() {
   return (
     <div className="container mx-auto p-4 max-w-4xl">
       <div className="flex items-center gap-4 mb-6">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => router.back()}
-        >
+        <Button variant="outline" size="sm" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Voltar
         </Button>
@@ -424,7 +435,9 @@ export default function NovaReuniaoPage() {
                       className="w-full justify-start text-left font-normal"
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {selectedDate ? format(selectedDate, "PPP", { locale: ptBR }) : "Selecione a data"}
+                      {selectedDate
+                        ? format(selectedDate, "PPP", { locale: ptBR })
+                        : "Selecione a data"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
@@ -464,7 +477,7 @@ export default function NovaReuniaoPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 {selectedBook && (
                   <div className="space-y-3">
                     <div className="flex items-center space-x-2">
@@ -475,12 +488,18 @@ export default function NovaReuniaoPage() {
                       />
                       <Label htmlFor="range">Intervalo de capítulos</Label>
                     </div>
-                    
-                    <div className={`grid gap-3 ${isRange ? 'grid-cols-2' : 'grid-cols-1'}`}>
+
+                    <div
+                      className={`grid gap-3 ${
+                        isRange ? "grid-cols-2" : "grid-cols-1"
+                      }`}
+                    >
                       <div>
-                        <Label>{isRange ? "Capítulo inicial" : "Capítulo"}</Label>
-                        <Select 
-                          value={startChapter} 
+                        <Label>
+                          {isRange ? "Capítulo inicial" : "Capítulo"}
+                        </Label>
+                        <Select
+                          value={startChapter}
                           onValueChange={handleStartChapterChange}
                           disabled={!selectedBook}
                         >
@@ -488,20 +507,27 @@ export default function NovaReuniaoPage() {
                             <SelectValue placeholder="Selecione o capítulo" />
                           </SelectTrigger>
                           <SelectContent>
-                            {selectedBookData && Array.from({ length: selectedBookData.chapters }, (_, i) => i + 1).map((chapter) => (
-                              <SelectItem key={chapter} value={chapter.toString()}>
-                                Capítulo {chapter}
-                              </SelectItem>
-                            ))}
+                            {selectedBookData &&
+                              Array.from(
+                                { length: selectedBookData.chapters },
+                                (_, i) => i + 1
+                              ).map((chapter) => (
+                                <SelectItem
+                                  key={chapter}
+                                  value={chapter.toString()}
+                                >
+                                  Capítulo {chapter}
+                                </SelectItem>
+                              ))}
                           </SelectContent>
                         </Select>
                       </div>
-                      
+
                       {isRange && (
                         <div>
                           <Label>Capítulo final</Label>
-                          <Select 
-                            value={endChapter} 
+                          <Select
+                            value={endChapter}
                             onValueChange={handleEndChapterChange}
                             disabled={!selectedBook || !startChapter}
                           >
@@ -509,13 +535,23 @@ export default function NovaReuniaoPage() {
                               <SelectValue placeholder="Selecione o capítulo final" />
                             </SelectTrigger>
                             <SelectContent>
-                              {selectedBookData && Array.from({ length: selectedBookData.chapters }, (_, i) => i + 1)
-                                .filter(chapter => chapter >= parseInt(startChapter || "1"))
-                                .map((chapter) => (
-                                <SelectItem key={chapter} value={chapter.toString()}>
-                                  Capítulo {chapter}
-                                </SelectItem>
-                              ))}
+                              {selectedBookData &&
+                                Array.from(
+                                  { length: selectedBookData.chapters },
+                                  (_, i) => i + 1
+                                )
+                                  .filter(
+                                    (chapter) =>
+                                      chapter >= parseInt(startChapter || "1")
+                                  )
+                                  .map((chapter) => (
+                                    <SelectItem
+                                      key={chapter}
+                                      value={chapter.toString()}
+                                    >
+                                      Capítulo {chapter}
+                                    </SelectItem>
+                                  ))}
                             </SelectContent>
                           </Select>
                         </div>
@@ -552,10 +588,15 @@ export default function NovaReuniaoPage() {
                 id="superintendente"
                 checked={formData.semanaVisitaSuperintendente}
                 onCheckedChange={(checked) =>
-                  setFormData({ ...formData, semanaVisitaSuperintendente: checked })
+                  setFormData({
+                    ...formData,
+                    semanaVisitaSuperintendente: checked,
+                  })
                 }
               />
-              <Label htmlFor="superintendente">Semana da visita do superintendente</Label>
+              <Label htmlFor="superintendente">
+                Semana da visita do superintendente
+              </Label>
             </div>
 
             <div className="flex items-center space-x-2">
@@ -574,7 +615,10 @@ export default function NovaReuniaoPage() {
               <Select
                 value={formData.eventoEspecial || "none"}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, eventoEspecial: value === "none" ? undefined : value })
+                  setFormData({
+                    ...formData,
+                    eventoEspecial: value === "none" ? undefined : value,
+                  })
                 }
               >
                 <SelectTrigger>
@@ -608,10 +652,10 @@ export default function NovaReuniaoPage() {
                 <PublicadorSelect
                   value={formData.presidente?.id || ""}
                   onChange={(value) => {
-                    const publicador = publicadores.find(p => p.id === value);
-                    updateFormField("presidente", { 
-                      id: value, 
-                      nome: publicador?.nome || "" 
+                    const publicador = publicadores.find((p) => p.id === value);
+                    updateFormField("presidente", {
+                      id: value,
+                      nome: publicador?.nome || "",
                     });
                   }}
                   placeholder="Selecione o presidente"
@@ -623,10 +667,10 @@ export default function NovaReuniaoPage() {
                 <PublicadorSelect
                   value={formData.oracoes.inicial?.id || ""}
                   onChange={(value) => {
-                    const publicador = publicadores.find(p => p.id === value);
-                    updateFormField("oracoes.inicial", { 
-                      id: value, 
-                      nome: publicador?.nome || "" 
+                    const publicador = publicadores.find((p) => p.id === value);
+                    updateFormField("oracoes.inicial", {
+                      id: value,
+                      nome: publicador?.nome || "",
                     });
                   }}
                   placeholder="Selecione para oração inicial"
@@ -634,14 +678,16 @@ export default function NovaReuniaoPage() {
                 />
               </div>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label>Cântico Inicial</Label>
                 <Input
                   placeholder="Número do cântico"
                   value={formData.canticos.inicial}
-                  onChange={(e) => updateFormField("canticos.inicial", e.target.value)}
+                  onChange={(e) =>
+                    updateFormField("canticos.inicial", e.target.value)
+                  }
                 />
               </div>
               <div>
@@ -649,7 +695,9 @@ export default function NovaReuniaoPage() {
                 <Input
                   placeholder="Número do cântico"
                   value={formData.canticos.intermediario}
-                  onChange={(e) => updateFormField("canticos.intermediario", e.target.value)}
+                  onChange={(e) =>
+                    updateFormField("canticos.intermediario", e.target.value)
+                  }
                 />
               </div>
               <div>
@@ -657,7 +705,9 @@ export default function NovaReuniaoPage() {
                 <Input
                   placeholder="Número do cântico"
                   value={formData.canticos.final}
-                  onChange={(e) => updateFormField("canticos.final", e.target.value)}
+                  onChange={(e) =>
+                    updateFormField("canticos.final", e.target.value)
+                  }
                 />
               </div>
             </div>
@@ -667,10 +717,10 @@ export default function NovaReuniaoPage() {
               <PublicadorSelect
                 value={formData.oracoes.final?.id || ""}
                 onChange={(value) => {
-                  const publicador = publicadores.find(p => p.id === value);
-                  updateFormField("oracoes.final", { 
-                    id: value, 
-                    nome: publicador?.nome || "" 
+                  const publicador = publicadores.find((p) => p.id === value);
+                  updateFormField("oracoes.final", {
+                    id: value,
+                    nome: publicador?.nome || "",
                   });
                 }}
                 placeholder="Selecione para oração final"
@@ -697,24 +747,35 @@ export default function NovaReuniaoPage() {
                   <Input
                     placeholder="Título do discurso"
                     value={formData.tesourosPalavra.discurso.titulo}
-                    onChange={(e) => updateFormField("tesourosPalavra.discurso.titulo", e.target.value)}
+                    onChange={(e) =>
+                      updateFormField(
+                        "tesourosPalavra.discurso.titulo",
+                        e.target.value
+                      )
+                    }
                   />
                 </div>
                 <div>
                   <Label>Duração</Label>
                   <div className="flex items-center h-10 px-3 py-2 border border-input bg-muted rounded-md text-sm">
-                    {formData.semanaVisitaSuperintendente ? "30 min (visita)" : "10 min (fixo)"}
+                    {formData.semanaVisitaSuperintendente
+                      ? "30 min (visita)"
+                      : "10 min (fixo)"}
                   </div>
                 </div>
                 <div>
                   <Label>Responsável</Label>
                   <PublicadorSelect
-                    value={formData.tesourosPalavra.discurso.responsavel?.id || ""}
+                    value={
+                      formData.tesourosPalavra.discurso.responsavel?.id || ""
+                    }
                     onChange={(value) => {
-                      const publicador = publicadores.find(p => p.id === value);
-                      updateFormField("tesourosPalavra.discurso.responsavel", { 
-                        id: value, 
-                        nome: publicador?.nome || "" 
+                      const publicador = publicadores.find(
+                        (p) => p.id === value
+                      );
+                      updateFormField("tesourosPalavra.discurso.responsavel", {
+                        id: value,
+                        nome: publicador?.nome || "",
                       });
                     }}
                     placeholder="Selecione o responsável"
@@ -727,7 +788,9 @@ export default function NovaReuniaoPage() {
             <Separator />
 
             <div>
-              <Label className="text-base font-semibold">Joias Espirituais</Label>
+              <Label className="text-base font-semibold">
+                Joias Espirituais
+              </Label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
                 <div>
                   <Label>Duração</Label>
@@ -738,13 +801,21 @@ export default function NovaReuniaoPage() {
                 <div>
                   <Label>Responsável</Label>
                   <PublicadorSelect
-                    value={formData.tesourosPalavra.joiasEspirituais.responsavel?.id || ""}
+                    value={
+                      formData.tesourosPalavra.joiasEspirituais.responsavel
+                        ?.id || ""
+                    }
                     onChange={(value) => {
-                      const publicador = publicadores.find(p => p.id === value);
-                      updateFormField("tesourosPalavra.joiasEspirituais.responsavel", { 
-                        id: value, 
-                        nome: publicador?.nome || "" 
-                      });
+                      const publicador = publicadores.find(
+                        (p) => p.id === value
+                      );
+                      updateFormField(
+                        "tesourosPalavra.joiasEspirituais.responsavel",
+                        {
+                          id: value,
+                          nome: publicador?.nome || "",
+                        }
+                      );
                     }}
                     placeholder="Selecione o responsável"
                     permissao="perm_joias_espirituais"
@@ -756,14 +827,21 @@ export default function NovaReuniaoPage() {
             <Separator />
 
             <div>
-              <Label className="text-base font-semibold">Leitura da Bíblia</Label>
+              <Label className="text-base font-semibold">
+                Leitura da Bíblia
+              </Label>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
                 <div>
                   <Label>Texto</Label>
                   <Input
                     placeholder="Texto da leitura"
                     value={formData.tesourosPalavra.leituraBiblica.texto}
-                    onChange={(e) => updateFormField("tesourosPalavra.leituraBiblica.texto", e.target.value)}
+                    onChange={(e) =>
+                      updateFormField(
+                        "tesourosPalavra.leituraBiblica.texto",
+                        e.target.value
+                      )
+                    }
                   />
                 </div>
                 <div>
@@ -775,13 +853,21 @@ export default function NovaReuniaoPage() {
                 <div>
                   <Label>Responsável</Label>
                   <PublicadorSelect
-                    value={formData.tesourosPalavra.leituraBiblica.responsavel?.id || ""}
+                    value={
+                      formData.tesourosPalavra.leituraBiblica.responsavel?.id ||
+                      ""
+                    }
                     onChange={(value) => {
-                      const publicador = publicadores.find(p => p.id === value);
-                      updateFormField("tesourosPalavra.leituraBiblica.responsavel", { 
-                        id: value, 
-                        nome: publicador?.nome || "" 
-                      });
+                      const publicador = publicadores.find(
+                        (p) => p.id === value
+                      );
+                      updateFormField(
+                        "tesourosPalavra.leituraBiblica.responsavel",
+                        {
+                          id: value,
+                          nome: publicador?.nome || "",
+                        }
+                      );
                     }}
                     placeholder="Selecione o responsável"
                     permissao="perm_leitura_biblia"
@@ -812,7 +898,8 @@ export default function NovaReuniaoPage() {
             </CardTitle>
             {tempoExcedido && (
               <p className="text-sm text-red-600 mt-2">
-                ⚠️ Tempo total excede 15 minutos (incluindo comentários presidenciais)
+                ⚠️ Tempo total excede 15 minutos (incluindo comentários
+                presidenciais)
               </p>
             )}
           </CardHeader>
@@ -820,7 +907,9 @@ export default function NovaReuniaoPage() {
             {formData.facaSeuMelhor.map((parte, index) => (
               <div key={index} className="border rounded-lg p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label className="text-base font-semibold">Parte {index + 1}</Label>
+                  <Label className="text-base font-semibold">
+                    Parte {index + 1}
+                  </Label>
                   <div className="flex gap-2">
                     {formData.facaSeuMelhor.length < 4 && (
                       <Button
@@ -844,7 +933,7 @@ export default function NovaReuniaoPage() {
                     )}
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   <div>
                     <Label>Tipo</Label>
@@ -876,11 +965,11 @@ export default function NovaReuniaoPage() {
                         min="1"
                         max="30"
                         placeholder="Ex: 5"
-                        value={parte.duracao.replace(' min', '')}
+                        value={parte.duracao.replace(" min", "")}
                         onChange={(e) => {
                           const newParts = [...formData.facaSeuMelhor];
                           const value = e.target.value;
-                          newParts[index].duracao = value ? `${value} min` : '';
+                          newParts[index].duracao = value ? `${value} min` : "";
                           setFormData({ ...formData, facaSeuMelhor: newParts });
                         }}
                         className="flex-1"
@@ -893,7 +982,10 @@ export default function NovaReuniaoPage() {
                           onClick={() => {
                             const newParts = [...formData.facaSeuMelhor];
                             newParts[index].duracao = "5 min";
-                            setFormData({ ...formData, facaSeuMelhor: newParts });
+                            setFormData({
+                              ...formData,
+                              facaSeuMelhor: newParts,
+                            });
                           }}
                         >
                           5
@@ -905,7 +997,10 @@ export default function NovaReuniaoPage() {
                           onClick={() => {
                             const newParts = [...formData.facaSeuMelhor];
                             newParts[index].duracao = "10 min";
-                            setFormData({ ...formData, facaSeuMelhor: newParts });
+                            setFormData({
+                              ...formData,
+                              facaSeuMelhor: newParts,
+                            });
                           }}
                         >
                           10
@@ -917,7 +1012,10 @@ export default function NovaReuniaoPage() {
                           onClick={() => {
                             const newParts = [...formData.facaSeuMelhor];
                             newParts[index].duracao = "15 min";
-                            setFormData({ ...formData, facaSeuMelhor: newParts });
+                            setFormData({
+                              ...formData,
+                              facaSeuMelhor: newParts,
+                            });
                           }}
                         >
                           15
@@ -930,11 +1028,13 @@ export default function NovaReuniaoPage() {
                     <PublicadorSelect
                       value={parte.responsavel?.id || ""}
                       onChange={(value) => {
-                        const publicador = publicadores.find(p => p.id === value);
+                        const publicador = publicadores.find(
+                          (p) => p.id === value
+                        );
                         const newParts = [...formData.facaSeuMelhor];
-                        newParts[index].responsavel = { 
-                          id: value, 
-                          nome: publicador?.nome || "" 
+                        newParts[index].responsavel = {
+                          id: value,
+                          nome: publicador?.nome || "",
                         };
                         setFormData({ ...formData, facaSeuMelhor: newParts });
                       }}
@@ -947,11 +1047,13 @@ export default function NovaReuniaoPage() {
                     <PublicadorSelect
                       value={parte.ajudante?.id || ""}
                       onChange={(value) => {
-                        const publicador = publicadores.find(p => p.id === value);
+                        const publicador = publicadores.find(
+                          (p) => p.id === value
+                        );
                         const newParts = [...formData.facaSeuMelhor];
-                        newParts[index].ajudante = { 
-                          id: value, 
-                          nome: publicador?.nome || "" 
+                        newParts[index].ajudante = {
+                          id: value,
+                          nome: publicador?.nome || "",
                         };
                         setFormData({ ...formData, facaSeuMelhor: newParts });
                       }}
@@ -960,7 +1062,7 @@ export default function NovaReuniaoPage() {
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <Label>Descrição/Tema</Label>
                   <Input
@@ -990,7 +1092,9 @@ export default function NovaReuniaoPage() {
             {formData.nossaVidaCrista.map((parte, index) => (
               <div key={index} className="border rounded-lg p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label className="text-base font-semibold">Parte {index + 1}</Label>
+                  <Label className="text-base font-semibold">
+                    Parte {index + 1}
+                  </Label>
                   <div className="flex gap-2">
                     {formData.nossaVidaCrista.length < 3 && (
                       <Button
@@ -1014,7 +1118,7 @@ export default function NovaReuniaoPage() {
                     )}
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
                     <Label>Tipo</Label>
@@ -1050,7 +1154,10 @@ export default function NovaReuniaoPage() {
                         onValueChange={(value) => {
                           const newParts = [...formData.nossaVidaCrista];
                           newParts[index].duracao = value;
-                          setFormData({ ...formData, nossaVidaCrista: newParts });
+                          setFormData({
+                            ...formData,
+                            nossaVidaCrista: newParts,
+                          });
                         }}
                       >
                         <SelectTrigger>
@@ -1069,11 +1176,13 @@ export default function NovaReuniaoPage() {
                     <PublicadorSelect
                       value={parte.responsavel?.id || ""}
                       onChange={(value) => {
-                        const publicador = publicadores.find(p => p.id === value);
+                        const publicador = publicadores.find(
+                          (p) => p.id === value
+                        );
                         const newParts = [...formData.nossaVidaCrista];
-                        newParts[index].responsavel = { 
-                          id: value, 
-                          nome: publicador?.nome || "" 
+                        newParts[index].responsavel = {
+                          id: value,
+                          nome: publicador?.nome || "",
                         };
                         setFormData({ ...formData, nossaVidaCrista: newParts });
                       }}
@@ -1082,7 +1191,7 @@ export default function NovaReuniaoPage() {
                     />
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
                     <Label>Conteúdo/Tema</Label>
@@ -1102,13 +1211,18 @@ export default function NovaReuniaoPage() {
                       <PublicadorSelect
                         value={parte.leitor?.id || ""}
                         onChange={(value) => {
-                          const publicador = publicadores.find(p => p.id === value);
+                          const publicador = publicadores.find(
+                            (p) => p.id === value
+                          );
                           const newParts = [...formData.nossaVidaCrista];
-                          newParts[index].leitor = { 
-                            id: value, 
-                            nome: publicador?.nome || "" 
+                          newParts[index].leitor = {
+                            id: value,
+                            nome: publicador?.nome || "",
                           };
-                          setFormData({ ...formData, nossaVidaCrista: newParts });
+                          setFormData({
+                            ...formData,
+                            nossaVidaCrista: newParts,
+                          });
                         }}
                         placeholder="Selecione o leitor"
                         permissao="perm_leitor"
@@ -1126,9 +1240,7 @@ export default function NovaReuniaoPage() {
           <Button variant="outline" onClick={() => router.back()}>
             Cancelar
           </Button>
-          <Button onClick={handleSubmit}>
-            Criar Reunião
-          </Button>
+          <Button onClick={handleSubmit}>Criar Reunião</Button>
         </div>
       </div>
     </div>

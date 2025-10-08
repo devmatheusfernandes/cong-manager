@@ -14,7 +14,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { CalendarIcon, RotateCcw } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -34,7 +38,7 @@ export function DevolverTerritorioDialog({
   territorioNome,
   publicadorNome,
   onSuccess,
-  trigger
+  trigger,
 }: DevolverTerritorioDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -43,30 +47,33 @@ export function DevolverTerritorioDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!dataDevolucao) {
       toast.error("Selecione a data de devolução");
       return;
     }
 
     setLoading(true);
-    
+
     try {
-      const response = await fetch(`/api/territorios/designacoes/${designacaoId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          data_fim: dataDevolucao.toISOString().split('T')[0],
-          status: 'finalizado',
-          observacoes: observacoes || undefined
-        }),
-      });
+      const response = await fetch(
+        `/api/territorios/designacoes/${designacaoId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            data_fim: dataDevolucao.toISOString().split("T")[0],
+            status: "finalizado",
+            observacoes: observacoes || undefined,
+          }),
+        }
+      );
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Erro ao devolver território');
+        throw new Error(error.error || "Erro ao devolver território");
       }
 
       toast.success("Território devolvido com sucesso!");
@@ -75,8 +82,10 @@ export function DevolverTerritorioDialog({
       setObservacoes("");
       onSuccess?.();
     } catch (error) {
-      console.error('Erro ao devolver território:', error);
-      toast.error(error instanceof Error ? error.message : "Erro ao devolver território");
+      console.error("Erro ao devolver território:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Erro ao devolver território"
+      );
     } finally {
       setLoading(false);
     }
@@ -91,14 +100,13 @@ export function DevolverTerritorioDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger || defaultTrigger}
-      </DialogTrigger>
+      <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Devolver Território</DialogTitle>
           <DialogDescription>
-            Confirme a devolução do território "{territorioNome}" por {publicadorNome}.
+            Confirme a devolução do território {territorioNome} por{" "}
+            {publicadorNome}.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">

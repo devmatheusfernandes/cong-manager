@@ -8,8 +8,8 @@ export default function DashboardPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redireciona para a primeira tab (nomes-datas) por padrão
-    router.replace("/dashboard/nomes-datas");
+    // Redireciona para a primeira tab (mecanicas) por padrão
+    router.replace("/dashboard/mecanicas");
   }, [router]);
 
   return (

@@ -66,6 +66,12 @@ const allTabs: TabItem[] = [
     icon: Shield,
     path: "/dashboard/admin",
   },
+  {
+    id: "congregacao",
+    label: "Congregação",
+    icon: ChevronUp,
+    path: "/dashboard/congregacao",
+  },
 ];
 
 interface BottomNavigationProps {
@@ -125,7 +131,7 @@ export function BottomNavigation({ className }: BottomNavigationProps) {
 
   // Obter tabs disponíveis baseado nas permissões do usuário
   const availableTabIds = getAvailableTabs(user);
-  const tabs = allTabs.filter(tab => availableTabIds.includes(tab.id));
+  const tabs = allTabs.filter((tab) => availableTabIds.includes(tab.id));
 
   // Determina qual tab está ativa baseada na URL atual
   const activeTab = tabs.find((tab) => pathname === tab.path)?.id || "";
@@ -159,7 +165,15 @@ export function BottomNavigation({ className }: BottomNavigationProps) {
       >
         <div className="max-w-screen-xl mx-auto">
           {/* Desktop: todas as tabs */}
-          <div className={`hidden md:grid gap-1 ${tabs.length <= 5 ? 'md:grid-cols-5' : tabs.length <= 7 ? 'md:grid-cols-7' : 'md:grid-cols-9'}`}>
+          <div
+            className={`hidden md:grid gap-1 ${
+              tabs.length <= 5
+                ? "md:grid-cols-5"
+                : tabs.length <= 7
+                ? "md:grid-cols-7"
+                : "md:grid-cols-9"
+            }`}
+          >
             {tabs.map((tab) => (
               <TabButton
                 key={tab.id}
@@ -171,7 +185,11 @@ export function BottomNavigation({ className }: BottomNavigationProps) {
           </div>
 
           {/* Mobile: máximo 5 posições */}
-          <div className={`grid md:hidden ${tabs.length <= 4 ? `grid-cols-${tabs.length}` : 'grid-cols-5'}`}>
+          <div
+            className={`grid md:hidden ${
+              tabs.length <= 4 ? `grid-cols-${tabs.length}` : "grid-cols-5"
+            }`}
+          >
             {/* Tabs dinâmicas */}
             {tabs.length <= 4 ? (
               // Se tem 4 ou menos tabs, mostra todas
@@ -201,7 +219,9 @@ export function BottomNavigation({ className }: BottomNavigationProps) {
                 >
                   <div className="flex flex-col items-center gap-1">
                     <ChevronUp className="h-5 w-5" />
-                    <span className="text-xs font-medium leading-none">Mais</span>
+                    <span className="text-xs font-medium leading-none">
+                      Mais
+                    </span>
                   </div>
                 </button>
               </>

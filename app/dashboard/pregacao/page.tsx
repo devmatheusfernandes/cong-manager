@@ -9,6 +9,8 @@ import { DevolverTerritorioDialog } from "@/components/devolver-territorio-dialo
 import { HistoricoTerritorioDialog } from "@/components/historico-territorio-dialog";
 import { Plus, MapPin, CheckCircle, AlertCircle, Clock, UserCheck, Edit, History, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/components/auth-provider";
+import { canEdit } from "@/lib/auth";
 
 interface Territorio {
   id: string;
@@ -33,8 +35,11 @@ interface Territorio {
 }
 
 export default function PregacaoPage() {
+  const { user } = useAuth();
   const [territorios, setTerritorios] = useState<Territorio[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  const canEditPregacao = canEdit(user, 'pregacao');
 
   const fetchTerritorios = async () => {
     try {
@@ -124,10 +129,12 @@ export default function PregacaoPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Pregação</h2>
-        <div className="flex gap-2">
-          <TerritorioDialog onSuccess={fetchTerritorios} />
-          <DesignarTerritorioDialog onSuccess={fetchTerritorios} />
-        </div>
+        {canEditPregacao && (
+          <div className="flex gap-2">
+            <TerritorioDialog onSuccess={fetchTerritorios} />
+            <DesignarTerritorioDialog onSuccess={fetchTerritorios} />
+          </div>
+        )}
       </div>
       
       {territorios.length === 0 ? (
@@ -135,9 +142,12 @@ export default function PregacaoPage() {
           <MapPin className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
           <h3 className="text-lg font-medium mb-2">Nenhum território cadastrado</h3>
           <p className="text-muted-foreground mb-4">
-            Comece criando seu primeiro território para organizar a pregação.
+            {canEditPregacao 
+              ? "Comece criando seu primeiro território para organizar a pregação."
+              : "Nenhum território foi cadastrado ainda."
+            }
           </p>
-          <TerritorioDialog onSuccess={fetchTerritorios} />
+          {canEditPregacao && <TerritorioDialog onSuccess={fetchTerritorios} />}
         </div>
       ) : (
         <div className="space-y-3">
@@ -210,17 +220,19 @@ export default function PregacaoPage() {
                   </div>
                   
                   <div className="flex gap-2 pt-2">
-                    <TerritorioDialog 
-                      territorio={territorio} 
-                      onSuccess={fetchTerritorios}
-                      trigger={
-                        <Button size="sm" variant="outline" className="flex-1">
-                          <Edit className="h-4 w-4 mr-2" />
-                          Editar
-                        </Button>
-                      }
-                    />
-                    {designacaoAtiva && (
+                    {canEditPregacao && (
+                      <TerritorioDialog 
+                        territorio={territorio} 
+                        onSuccess={fetchTerritorios}
+                        trigger={
+                          <Button size="sm" variant="outline" className="flex-1">
+                            <Edit className="h-4 w-4 mr-2" />
+                            Editar
+                          </Button>
+                        }
+                      />
+                    )}
+                    {canEditPregacao && designacaoAtiva && (
                       <DevolverTerritorioDialog
                         designacaoId={designacaoAtiva.id}
                         territorioNome={territorio.nome}

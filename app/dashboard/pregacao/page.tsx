@@ -7,6 +7,7 @@ import { TerritorioDialog } from "@/components/territorio-dialog";
 import { DesignarTerritorioDialog } from "@/components/designar-territorio-dialog";
 import { DevolverTerritorioDialog } from "@/components/devolver-territorio-dialog";
 import { HistoricoTerritorioDialog } from "@/components/historico-territorio-dialog";
+import { DeleteTerritorioDialog } from "@/components/delete-territorio-dialog";
 import {
   MapPin,
   Clock,
@@ -14,6 +15,7 @@ import {
   Edit,
   History,
   RotateCcw,
+  Trash,
 } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { toast } from "sonner";
@@ -294,6 +296,13 @@ export default function PregacaoPage() {
                         </Button>
                       }
                     />
+                    {canEditPregacao && (
+                      <DeleteTerritorioDialog
+                        territorioId={territorio.id}
+                        territorioNome={territorio.nome}
+                        onSuccess={fetchTerritorios}
+                      />
+                    )}
                   </div>
                 </div>
               </CollapsibleCard>

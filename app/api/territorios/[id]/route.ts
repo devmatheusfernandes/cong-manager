@@ -86,11 +86,26 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const { id } = await params;
   try {
+    // Excluir designações de território associadas primeiro
+    const { error: designacaoError } = await supabase
+      .from('designacoes_territorio')
+      .delete()
+      .eq('territorio_id', id);
+
+    if (designacaoError) {
+      console.error('Erro ao excluir designações de território:', designacaoError);
+      return NextResponse.json(
+        { error: 'Erro ao excluir designações de território' },
+        { status: 500 }
+      );
+    }
+
     const { error } = await supabase
       .from('territorios')
       .delete()
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (error) {
       console.error('Erro ao excluir território:', error)

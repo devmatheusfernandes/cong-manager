@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CollapsibleCard } from "@/components/collapsible-card";
 import { Plus, User, Shield, Settings, Edit, Trash2 } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { PermissionGuard } from "@/components/permission-guard";
 import { toast } from "sonner";
 import { useAuth } from "@/components/auth-provider";
@@ -270,7 +271,7 @@ export default function PublicadoresPage() {
 
       {loading ? (
          <div className="text-center py-8">
-           <p>Carregando publicadores...</p>
+           <LoadingSpinner text="Carregando publicadores..." />
          </div>
        ) : publicadores.length === 0 ? (
          <div className="text-center py-8">

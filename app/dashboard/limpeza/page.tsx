@@ -3,7 +3,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { CollapsibleCard } from "@/components/collapsible-card";
-import { PermissionGuard, PermissionStatus } from "@/components/permission-guard";
+import {
+  PermissionGuard,
+  PermissionStatus,
+} from "@/components/permission-guard";
 import {
   Dialog,
   DialogContent,
@@ -18,17 +21,27 @@ import {
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { 
-  getAllPublicadores, 
+import {
+  getAllPublicadores,
   type Publicador,
   getAllEscalasLimpeza,
   createEscalaLimpeza,
   deleteEscalaLimpeza,
   type EscalaLimpeza,
   type CreateEscalaLimpezaData,
-  canEdit
+  canEdit,
 } from "@/lib/auth";
-import { Plus, Calendar, User, Users, CalendarIcon, Info, CheckCircle, AlertCircle } from "lucide-react";
+import {
+  Plus,
+  Calendar,
+  User,
+  Users,
+  CalendarIcon,
+  Info,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
@@ -37,28 +50,28 @@ import { useAuth } from "@/components/auth-provider";
 
 // Função para filtrar publicadores com permissão de limpeza
 const getPublicadoresLimpeza = (publicadores: Publicador[]) => {
-  return publicadores.filter(publicador => 
-    publicador.ativo && 
-    publicador.permissions?.includes("perm_limpeza")
+  return publicadores.filter(
+    (publicador) =>
+      publicador.ativo && publicador.permissions?.includes("perm_limpeza")
   );
 };
 
 export default function LimpezaPage() {
   // Hook de autenticação
   const { user } = useAuth();
-  
+
   // Estados para dados
   const [publicadores, setPublicadores] = useState<Publicador[]>([]);
   const [escalasLimpeza, setEscalasLimpeza] = useState<EscalaLimpeza[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Estados para os modais
   const [isNovaEscalaModalOpen, setIsNovaEscalaModalOpen] = useState(false);
   const [isInstrucoesModalOpen, setIsInstrucoesModalOpen] = useState(false);
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [novaEscala, setNovaEscala] = useState({
     publicadores: [] as string[],
-    observacoes: ""
+    observacoes: "",
   });
 
   // Carregamento de dados
@@ -68,7 +81,7 @@ export default function LimpezaPage() {
         setLoading(true);
         const [publicadoresData, escalasData] = await Promise.all([
           getAllPublicadores(),
-          getAllEscalasLimpeza()
+          getAllEscalasLimpeza(),
         ]);
         setPublicadores(publicadoresData);
         setEscalasLimpeza(escalasData);
@@ -89,7 +102,7 @@ export default function LimpezaPage() {
   // Função para submeter nova escala
   const handleSubmitNovaEscala = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!date) {
       toast.error("Por favor, selecione uma data");
       return;
@@ -105,25 +118,25 @@ export default function LimpezaPage() {
         data_limpeza: format(date, "yyyy-MM-dd"),
         publicadores: novaEscala.publicadores,
         observacoes: novaEscala.observacoes,
-        grupo_id: ""
+        grupo_id: "",
       };
 
       const result = await createEscalaLimpeza(novaEscalaData);
-      
+
       if (result.success && result.escala) {
         // Atualizar o estado local
-        setEscalasLimpeza(prev => [...prev, result.escala!]);
+        setEscalasLimpeza((prev) => [...prev, result.escala!]);
       } else {
         throw new Error(result.error || "Erro desconhecido ao criar escala");
       }
 
       toast.success("Escala de limpeza criada com sucesso!");
-      
+
       // Reset do formulário
       setDate(undefined);
       setNovaEscala({
         publicadores: [],
-        observacoes: ""
+        observacoes: "",
       });
       setIsNovaEscalaModalOpen(false);
     } catch (error) {
@@ -134,11 +147,11 @@ export default function LimpezaPage() {
 
   // Função para adicionar/remover publicador
   const togglePublicador = (publicadorId: string) => {
-    setNovaEscala(prev => ({
+    setNovaEscala((prev) => ({
       ...prev,
       publicadores: prev.publicadores.includes(publicadorId)
-        ? prev.publicadores.filter(id => id !== publicadorId)
-        : [...prev.publicadores, publicadorId]
+        ? prev.publicadores.filter((id) => id !== publicadorId)
+        : [...prev.publicadores, publicadorId],
     }));
   };
 
@@ -146,10 +159,12 @@ export default function LimpezaPage() {
   const handleDeleteEscala = async (escalaId: string) => {
     try {
       const result = await deleteEscalaLimpeza(escalaId);
-      
+
       if (result.success) {
         // Atualizar o estado local
-        setEscalasLimpeza(prev => prev.filter(escala => escala.id !== escalaId));
+        setEscalasLimpeza((prev) =>
+          prev.filter((escala) => escala.id !== escalaId)
+        );
         toast.success("Escala de limpeza removida com sucesso!");
       } else {
         throw new Error(result.error || "Erro desconhecido ao remover escala");
@@ -176,10 +191,7 @@ export default function LimpezaPage() {
           </div>
         </div>
         <div className="flex items-center justify-center py-8">
-          <div className="text-center space-y-2">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-            <p className="text-sm text-muted-foreground">Carregando publicadores...</p>
-          </div>
+          <LoadingSpinner text="Carregando lista..." />
         </div>
       </div>
     );
@@ -190,25 +202,21 @@ export default function LimpezaPage() {
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <h2 className="text-xl font-semibold">Limpeza</h2>
-          <PermissionStatus permissao="perm_limpeza" />
         </div>
         <div className="flex gap-2">
           {/* Botão de Instruções - Visível para todos */}
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             variant="outline"
             onClick={() => setIsInstrucoesModalOpen(true)}
           >
             <Info className="h-4 w-4 mr-2" />
             Instruções
           </Button>
-          
+
           {/* Botão Nova Escala - Apenas para quem tem permissão */}
           {podeGerenciarLimpeza && (
-            <Button 
-              size="sm"
-              onClick={() => setIsNovaEscalaModalOpen(true)}
-            >
+            <Button size="sm" onClick={() => setIsNovaEscalaModalOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Nova Escala
             </Button>
@@ -220,7 +228,10 @@ export default function LimpezaPage() {
         {escalasOrdenadas.map((escala) => {
           const publicadoresResponsaveis = escala.publicadores
             .map((pubId) => publicadores.find((p) => p.id === pubId))
-            .filter((publicador): publicador is NonNullable<typeof publicador> => publicador !== undefined);
+            .filter(
+              (publicador): publicador is NonNullable<typeof publicador> =>
+                publicador !== undefined
+            );
 
           const dataFormatada = new Date(
             escala.data_limpeza
@@ -267,9 +278,9 @@ export default function LimpezaPage() {
                     <Button size="sm" variant="outline" className="flex-1">
                       Editar
                     </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
+                    <Button
+                      size="sm"
+                      variant="outline"
                       className="flex-1"
                       onClick={() => handleDeleteEscala(escala.id)}
                     >
@@ -284,7 +295,10 @@ export default function LimpezaPage() {
       </div>
 
       {/* Modal para Nova Escala */}
-      <Dialog open={isNovaEscalaModalOpen} onOpenChange={setIsNovaEscalaModalOpen}>
+      <Dialog
+        open={isNovaEscalaModalOpen}
+        onOpenChange={setIsNovaEscalaModalOpen}
+      >
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Nova Escala de Limpeza</DialogTitle>
@@ -303,7 +317,9 @@ export default function LimpezaPage() {
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date ? format(date, "PPP", { locale: ptBR }) : "Selecione uma data"}
+                    {date
+                      ? format(date, "PPP", { locale: ptBR })
+                      : "Selecione uma data"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
@@ -332,12 +348,14 @@ export default function LimpezaPage() {
                     )}
                     onClick={() => togglePublicador(publicador.id)}
                   >
-                    <div className={cn(
-                      "w-4 h-4 rounded border-2 flex items-center justify-center",
-                      novaEscala.publicadores.includes(publicador.id)
-                        ? "bg-primary border-primary"
-                        : "border-muted-foreground"
-                    )}>
+                    <div
+                      className={cn(
+                        "w-4 h-4 rounded border-2 flex items-center justify-center",
+                        novaEscala.publicadores.includes(publicador.id)
+                          ? "bg-primary border-primary"
+                          : "border-muted-foreground"
+                      )}
+                    >
                       {novaEscala.publicadores.includes(publicador.id) && (
                         <CheckCircle className="w-3 h-3 text-primary-foreground" />
                       )}
@@ -358,7 +376,12 @@ export default function LimpezaPage() {
                 id="observacoes"
                 placeholder="Ex: Limpeza geral do salão, incluir banheiros..."
                 value={novaEscala.observacoes}
-                onChange={(e) => setNovaEscala(prev => ({ ...prev, observacoes: e.target.value }))}
+                onChange={(e) =>
+                  setNovaEscala((prev) => ({
+                    ...prev,
+                    observacoes: e.target.value,
+                  }))
+                }
               />
             </div>
 
@@ -380,7 +403,10 @@ export default function LimpezaPage() {
       </Dialog>
 
       {/* Modal de Instruções */}
-      <Dialog open={isInstrucoesModalOpen} onOpenChange={setIsInstrucoesModalOpen}>
+      <Dialog
+        open={isInstrucoesModalOpen}
+        onOpenChange={setIsInstrucoesModalOpen}
+      >
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">

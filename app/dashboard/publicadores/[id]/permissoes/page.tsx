@@ -28,6 +28,7 @@ import {
   Star,
   Award
 } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { toast } from "sonner";
 import { PermissionGuard } from "@/components/permission-guard";
 import { 
@@ -153,7 +154,7 @@ export default function PermissoesPage() {
           </Button>
         </div>
         <div className="text-center py-8">
-          <p className="text-muted-foreground">Carregando...</p>
+          <LoadingSpinner />
         </div>
       </div>
     );

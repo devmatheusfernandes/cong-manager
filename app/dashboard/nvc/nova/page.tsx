@@ -42,6 +42,7 @@ import {
   BookOpen,
   Clock,
 } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -387,7 +388,7 @@ export default function NovaReuniaoPage() {
         <SelectContent>
           {loadingPublicadores ? (
             <SelectItem value="__loading__" disabled>
-              Carregando publicadores...
+              <LoadingSpinner size="sm" text="Carregando publicadores..." />
             </SelectItem>
           ) : publicadoresFiltrados.length === 0 ? (
             <SelectItem value="__empty__" disabled>

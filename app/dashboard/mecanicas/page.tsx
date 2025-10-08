@@ -52,6 +52,7 @@ import {
   Edit,
   Trash2,
 } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 // Funções para filtrar publicadores por permissões específicas
 const getPublicadoresComPermissao = (publicadores: Publicador[], permissao: string) => {
@@ -288,7 +289,7 @@ export default function MecanicasPage() {
           <h2 className="text-xl font-semibold">Mecânicas</h2>
         </div>
         <div className="text-center py-8">
-          <p>Carregando designações...</p>
+          <LoadingSpinner text="Carregando designações..." />
         </div>
       </div>
     );

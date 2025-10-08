@@ -25,6 +25,7 @@ import {
   Key,
   AlertTriangle,
 } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -205,7 +206,7 @@ export default function AdminPage() {
             </CardHeader>
             <CardContent>
               {loading ? (
-                <p className="text-muted-foreground">Carregando usuários...</p>
+                <LoadingSpinner text="Carregando usuários..." />
               ) : (
                 <div className="space-y-4">
                   {allUsers.map((systemUser) => (

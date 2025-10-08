@@ -52,6 +52,7 @@ import {
   Edit,
   Printer,
 } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function NVCPage() {
   const router = useRouter();
@@ -805,8 +806,7 @@ export default function NVCPage() {
 
       {loading && (
         <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-6 w-6 animate-spin mr-2" />
-          <span>Carregando reuniões...</span>
+          <LoadingSpinner text="Carregando reuniões..." />
         </div>
       )}
 

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { History, User, Calendar, Clock, FileText } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -135,10 +136,7 @@ export function HistoricoTerritorioDialog({
 
         {loading ? (
           <div className="flex items-center justify-center py-8">
-            <div className="text-center">
-              <Clock className="h-8 w-8 animate-spin mx-auto mb-2 text-muted-foreground" />
-              <p className="text-muted-foreground">Carregando histórico...</p>
-            </div>
+            <LoadingSpinner text="Carregando histórico..." />
           </div>
         ) : historico.length === 0 ? (
           <div className="text-center py-8">

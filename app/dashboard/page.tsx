@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -13,10 +14,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex items-center justify-center min-h-[50vh]">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-        <p className="mt-2 text-sm text-muted-foreground">Carregando...</p>
-      </div>
+      <LoadingSpinner />
     </div>
   );
 }

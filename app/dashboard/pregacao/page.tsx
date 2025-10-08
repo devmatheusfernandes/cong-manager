@@ -15,6 +15,7 @@ import {
   History,
   RotateCcw,
 } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { toast } from "sonner";
 import { useAuth } from "@/components/auth-provider";
 import { canEdit } from "@/lib/auth";
@@ -123,10 +124,7 @@ export default function PregacaoPage() {
           <h2 className="text-xl font-semibold">Pregação</h2>
         </div>
         <div className="flex items-center justify-center py-8">
-          <div className="text-center">
-            <Clock className="h-8 w-8 animate-spin mx-auto mb-2 text-muted-foreground" />
-            <p className="text-muted-foreground">Carregando territórios...</p>
-          </div>
+          <LoadingSpinner text="Carregando territórios..." />
         </div>
       </div>
     );

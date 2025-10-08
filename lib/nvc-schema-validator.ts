@@ -78,336 +78,422 @@ interface NVCData {
   nossa_vida_crista: ReuniaoNVC[];
 }
 
+interface ValidationResult {
+  valid: boolean;
+  errors: string[];
+}
+
+interface CleanedValidationResult extends ValidationResult {
+  cleanedData?: NVCData;
+  warnings: string[];
+}
+
 // Funções de validação
-function isString(value: any): value is string {
-  return typeof value === 'string';
+function isString(value: unknown): value is string {
+  return typeof value === "string";
 }
 
-function isBoolean(value: any): value is boolean {
-  return typeof value === 'boolean';
+function isBoolean(value: unknown): value is boolean {
+  return typeof value === "boolean";
 }
 
-function isArray(value: any): value is any[] {
+function isArray(value: unknown): value is unknown[] {
   return Array.isArray(value);
 }
 
-function isObject(value: any): value is object {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function validatePessoa(pessoa: any, fieldName: string): { valid: boolean; errors: string[] } {
+function validatePessoa(pessoa: unknown, fieldName: string): ValidationResult {
   const errors: string[] = [];
-  
+
   if (!isObject(pessoa)) {
     errors.push(`${fieldName} deve ser um objeto`);
     return { valid: false, errors };
   }
-  
-  if (!isString((pessoa as any).nome)) {
+
+  if (!isString(pessoa.nome)) {
     errors.push(`${fieldName}.nome deve ser uma string`);
   }
-  
-  if (!isString((pessoa as any).id)) {
+
+  if (!isString(pessoa.id)) {
     errors.push(`${fieldName}.id deve ser uma string`);
   }
-  
+
   return { valid: errors.length === 0, errors };
 }
 
-function validateCanticos(canticos: any): { valid: boolean; errors: string[] } {
+function validateCanticos(canticos: unknown): ValidationResult {
   const errors: string[] = [];
-  
+
   if (!isObject(canticos)) {
-    errors.push('canticos deve ser um objeto');
+    errors.push("canticos deve ser um objeto");
     return { valid: false, errors };
   }
-  
-  if (!isString((canticos as any).inicial)) {
-    errors.push('canticos.inicial deve ser uma string');
+
+  if (!isString(canticos.inicial)) {
+    errors.push("canticos.inicial deve ser uma string");
   }
-  
-  if (!isString((canticos as any).intermediario)) {
-    errors.push('canticos.intermediario deve ser uma string');
+
+  if (!isString(canticos.intermediario)) {
+    errors.push("canticos.intermediario deve ser uma string");
   }
-  
-  if (!isString((canticos as any).final)) {
-    errors.push('canticos.final deve ser uma string');
+
+  if (!isString(canticos.final)) {
+    errors.push("canticos.final deve ser uma string");
   }
-  
+
   return { valid: errors.length === 0, errors };
 }
 
-function validateTesourosPalavra(tesouros: any): { valid: boolean; errors: string[] } {
+function validateTesourosPalavra(tesouros: unknown): ValidationResult {
   const errors: string[] = [];
-  
+
   if (!isObject(tesouros)) {
-    errors.push('tesourosPalavra deve ser um objeto');
+    errors.push("tesourosPalavra deve ser um objeto");
     return { valid: false, errors };
   }
-  
-  if (!isString((tesouros as any).titulo)) {
-    errors.push('tesourosPalavra.titulo deve ser uma string');
+
+  if (!isString(tesouros.titulo)) {
+    errors.push("tesourosPalavra.titulo deve ser uma string");
   }
-  
-  if (!isString((tesouros as any).duracao)) {
-    errors.push('tesourosPalavra.duracao deve ser uma string');
+
+  if (!isString(tesouros.duracao)) {
+    errors.push("tesourosPalavra.duracao deve ser uma string");
   }
-  
-  const responsavelValidation = validatePessoa((tesouros as any).responsavel, 'tesourosPalavra.responsavel');
+
+  const responsavelValidation = validatePessoa(
+    tesouros.responsavel,
+    "tesourosPalavra.responsavel"
+  );
   errors.push(...responsavelValidation.errors);
-  
+
   // Validar joiasEspirituais
-  if (!isObject((tesouros as any).joiasEspirituais)) {
-    errors.push('tesourosPalavra.joiasEspirituais deve ser um objeto');
+  if (!isObject(tesouros.joiasEspirituais)) {
+    errors.push("tesourosPalavra.joiasEspirituais deve ser um objeto");
   } else {
-    const joias = (tesouros as any).joiasEspirituais;
-    if (!isString((joias as any).texto)) errors.push('joiasEspirituais.texto deve ser uma string');
-    if (!isString((joias as any).pergunta)) errors.push('joiasEspirituais.pergunta deve ser uma string');
-    if (!isString((joias as any).referencia)) errors.push('joiasEspirituais.referencia deve ser uma string');
-    if (!isString((joias as any).duracao)) errors.push('joiasEspirituais.duracao deve ser uma string');
-    
-    const joiasResponsavelValidation = validatePessoa((joias as any).responsavel, 'joiasEspirituais.responsavel');
+    const joias = tesouros.joiasEspirituais;
+    if (!isString(joias.texto))
+      errors.push("joiasEspirituais.texto deve ser uma string");
+    if (!isString(joias.pergunta))
+      errors.push("joiasEspirituais.pergunta deve ser uma string");
+    if (!isString(joias.referencia))
+      errors.push("joiasEspirituais.referencia deve ser uma string");
+    if (!isString(joias.duracao))
+      errors.push("joiasEspirituais.duracao deve ser uma string");
+
+    const joiasResponsavelValidation = validatePessoa(
+      joias.responsavel,
+      "joiasEspirituais.responsavel"
+    );
     errors.push(...joiasResponsavelValidation.errors);
   }
-  
+
   // Validar leituraBiblica
-  if (!isObject((tesouros as any).leituraBiblica)) {
-    errors.push('tesourosPalavra.leituraBiblica deve ser um objeto');
+  if (!isObject(tesouros.leituraBiblica)) {
+    errors.push("tesourosPalavra.leituraBiblica deve ser um objeto");
   } else {
-    const leitura = (tesouros as any).leituraBiblica;
-    if (!isString((leitura as any).texto)) errors.push('leituraBiblica.texto deve ser uma string');
-    if (!isString((leitura as any).duracao)) errors.push('leituraBiblica.duracao deve ser uma string');
-    
-    const leituraResponsavelValidation = validatePessoa((leitura as any).responsavel, 'leituraBiblica.responsavel');
+    const leitura = tesouros.leituraBiblica;
+    if (!isString(leitura.texto))
+      errors.push("leituraBiblica.texto deve ser uma string");
+    if (!isString(leitura.duracao))
+      errors.push("leituraBiblica.duracao deve ser uma string");
+
+    const leituraResponsavelValidation = validatePessoa(
+      leitura.responsavel,
+      "leituraBiblica.responsavel"
+    );
     errors.push(...leituraResponsavelValidation.errors);
   }
-  
+
   return { valid: errors.length === 0, errors };
 }
 
-function validateFacaSeuMelhor(facaSeuMelhor: any): { valid: boolean; errors: string[] } {
+function validateFacaSeuMelhor(facaSeuMelhor: unknown): ValidationResult {
   const errors: string[] = [];
-  
+
   if (!isArray(facaSeuMelhor)) {
-    errors.push('facaSeuMelhor deve ser um array');
+    errors.push("facaSeuMelhor deve ser um array");
     return { valid: false, errors };
   }
-  
-  facaSeuMelhor.forEach((parte: any, index: number) => {
+
+  facaSeuMelhor.forEach((parte: unknown, index: number) => {
     if (!isObject(parte)) {
       errors.push(`facaSeuMelhor[${index}] deve ser um objeto`);
       return;
     }
-    
-    if (!isString((parte as any).tipo)) {
+
+    if (!isString(parte.tipo)) {
       errors.push(`facaSeuMelhor[${index}].tipo deve ser uma string`);
     }
-    
-    if (!isString((parte as any).duracao)) {
+
+    if (!isString(parte.duracao)) {
       errors.push(`facaSeuMelhor[${index}].duracao deve ser uma string`);
     }
-    
-    if (!isString((parte as any).descricao)) {
+
+    if (!isString(parte.descricao)) {
       errors.push(`facaSeuMelhor[${index}].descricao deve ser uma string`);
     }
-    
-    const responsavelValidation = validatePessoa((parte as any).responsavel, `facaSeuMelhor[${index}].responsavel`);
+
+    const responsavelValidation = validatePessoa(
+      parte.responsavel,
+      `facaSeuMelhor[${index}].responsavel`
+    );
     errors.push(...responsavelValidation.errors);
-    
-    if ((parte as any).ajudante) {
-      const ajudanteValidation = validatePessoa((parte as any).ajudante, `facaSeuMelhor[${index}].ajudante`);
+
+    if (parte.ajudante) {
+      const ajudanteValidation = validatePessoa(
+        parte.ajudante,
+        `facaSeuMelhor[${index}].ajudante`
+      );
       errors.push(...ajudanteValidation.errors);
     }
   });
-  
+
   return { valid: errors.length === 0, errors };
 }
 
-function validateNossaVidaCrista(nossaVidaCrista: any): { valid: boolean; errors: string[] } {
+function validateNossaVidaCrista(nossaVidaCrista: unknown): ValidationResult {
   const errors: string[] = [];
-  
+
   if (!isArray(nossaVidaCrista)) {
-    errors.push('nossaVidaCrista deve ser um array');
+    errors.push("nossaVidaCrista deve ser um array");
     return { valid: false, errors };
   }
-  
-  nossaVidaCrista.forEach((parte: any, index: number) => {
+
+  nossaVidaCrista.forEach((parte: unknown, index: number) => {
     if (!isObject(parte)) {
       errors.push(`nossaVidaCrista[${index}] deve ser um objeto`);
       return;
     }
-    
-    if (!isString((parte as any).tipo)) {
+
+    if (!isString(parte.tipo)) {
       errors.push(`nossaVidaCrista[${index}].tipo deve ser uma string`);
     }
-    
-    if (!isString((parte as any).duracao)) {
+
+    if (!isString(parte.duracao)) {
       errors.push(`nossaVidaCrista[${index}].duracao deve ser uma string`);
     }
-    
-    const responsavelValidation = validatePessoa((parte as any).responsavel, `nossaVidaCrista[${index}].responsavel`);
+
+    const responsavelValidation = validatePessoa(
+      parte.responsavel,
+      `nossaVidaCrista[${index}].responsavel`
+    );
     errors.push(...responsavelValidation.errors);
   });
-  
+
   return { valid: errors.length === 0, errors };
 }
 
-function validateReuniao(reuniao: any, index: number): { valid: boolean; errors: string[] } {
+function validateReuniao(reuniao: unknown, index: number): ValidationResult {
   const errors: string[] = [];
-  
+
   if (!isObject(reuniao)) {
     errors.push(`Reunião ${index} deve ser um objeto`);
     return { valid: false, errors };
   }
-  
+
   // Campos obrigatórios
-  if (!isString((reuniao as any).periodo)) {
+  if (!isString(reuniao.periodo)) {
     errors.push(`Reunião ${index}: periodo deve ser uma string`);
   }
-  
-  if (!isBoolean((reuniao as any).semanaVisitaSuperintendente)) {
-    errors.push(`Reunião ${index}: semanaVisitaSuperintendente deve ser um booleano`);
+
+  if (!isBoolean(reuniao.semanaVisitaSuperintendente)) {
+    errors.push(
+      `Reunião ${index}: semanaVisitaSuperintendente deve ser um booleano`
+    );
   }
-  
-  if (!isBoolean((reuniao as any).diaTerca)) {
+
+  if (!isBoolean(reuniao.diaTerca)) {
     errors.push(`Reunião ${index}: diaTerca deve ser um booleano`);
   }
-  
+
   // Verificar se é evento especial
-  if ((reuniao as any).eventoEspecial) {
-    if (!isString((reuniao as any).eventoEspecial)) {
-      errors.push(`Reunião ${index}: eventoEspecial deve ser uma string ou null`);
+  if (reuniao.eventoEspecial) {
+    if (!isString(reuniao.eventoEspecial)) {
+      errors.push(
+        `Reunião ${index}: eventoEspecial deve ser uma string ou null`
+      );
     }
     // Para eventos especiais, outros campos podem ser null
     return { valid: errors.length === 0, errors };
   }
-  
+
   // Para reuniões normais, validar campos obrigatórios
-  if ((reuniao as any).leituraBiblica !== null && !isString((reuniao as any).leituraBiblica)) {
+  if (reuniao.leituraBiblica !== null && !isString(reuniao.leituraBiblica)) {
     errors.push(`Reunião ${index}: leituraBiblica deve ser uma string ou null`);
   }
-  
-  if ((reuniao as any).presidente) {
-    const presidenteValidation = validatePessoa((reuniao as any).presidente, `Reunião ${index}: presidente`);
+
+  if (reuniao.presidente) {
+    const presidenteValidation = validatePessoa(
+      reuniao.presidente,
+      `Reunião ${index}: presidente`
+    );
     errors.push(...presidenteValidation.errors);
   }
-  
-  if ((reuniao as any).oracoes) {
-    if (!isObject((reuniao as any).oracoes)) {
+
+  if (reuniao.oracoes) {
+    if (!isObject(reuniao.oracoes)) {
       errors.push(`Reunião ${index}: oracoes deve ser um objeto`);
     } else {
-      const inicialValidation = validatePessoa((reuniao as any).oracoes.inicial, `Reunião ${index}: oracoes.inicial`);
+      const inicialValidation = validatePessoa(
+        reuniao.oracoes.inicial,
+        `Reunião ${index}: oracoes.inicial`
+      );
       errors.push(...inicialValidation.errors);
-      
-      const finalValidation = validatePessoa((reuniao as any).oracoes.final, `Reunião ${index}: oracoes.final`);
+
+      const finalValidation = validatePessoa(
+        reuniao.oracoes.final,
+        `Reunião ${index}: oracoes.final`
+      );
       errors.push(...finalValidation.errors);
     }
   }
-  
-  if ((reuniao as any).canticos) {
-    const canticosValidation = validateCanticos((reuniao as any).canticos);
-    errors.push(...canticosValidation.errors.map(err => `Reunião ${index}: ${err}`));
+
+  if (reuniao.canticos) {
+    const canticosValidation = validateCanticos(reuniao.canticos);
+    errors.push(
+      ...canticosValidation.errors.map((err) => `Reunião ${index}: ${err}`)
+    );
   }
-  
-  if ((reuniao as any).tesourosPalavra) {
-    const tesouroValidation = validateTesourosPalavra((reuniao as any).tesourosPalavra);
-    errors.push(...tesouroValidation.errors.map(err => `Reunião ${index}: ${err}`));
+
+  if (reuniao.tesourosPalavra) {
+    const tesouroValidation = validateTesourosPalavra(reuniao.tesourosPalavra);
+    errors.push(
+      ...tesouroValidation.errors.map((err) => `Reunião ${index}: ${err}`)
+    );
   }
-  
-  if ((reuniao as any).facaSeuMelhor) {
-    const facaValidation = validateFacaSeuMelhor((reuniao as any).facaSeuMelhor);
-    errors.push(...facaValidation.errors.map(err => `Reunião ${index}: ${err}`));
+
+  if (reuniao.facaSeuMelhor) {
+    const facaValidation = validateFacaSeuMelhor(reuniao.facaSeuMelhor);
+    errors.push(
+      ...facaValidation.errors.map((err) => `Reunião ${index}: ${err}`)
+    );
   }
-  
-  if ((reuniao as any).nossaVidaCrista) {
-    const nvcValidation = validateNossaVidaCrista((reuniao as any).nossaVidaCrista);
-    errors.push(...nvcValidation.errors.map(err => `Reunião ${index}: ${err}`));
+
+  if (reuniao.nossaVidaCrista) {
+    const nvcValidation = validateNossaVidaCrista(reuniao.nossaVidaCrista);
+    errors.push(
+      ...nvcValidation.errors.map((err) => `Reunião ${index}: ${err}`)
+    );
   }
-  
+
   return { valid: errors.length === 0, errors };
 }
 
-export function validateNVCSchema(data: any): { valid: boolean; errors: string[] } {
+export function validateNVCSchema(data: unknown): ValidationResult {
   const errors: string[] = [];
-  
+
   if (!isObject(data)) {
-    errors.push('Dados devem ser um objeto');
+    errors.push("Dados devem ser um objeto");
     return { valid: false, errors };
   }
-  
-  if (!(data as any).nossa_vida_crista) {
+
+  if (!data.nossa_vida_crista) {
     errors.push('Propriedade "nossa_vida_crista" é obrigatória');
     return { valid: false, errors };
   }
-  
-  if (!isArray((data as any).nossa_vida_crista)) {
+
+  if (!isArray(data.nossa_vida_crista)) {
     errors.push('"nossa_vida_crista" deve ser um array');
     return { valid: false, errors };
   }
-  
-  if ((data as any).nossa_vida_crista.length === 0) {
+
+  if (data.nossa_vida_crista.length === 0) {
     errors.push('"nossa_vida_crista" não pode estar vazio');
     return { valid: false, errors };
   }
-  
-  (data as any).nossa_vida_crista.forEach((reuniao: any, index: number) => {
+
+  data.nossa_vida_crista.forEach((reuniao: unknown, index: number) => {
     const reuniaoValidation = validateReuniao(reuniao, index + 1);
     errors.push(...reuniaoValidation.errors);
   });
-  
+
   return { valid: errors.length === 0, errors };
 }
 
-export function validateAndCleanNVCData(data: any): { 
-  valid: boolean; 
-  errors: string[]; 
-  cleanedData?: NVCData;
-  warnings: string[];
-} {
+export function validateAndCleanNVCData(
+  data: unknown
+): CleanedValidationResult {
   const warnings: string[] = [];
   const validation = validateNVCSchema(data);
-  
+
   if (!validation.valid) {
     return { valid: false, errors: validation.errors, warnings };
   }
-  
+
+  if (!isObject(data) || !isArray(data.nossa_vida_crista)) {
+    return { valid: false, errors: ["Dados inválidos"], warnings };
+  }
+
   // Limpar e normalizar dados
   const cleanedData: NVCData = {
-    nossa_vida_crista: (data as any).nossa_vida_crista.map((reuniao: any, index: number) => {
-      const cleaned: ReuniaoNVC = {
-        id: (reuniao as any).id || `temp-${Date.now()}-${index}`,
-        congregacao_id: (reuniao as any).congregacao_id || "",
-        periodo: (reuniao as any).periodo,
-        leituraBiblica: (reuniao as any).leituraBiblica,
-        presidente: (reuniao as any).presidente,
-        oracoes: (reuniao as any).oracoes,
-        canticos: (reuniao as any).canticos,
-        comentarios: (reuniao as any).comentarios,
-        tesourosPalavra: (reuniao as any).tesourosPalavra,
-        facaSeuMelhor: (reuniao as any).facaSeuMelhor,
-        nossaVidaCrista: (reuniao as any).nossaVidaCrista,
-        eventoEspecial: (reuniao as any).eventoEspecial,
-        semanaVisitaSuperintendente: (reuniao as any).semanaVisitaSuperintendente,
-        diaTerca: (reuniao as any).diaTerca
-      };
-      
-      // Adicionar warnings para campos vazios
-      if (!cleaned.id || cleaned.id.startsWith('temp-')) {
-        warnings.push(`Reunião ${index + 1}: ID foi gerado automaticamente`);
+    nossa_vida_crista: data.nossa_vida_crista.map(
+      (reuniao: unknown, index: number) => {
+        if (!isObject(reuniao)) {
+          throw new Error(`Reunião ${index} não é um objeto`);
+        }
+
+        const cleaned: ReuniaoNVC = {
+          id: isString(reuniao.id) ? reuniao.id : `temp-${Date.now()}-${index}`,
+          congregacao_id: isString(reuniao.congregacao_id)
+            ? reuniao.congregacao_id
+            : "",
+          periodo: isString(reuniao.periodo) ? reuniao.periodo : "",
+          leituraBiblica: isString(reuniao.leituraBiblica)
+            ? reuniao.leituraBiblica
+            : null,
+          presidente: isObject(reuniao.presidente)
+            ? (reuniao.presidente as unknown as Pessoa)
+            : null,
+          oracoes: isObject(reuniao.oracoes)
+            ? (reuniao.oracoes as unknown as Oracoes)
+            : null,
+          canticos: isObject(reuniao.canticos)
+            ? (reuniao.canticos as unknown as Canticos)
+            : null,
+          comentarios: isObject(reuniao.comentarios)
+            ? (reuniao.comentarios as unknown as Comentarios)
+            : null,
+          tesourosPalavra: isObject(reuniao.tesourosPalavra)
+            ? (reuniao.tesourosPalavra as unknown as TesourosPalavra)
+            : null,
+          facaSeuMelhor: isArray(reuniao.facaSeuMelhor)
+            ? (reuniao.facaSeuMelhor as FacaSeuMelhorParte[])
+            : null,
+          nossaVidaCrista: isArray(reuniao.nossaVidaCrista)
+            ? (reuniao.nossaVidaCrista as NossaVidaCristaParte[])
+            : null,
+          eventoEspecial: isString(reuniao.eventoEspecial)
+            ? reuniao.eventoEspecial
+            : null,
+          semanaVisitaSuperintendente: isBoolean(
+            reuniao.semanaVisitaSuperintendente
+          )
+            ? reuniao.semanaVisitaSuperintendente
+            : false,
+          diaTerca: isBoolean(reuniao.diaTerca) ? reuniao.diaTerca : false,
+        };
+
+        // Adicionar warnings para campos vazios
+        if (!cleaned.id || cleaned.id.startsWith("temp-")) {
+          warnings.push(`Reunião ${index + 1}: ID foi gerado automaticamente`);
+        }
+
+        if (!cleaned.congregacao_id) {
+          warnings.push(`Reunião ${index + 1}: congregacao_id está vazio`);
+        }
+
+        return cleaned;
       }
-      
-      if (!cleaned.congregacao_id) {
-        warnings.push(`Reunião ${index + 1}: congregacao_id está vazio`);
-      }
-      
-      return cleaned;
-    })
+    ),
   };
-  
-  return { 
-    valid: true, 
-    errors: [], 
+
+  return {
+    valid: true,
+    errors: [],
     cleanedData,
-    warnings 
+    warnings,
   };
 }

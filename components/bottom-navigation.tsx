@@ -4,17 +4,18 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter, usePathname } from "next/navigation";
 import {
-  Calendar,
-  Mic,
-  Settings,
-  Trash2,
-  BookOpen,
-  ShoppingCart,
-  Users,
-  MapPin,
   ChevronUp,
   Shield,
 } from "lucide-react";
+import { CarrinhoIcon } from './icons/carrinho-icon';
+import { CongregacaoIcon } from './icons/congregacao-icon';
+import { DiscursoIcon } from './icons/discurso-icon';
+import { GruposIcon } from './icons/grupos-icon';
+import { LimpezaIcon } from './icons/limpeza-icon';
+import { MecanicasIcon } from './icons/mecanicas-icon';
+import { NvcIcon } from './icons/nvc-icon';
+import { PregacaoIcon } from './icons/pregacao-icon';
+import { PublicadoresIcon } from './icons/publicadores-icon';
 import { BottomSheet } from "./bottom-sheet";
 import { useAuth } from "./auth-provider";
 import { getAvailableTabs } from "@/lib/auth";
@@ -30,34 +31,34 @@ const allTabs: TabItem[] = [
   {
     id: "discursos",
     label: "Discursos",
-    icon: Mic,
+    icon: DiscursoIcon,
     path: "/dashboard/discursos",
   },
   {
     id: "mecanicas",
     label: "Mecânicas",
-    icon: Settings,
+    icon: MecanicasIcon,
     path: "/dashboard/mecanicas",
   },
-  { id: "limpeza", label: "Limpeza", icon: Trash2, path: "/dashboard/limpeza" },
-  { id: "nvc", label: "NVC", icon: BookOpen, path: "/dashboard/nvc" },
+  { id: "limpeza", label: "Limpeza", icon: LimpezaIcon, path: "/dashboard/limpeza" },
+  { id: "nvc", label: "Nossa Vida", icon: NvcIcon, path: "/dashboard/nvc" },
   {
     id: "carrinho",
     label: "Carrinho",
-    icon: ShoppingCart,
+    icon: CarrinhoIcon,
     path: "/dashboard/carrinho",
   },
-  { id: "grupos", label: "Grupos", icon: Users, path: "/dashboard/grupos" },
+  { id: "grupos", label: "Grupos", icon: GruposIcon, path: "/dashboard/grupos" },
   {
     id: "pregacao",
     label: "Pregação",
-    icon: MapPin,
+    icon: PregacaoIcon,
     path: "/dashboard/pregacao",
   },
   {
     id: "publicadores",
     label: "Publicadores",
-    icon: Calendar,
+    icon: PublicadoresIcon,
     path: "/dashboard/publicadores",
   },
   {
@@ -69,7 +70,7 @@ const allTabs: TabItem[] = [
   {
     id: "congregacao",
     label: "Congregação",
-    icon: ChevronUp,
+    icon: CongregacaoIcon,
     path: "/dashboard/congregacao",
   },
 ];
@@ -98,8 +99,8 @@ function TabButton({
         relative flex flex-col items-center justify-center p-3 min-h-[60px] transition-colors rounded-lg
         ${
           isActive
-            ? "text-primary"
-            : "text-muted-foreground hover:text-foreground"
+            ? "text-[hsl(264,39%,38%)]"
+            : "text-muted-foreground hover:text-[hsl(264,39%,38%)]"
         }
         ${className}
       `}
@@ -107,7 +108,7 @@ function TabButton({
       {isActive && (
         <motion.div
           layoutId="activeTab"
-          className="absolute inset-0 bg-primary/10 rounded-lg"
+          className="absolute inset-0 bg-[hsl(264,39%,38%)]/10 rounded-lg"
           initial={false}
           transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
         />
@@ -215,7 +216,7 @@ export function BottomNavigation({ className }: BottomNavigationProps) {
                 {/* 5ª posição: botão "mais" */}
                 <button
                   onClick={() => setIsSheetOpen(true)}
-                  className="relative flex flex-col items-center justify-center p-3 min-h-[60px] transition-colors text-muted-foreground hover:text-foreground"
+                  className="relative flex flex-col items-center justify-center p-3 min-h-[60px] transition-colors text-muted-foreground hover:text-[hsl(264,39%,38%)]"
                 >
                   <div className="flex flex-col items-center gap-1">
                     <ChevronUp className="h-5 w-5" />

@@ -3,6 +3,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
+.p {
+  color: hsl(264, 39%, 38%);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

@@ -180,6 +180,50 @@ export interface Database {
           updated_at?: string
         }
       }
+      mecanicas: {
+        Row: {
+          id: string
+          data: string
+          tipo_reuniao: string
+          indicador_entrada_id: string | null
+          indicador_auditorio_id: string | null
+          audio_video_id: string | null
+          volante_id: string | null
+          palco_id: string | null
+          leitor_sentinela_id: string | null
+          presidente_id: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          data: string
+          tipo_reuniao: string
+          indicador_entrada_id?: string | null
+          indicador_auditorio_id?: string | null
+          audio_video_id?: string | null
+          volante_id?: string | null
+          palco_id?: string | null
+          leitor_sentinela_id?: string | null
+          presidente_id?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          data?: string
+          tipo_reuniao?: string
+          indicador_entrada_id?: string | null
+          indicador_auditorio_id?: string | null
+          audio_video_id?: string | null
+          volante_id?: string | null
+          palco_id?: string | null
+          leitor_sentinela_id?: string | null
+          presidente_id?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+      }
       reunioes_nvc: {
         Row: {
           id: string

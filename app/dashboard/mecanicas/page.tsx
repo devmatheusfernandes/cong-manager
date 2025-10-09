@@ -53,6 +53,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { ImportMecanicasPdfDialog } from "@/components/import-mecanicas-pdf-dialog";
 
 // Funções para filtrar publicadores por permissões específicas
 const getPublicadoresComPermissao = (publicadores: Publicador[], permissao: string) => {
@@ -300,21 +301,37 @@ export default function MecanicasPage() {
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Mecânicas</h2>
         {podeGerenciarMecanicas && (
-          <Dialog
-            open={isModalOpen}
-            onOpenChange={(open) => {
-              setIsModalOpen(open);
-              if (!open) {
-                resetForm();
-              }
-            }}
-          >
-            <DialogTrigger asChild>
-              <Button size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Nova Designação
-              </Button>
-            </DialogTrigger>
+          <div className="flex gap-2">
+            <ImportMecanicasPdfDialog 
+              onImportSuccess={() => {
+                // Recarregar dados após importação bem-sucedida
+                const loadData = async () => {
+                  try {
+                    const mecanicasData = await getAllMecanicas();
+                    setMecanicas(mecanicasData);
+                    toast.success("Dados atualizados!");
+                  } catch (error) {
+                    console.error("Erro ao recarregar dados:", error);
+                  }
+                };
+                loadData();
+              }}
+            />
+            <Dialog
+              open={isModalOpen}
+              onOpenChange={(open) => {
+                setIsModalOpen(open);
+                if (!open) {
+                  resetForm();
+                }
+              }}
+            >
+              <DialogTrigger asChild>
+                <Button size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nova Designação
+                </Button>
+              </DialogTrigger>
             <DialogContent className="sm:max-w-[600px]">
               <DialogHeader>
                 <DialogTitle>
@@ -584,6 +601,7 @@ export default function MecanicasPage() {
               </form>
             </DialogContent>
           </Dialog>
+          </div>
         )}
       </div>
 

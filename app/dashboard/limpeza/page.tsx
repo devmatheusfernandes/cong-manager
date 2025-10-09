@@ -47,6 +47,7 @@ import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/auth-provider";
+import { ImportLimpezaPdfDialog } from "@/components/import-limpeza-pdf-dialog";
 
 // Função para filtrar publicadores com permissão de limpeza
 const getPublicadoresLimpeza = (publicadores: Publicador[]) => {
@@ -98,6 +99,8 @@ export default function LimpezaPage() {
 
   // Verificar permissões
   const podeGerenciarLimpeza = canEdit(user, "limpeza");
+
+
 
   // Função para submeter nova escala
   const handleSubmitNovaEscala = async (e: React.FormEvent) => {
@@ -214,12 +217,26 @@ export default function LimpezaPage() {
             Instruções
           </Button>
 
-          {/* Botão Nova Escala - Apenas para quem tem permissão */}
+          {/* Botões para quem tem permissão */}
           {podeGerenciarLimpeza && (
-            <Button size="sm" onClick={() => setIsNovaEscalaModalOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nova Escala
-            </Button>
+            <>
+              <ImportLimpezaPdfDialog 
+                onImportSuccess={async () => {
+                  try {
+                    const escalasData = await getAllEscalasLimpeza();
+                    setEscalasLimpeza(escalasData);
+                    toast.success("Dados atualizados!");
+                  } catch (error) {
+                    console.error("Erro ao recarregar dados:", error);
+                    toast.error("Erro ao recarregar dados");
+                  }
+                }}
+              />
+              <Button size="sm" onClick={() => setIsNovaEscalaModalOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Nova Escala
+              </Button>
+            </>
           )}
         </div>
       </div>

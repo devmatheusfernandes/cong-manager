@@ -915,7 +915,7 @@ export interface Discurso {
   tema: string;
   data: string;
   cantico?: string;
-  hospitalidade_id?: string;
+  hospitalidade?: string;
   tem_imagem: boolean;
   created_at?: string;
   updated_at?: string;
@@ -937,7 +937,7 @@ export interface CreateDiscursoData {
   tema: string;
   data: string;
   cantico?: string;
-  hospitalidade_id?: string;
+  hospitalidade?: string;
   tem_imagem?: boolean;
 }
 
@@ -946,7 +946,7 @@ export interface UpdateDiscursoData {
   tema?: string;
   data?: string;
   cantico?: string;
-  hospitalidade_id?: string;
+  hospitalidade?: string;
   tem_imagem?: boolean;
 }
 

@@ -54,6 +54,7 @@ import {
   type Discurso,
   type Orador,
 } from "@/lib/auth";
+import { ImportDiscursosPdfDialog } from "@/components/import-discursos-pdf-dialog";
 
 export default function DiscursosPage() {
   const [discursos, setDiscursos] = useState<Discurso[]>([]);
@@ -72,7 +73,7 @@ export default function DiscursosPage() {
     data: "",
     orador_id: "",
     cantico: "",
-    hospitalidade_id: "",
+    hospitalidade: "",
     tem_imagem: false,
   });
 
@@ -123,7 +124,7 @@ export default function DiscursosPage() {
         data: novoDiscurso.data,
         orador_id: novoDiscurso.orador_id,
         cantico: novoDiscurso.cantico || undefined,
-        hospitalidade_id: novoDiscurso.hospitalidade_id || undefined,
+        hospitalidade: novoDiscurso.hospitalidade || undefined,
         tem_imagem: novoDiscurso.tem_imagem,
       });
 
@@ -135,7 +136,7 @@ export default function DiscursosPage() {
           data: "",
           orador_id: "",
           cantico: "",
-          hospitalidade_id: "",
+          hospitalidade: "",
           tem_imagem: false,
         });
         fetchData(); // Recarregar dados
@@ -183,7 +184,7 @@ export default function DiscursosPage() {
       data: discurso.data,
       orador_id: discurso.orador_id,
       cantico: discurso.cantico || "",
-      hospitalidade_id: discurso.hospitalidade_id || "",
+      hospitalidade: discurso.hospitalidade || "",
       tem_imagem: discurso.tem_imagem,
     });
     setEditDiscursoOpen(true);
@@ -208,7 +209,7 @@ export default function DiscursosPage() {
         data: novoDiscurso.data,
         orador_id: novoDiscurso.orador_id,
         cantico: novoDiscurso.cantico || undefined,
-        hospitalidade_id: novoDiscurso.hospitalidade_id || undefined,
+        hospitalidade: novoDiscurso.hospitalidade || undefined,
         tem_imagem: novoDiscurso.tem_imagem,
       });
 
@@ -221,7 +222,7 @@ export default function DiscursosPage() {
           data: "",
           orador_id: "",
           cantico: "",
-          hospitalidade_id: "",
+          hospitalidade: "",
           tem_imagem: false,
         });
         fetchData(); // Recarregar dados
@@ -276,13 +277,15 @@ export default function DiscursosPage() {
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Discursos</h2>
         {podeGerenciarDiscursos && (
-          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Discurso
-              </Button>
-            </DialogTrigger>
+          <div className="flex items-center gap-2">
+            <ImportDiscursosPdfDialog onImportSuccess={fetchData} />
+            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Novo Discurso
+                </Button>
+              </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
                 <DialogTitle>Criar Novo Discurso</DialogTitle>
@@ -393,26 +396,17 @@ export default function DiscursosPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="hospitalidade">Hospitalidade</Label>
-                  <Select
-                    value={novoDiscurso.hospitalidade_id}
-                    onValueChange={(value) =>
+                  <Input
+                    id="hospitalidade"
+                    placeholder="Ex: Família Silva"
+                    value={novoDiscurso.hospitalidade}
+                    onChange={(e) =>
                       setNovoDiscurso({
                         ...novoDiscurso,
-                        hospitalidade_id: value,
+                        hospitalidade: e.target.value,
                       })
                     }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione quem oferecerá hospitalidade (opcional)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {oradores.map((orador) => (
-                        <SelectItem key={orador.id} value={orador.id}>
-                          {orador.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  />
                 </div>
 
                 <div className="flex items-center space-x-2">
@@ -444,6 +438,7 @@ export default function DiscursosPage() {
               </form>
             </DialogContent>
           </Dialog>
+          </div>
         )}
       </div>
 
@@ -514,23 +509,14 @@ export default function DiscursosPage() {
 
             <div className="space-y-2">
               <Label htmlFor="hospitalidade-edit">Hospitalidade</Label>
-              <Select
-                value={novoDiscurso.hospitalidade_id}
-                onValueChange={(value) =>
-                  setNovoDiscurso({ ...novoDiscurso, hospitalidade_id: value })
+              <Input
+                id="hospitalidade-edit"
+                placeholder="Ex: Família Silva"
+                value={novoDiscurso.hospitalidade}
+                onChange={(e) =>
+                  setNovoDiscurso({ ...novoDiscurso, hospitalidade: e.target.value })
                 }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione quem oferecerá hospitalidade (opcional)" />
-                </SelectTrigger>
-                <SelectContent>
-                  {oradores.map((orador) => (
-                    <SelectItem key={orador.id} value={orador.id}>
-                      {orador.nome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              />
             </div>
 
             <div className="flex items-center space-x-2">
@@ -623,9 +609,6 @@ export default function DiscursosPage() {
       <div className="space-y-3">
         {discursosOrdenados.map((discurso) => {
           const orador = oradores.find((o) => o.id === discurso.orador_id);
-          const hospitalidade = oradores.find(
-            (p) => p.id === discurso.hospitalidade_id
-          );
 
           const dataFormatada = new Date(discurso.data).toLocaleDateString(
             "pt-BR",
@@ -664,17 +647,17 @@ export default function DiscursosPage() {
                 {/* Grid com informações */}
                 <div className="grid grid-cols-1 gap-3">
                   {/* Hospitalidade */}
-                  <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-800">
-                    <div className="flex items-center gap-2 mb-1">
-                      <User className="h-3 w-3 text-green-600 dark:text-green-400" />
-                      <span className="text-xs text-green-600 dark:text-green-400 font-medium">
-                        Hospitalidade
-                      </span>
-                    </div>
-                    <p className="text-sm font-medium text-foreground">
-                      {hospitalidade?.nome || "Não definida"}
-                    </p>
-                  </div>
+                   <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-800">
+                     <div className="flex items-center gap-2 mb-1">
+                       <User className="h-3 w-3 text-green-600 dark:text-green-400" />
+                       <span className="text-xs text-green-600 dark:text-green-400 font-medium">
+                         Hospitalidade
+                       </span>
+                     </div>
+                     <p className="text-sm font-medium text-foreground">
+                       {discurso.hospitalidade || "Não definida"}
+                     </p>
+                   </div>
 
                   {/* Cântico */}
                   <div className="p-3 bg-purple-50 dark:bg-purple-950/30 rounded-lg border border-purple-200 dark:border-purple-800">

@@ -225,7 +225,7 @@ export default function NovaReuniaoPage() {
         nossa_vida_crista: [
           {
             id: `nova-${Date.now()}`,
-            congregacao_id: "660e8400-e29b-41d4-a716-446655440001", // ID padrão da congregação
+            congregacao_id: process.env.NEXT_PUBLIC_CONGREGATION_DEFAULT_ID!, // ID padrão da congregação
             periodo: formData.periodo,
             leituraBiblica: formData.leituraBiblica,
             presidente: formData.presidente,

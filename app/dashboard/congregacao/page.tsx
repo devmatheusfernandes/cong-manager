@@ -72,7 +72,7 @@ export default function CongregacaoPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const congregacaoId = '660e8400-e29b-41d4-a716-446655440001';
+  const congregacaoId = process.env.NEXT_PUBLIC_CONGREGATION_DEFAULT_ID!;
 
   const handleCongregacaoUpdate = (updatedCongregacao: Congregacao) => {
     if (data) {

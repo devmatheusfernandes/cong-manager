@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Usar congregacao_id do body ou valor padrão
-    const congregacaoId = congregacao_id || '660e8400-e29b-41d4-a716-446655440001'
+    const congregacaoId = congregacao_id || process.env.NEXT_PUBLIC_CONGREGATION_DEFAULT_ID!
 
     const { data: local, error } = await supabase
       .from('locais_carrinho')

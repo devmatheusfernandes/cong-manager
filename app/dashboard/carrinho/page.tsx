@@ -49,7 +49,7 @@ export default function CarrinhoPage() {
   const [selectedHorarioForEscala, setSelectedHorarioForEscala] = useState<string>("");
 
   // ID da congregação padrão (pode ser obtido do contexto do usuário no futuro)
-  const congregacaoId = '660e8400-e29b-41d4-a716-446655440001';
+  const congregacaoId = process.env.NEXT_PUBLIC_CONGREGATION_DEFAULT_ID!;
 
   const fetchLocais = async () => {
     try {

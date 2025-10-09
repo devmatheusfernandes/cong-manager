@@ -55,7 +55,7 @@ export function TerritorioDialog({
       // Em uma implementação real, você buscaria da API ou contexto
       setFormData((prev) => ({
         ...prev,
-        congregacao_id: "660e8400-e29b-41d4-a716-446655440001",
+        congregacao_id: process.env.NEXT_PUBLIC_CONGREGATION_DEFAULT_ID!,
       }));
     }
   }, [isEditing, formData.congregacao_id]);

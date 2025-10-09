@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ID da congregação padrão (pode ser obtido do contexto do usuário no futuro)
-    const congregacao_id = '660e8400-e29b-41d4-a716-446655440001'
+    const congregacao_id = process.env.NEXT_PUBLIC_CONGREGATION_DEFAULT_ID!
 
     // Criar o grupo
     const { data: grupo, error: grupoError } = await supabase

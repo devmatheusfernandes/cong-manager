@@ -38,7 +38,7 @@ export function LocaisManager() {
   })
 
   // ID padrão da congregação (em uma implementação real, isso viria de um contexto)
-  const congregacaoId = '660e8400-e29b-41d4-a716-446655440001'
+  const congregacaoId = process.env.NEXT_PUBLIC_CONGREGATION_DEFAULT_ID!
 
   useEffect(() => {
     fetchLocais()

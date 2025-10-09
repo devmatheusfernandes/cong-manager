@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const congregacao_id = searchParams.get('id') || '660e8400-e29b-41d4-a716-446655440001'
+    const congregacao_id = searchParams.get('id') || process.env.NEXT_PUBLIC_CONGREGATION_DEFAULT_ID!
 
     console.log('🔍 Buscando dados da congregação:', congregacao_id)
 

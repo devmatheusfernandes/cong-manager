@@ -13,6 +13,7 @@ import { MecanicasIcon } from "./icons/mecanicas-icon";
 import { NvcIcon } from "./icons/nvc-icon";
 import { PregacaoIcon } from "./icons/pregacao-icon";
 import { PublicadoresIcon } from "./icons/publicadores-icon";
+import { TestemunhoPublicoIcon } from "./icons/testemunho-publico-icon";
 import { BottomSheet } from "./bottom-sheet";
 import { useAuth } from "./auth-provider";
 import { getAvailableTabs } from "@/lib/auth";
@@ -45,10 +46,10 @@ const allTabs: TabItem[] = [
   },
   { id: "nvc", label: "Nossa Vida", icon: NvcIcon, path: "/dashboard/nvc" },
   {
-    id: "carrinho",
-    label: "Carrinho",
+    id: "testemunho-publico",
+    label: "Testemunho",
     icon: CarrinhoIcon,
-    path: "/dashboard/carrinho",
+    path: "/dashboard/testemunho-publico",
   },
   {
     id: "grupos",

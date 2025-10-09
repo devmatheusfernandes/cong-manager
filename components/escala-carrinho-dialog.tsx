@@ -7,8 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Calendar, User, Clock, FileText, Trash2 } from "lucide-react";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Calendar, User, Clock, FileText, Trash2, Check, ChevronsUpDown } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface Publicador {
   id: string;
@@ -18,13 +23,12 @@ interface Publicador {
 interface EscalaCarrinho {
   id: string;
   horario_id: string;
-  publicador_id: string;
   data: string;
   eh_fixa: boolean;
   observacoes?: string;
-  publicador?: {
-    nome: string;
-  };
+  publicador1?: { id: string; nome: string; };
+  publicador2?: { id: string; nome: string; };
+  publicador3?: { id: string; nome: string; };
 }
 
 interface EscalaCarrinhoDialogProps {
@@ -45,7 +49,7 @@ export function EscalaCarrinhoDialog({
   const [loading, setLoading] = useState(false);
   const [publicadores, setPublicadores] = useState<Publicador[]>([]);
   const [formData, setFormData] = useState({
-    publicador_id: "",
+    publicadores_ids: [] as string[],
     data: "",
     eh_fixa: false,
     observacoes: "",
@@ -73,15 +77,20 @@ export function EscalaCarrinhoDialog({
   // Preencher formulário quando editando
   useEffect(() => {
     if (escala) {
+      const publicadorIds = [];
+      if (escala.publicador1) publicadorIds.push(escala.publicador1.id);
+      if (escala.publicador2) publicadorIds.push(escala.publicador2.id);
+      if (escala.publicador3) publicadorIds.push(escala.publicador3.id);
+      
       setFormData({
-        publicador_id: escala.publicador_id,
+        publicadores_ids: publicadorIds,
         data: escala.data,
         eh_fixa: escala.eh_fixa,
         observacoes: escala.observacoes || "",
       });
     } else {
       setFormData({
-        publicador_id: "",
+        publicadores_ids: [],
         data: "",
         eh_fixa: false,
         observacoes: "",
@@ -101,7 +110,7 @@ export function EscalaCarrinhoDialog({
       const method = escala ? "PUT" : "POST";
       
       const payload = escala 
-        ? formData
+        ? { ...formData, id: escala.id }
         : { ...formData, horario_id: horarioId };
 
       const response = await fetch(url, {
@@ -172,27 +181,73 @@ export function EscalaCarrinhoDialog({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="publicador">Publicador</Label>
-            <Select
-              value={formData.publicador_id}
-              onValueChange={(value) =>
-                setFormData({ ...formData, publicador_id: value })
-              }
-              required
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione um publicador" />
-              </SelectTrigger>
-              <SelectContent>
-                {publicadores.map((publicador) => (
-                  <SelectItem key={publicador.id} value={publicador.id}>
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4" />
-                      {publicador.nome}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  className="w-full justify-between"
+                >
+                  {formData.publicadores_ids.length > 0
+                    ? publicadores
+                        .filter(p => formData.publicadores_ids.includes(p.id))
+                        .map(p => p.nome)
+                        .join(", ")
+                    : "Selecione publicador(es)..."}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                <Command>
+                  <CommandInput placeholder="Buscar publicador..." />
+                  <CommandEmpty>Nenhum publicador encontrado.</CommandEmpty>
+                  <CommandGroup>
+                    {publicadores.map((publicador) => (
+                      <CommandItem
+                        key={publicador.id}
+                        onSelect={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            publicadores_ids: prev.publicadores_ids.includes(publicador.id)
+                              ? prev.publicadores_ids.filter(id => id !== publicador.id)
+                              : [...prev.publicadores_ids, publicador.id]
+                          }));
+                        }}
+                      >
+                        <Checkbox
+                          checked={formData.publicadores_ids.includes(publicador.id)}
+                          className="mr-2"
+                        />
+                        {publicador.nome}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            {formData.publicadores_ids.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {publicadores
+                  .filter(p => formData.publicadores_ids.includes(p.id))
+                  .map(p => (
+                    <Badge key={p.id} variant="secondary" className="flex items-center gap-1">
+                      {p.nome}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            publicadores_ids: prev.publicadores_ids.filter(id => id !== p.id)
+                          }));
+                        }}
+                        className="ml-1 rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">

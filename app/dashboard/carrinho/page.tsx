@@ -15,13 +15,10 @@ import { toast } from "sonner";
 interface EscalaCarrinho {
   id: string;
   horario_id: string;
-  publicador_id: string;
   data: string;
   eh_fixa: boolean;
   observacoes?: string;
-  publicador?: {
-    nome: string;
-  };
+  publicadores: { id: string; nome: string; }[];
 }
 
 interface HorarioCarrinho {
@@ -255,7 +252,9 @@ export default function CarrinhoPage() {
                                   <div className="flex items-center gap-2">
                                     <User className="h-3 w-3 text-teal-600 dark:text-teal-400" />
                                     <span className="text-xs text-teal-900 dark:text-teal-100">
-                                      {escala.publicador?.nome || 'Publicador não encontrado'}
+                                      {escala.publicadores.length > 0
+                                        ? escala.publicadores.map(p => p.nome).join(', ')
+                                        : 'Nenhum publicador'}
                                     </span>
                                     {escala.eh_fixa && (
                                       <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 px-1 rounded">

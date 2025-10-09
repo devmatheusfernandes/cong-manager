@@ -28,6 +28,8 @@ export type Permission =
   | "edit_nvc"
   | "view_carrinho"
   | "edit_carrinho"
+  | "view_testemunho-publico"
+  | "edit_testemunho-publico"
   | "view_grupos"
   | "edit_grupos"
   | "view_pregacao"
@@ -44,6 +46,7 @@ export const PUBLIC_TABS = [
   "limpeza",
   "nvc",
   "carrinho",
+  "testemunho-publico",
   "grupos",
 ];
 
@@ -224,6 +227,7 @@ export function getAvailableTabs(user: User | null): string[] {
   if (canView(user, "limpeza")) tabs.push("limpeza");
   if (canView(user, "nvc")) tabs.push("nvc");
   if (canView(user, "carrinho")) tabs.push("carrinho");
+  if (canView(user, "testemunho-publico")) tabs.push("testemunho-publico");
   if (canView(user, "grupos")) tabs.push("grupos");
   if (canView(user, "pregacao")) tabs.push("pregacao");
   if (canView(user, "publicadores")) tabs.push("publicadores");

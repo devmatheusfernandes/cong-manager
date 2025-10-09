@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 
-// GET - Listar horários de carrinho
+// GET - Listar horários de testemunho público
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
       .from('carrinho_horarios')
       .select(`
         *,
-        local:locais_carrinho(nome, endereco)
+        locais_carrinho(nome, endereco)
       `)
       .eq('ativo', true)
       .order('dia_semana')
@@ -41,16 +41,16 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Criar novo horário
+// POST - Criar novo horário de testemunho público
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { local_id, dia_semana, hora_inicio, hora_fim } = body
+    const { local_id, dia_semana, hora_inicio, hora_fim, observacoes } = body
 
     // Validação básica
     if (!local_id || dia_semana === undefined || !hora_inicio || !hora_fim) {
       return NextResponse.json(
-        { error: 'Todos os campos são obrigatórios' },
+        { error: 'Local, dia da semana, hora de início e fim são obrigatórios' },
         { status: 400 }
       )
     }
@@ -63,20 +63,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verificar se já existe horário para este local no mesmo dia e horário
-    const { data: existente } = await supabase
-      .from('carrinho_horarios')
+    // Verificar se o local existe
+    const { data: local, error: localError } = await supabase
+      .from('locais_carrinho')
       .select('id')
-      .eq('local_id', local_id)
-      .eq('dia_semana', dia_semana)
-      .eq('hora_inicio', hora_inicio)
+      .eq('id', local_id)
       .eq('ativo', true)
       .single()
 
-    if (existente) {
+    if (localError || !local) {
       return NextResponse.json(
-        { error: 'Já existe um horário para este local neste dia e horário' },
-        { status: 409 }
+        { error: 'Local não encontrado' },
+        { status: 404 }
       )
     }
 
@@ -86,11 +84,13 @@ export async function POST(request: NextRequest) {
         local_id,
         dia_semana,
         hora_inicio,
-        hora_fim
+        hora_fim,
+        observacoes,
+        ativo: true
       })
       .select(`
         *,
-        local:locais_carrinho(nome, endereco)
+        locais_carrinho(nome, endereco)
       `)
       .single()
 

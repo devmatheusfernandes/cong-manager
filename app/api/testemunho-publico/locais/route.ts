@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 
-// GET - Listar todos os locais de carrinho
+// GET - Listar todos os locais de testemunho público
 export async function GET() {
   try {
     const { data: locais, error } = await supabase
@@ -14,9 +14,9 @@ export async function GET() {
       .order('nome')
 
     if (error) {
-      console.error('Erro ao buscar locais de carrinho:', error)
+      console.error('Erro ao buscar locais de testemunho público:', error)
       return NextResponse.json(
-        { error: 'Erro ao buscar locais de carrinho' },
+        { error: 'Erro ao buscar locais de testemunho público' },
         { status: 500 }
       )
     }
@@ -31,35 +31,39 @@ export async function GET() {
   }
 }
 
-// POST - Criar novo local de carrinho
+// POST - Criar novo local de testemunho público
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { nome, endereco, congregacao_id } = body
+    const { nome, endereco, observacoes, congregacao_id } = body
 
     // Validação básica
-    if (!nome || !endereco || !congregacao_id) {
+    if (!nome) {
       return NextResponse.json(
-        { error: 'Nome, endereço e congregação são obrigatórios' },
+        { error: 'Nome é obrigatório' },
         { status: 400 }
       )
     }
 
-    // Inserir novo local
+    // Usar congregacao_id do body ou valor padrão
+    const congregacaoId = congregacao_id || '660e8400-e29b-41d4-a716-446655440001'
+
     const { data: local, error } = await supabase
       .from('locais_carrinho')
       .insert({
         nome,
         endereco,
-        congregacao_id
+        observacoes,
+        congregacao_id: congregacaoId,
+        ativo: true
       })
       .select()
       .single()
 
     if (error) {
-      console.error('Erro ao criar local de carrinho:', error)
+      console.error('Erro ao criar local:', error)
       return NextResponse.json(
-        { error: 'Erro ao criar local de carrinho' },
+        { error: 'Erro ao criar local' },
         { status: 500 }
       )
     }
